@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Absensi Kegiatan</title>
+    <title>Sistem Presensi Kegiatan</title>
     <link rel="manifest" href="manifest.json">
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -11,13 +11,25 @@
     
     <style>
         :root {
-            --primary: #1e40af; /* Biru Safir Mewah */
-            --primary-hover: #1d4ed8;
-            --bg-main: #f8fafc; /* Abu-abu ultra lembut */
-            --text-dark: #0f172a; /* Hitam elegan */
+            --primary: #047857; /* Hijau Emerald Islami */
+            --primary-hover: #065f46;
+            --accent: #d97706; /* Emas/Amber Premium */
+            --bg-main: #f8fafc; 
+            --bg-card: #ffffff;
+            --text-dark: #0f172a; 
             --text-muted: #64748b;
-            --white: #ffffff;
+            --border-color: #e2e8f0;
             --success: #10b981;
+            --shadow-color: rgba(15, 23, 42, 0.04);
+        }
+
+        [data-theme="dark"] {
+            --bg-main: #0f172a; 
+            --bg-card: #1e293b; 
+            --text-dark: #f8fafc; 
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+            --shadow-color: rgba(0, 0, 0, 0.2);
         }
 
         body { 
@@ -30,48 +42,73 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         .app-container { 
             width: 100%;
             max-width: 480px; 
-            background: var(--white); 
+            background: var(--bg-card); 
             padding: 32px 24px; 
             border-radius: 24px; 
-            box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.04), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
+            box-shadow: 0 10px 25px -5px var(--shadow-color), 0 8px 10px -6px var(--shadow-color);
             box-sizing: border-box;
             margin: 16px;
+            position: relative;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
         }
 
-        /* Desain Header Logo Komunitas */
+        .theme-toggle-btn {
+            position: absolute;
+            top: 24px;
+            right: 24px;
+            background: var(--bg-main);
+            border: 1px solid var(--border-color);
+            color: var(--text-dark);
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            width: auto;
+            margin: 0;
+            box-shadow: none;
+            transition: all 0.2s ease;
+        }
+
         .brand-header {
             text-align: center;
             margin-bottom: 28px;
+            margin-top: 10px;
         }
         .brand-logo {
-            width: 64px;
-            height: 64px;
-            margin-bottom: 12px;
+            width: 110px;
+            height: 110px;
+            margin-bottom: 14px;
             object-fit: contain;
+            border-radius: 12px;
         }
         .brand-header h2 { 
-            font-size: 22px; 
+            font-size: 24px; 
             font-weight: 700; 
             color: var(--text-dark); 
             margin: 0;
             letter-spacing: -0.5px;
         }
         .brand-header p {
-            font-size: 14px;
-            color: var(--text-muted);
+            font-size: 13px;
+            color: var(--accent);
+            font-weight: 600;
             margin: 4px 0 0 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .form-group { margin-bottom: 20px; position: relative; }
         
         label { 
             display: block; 
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 600; 
             margin-bottom: 8px; 
             color: var(--text-dark); 
@@ -82,7 +119,9 @@
         input, button { 
             width: 100%; 
             padding: 14px 16px; 
-            border: 1px solid #e2e8f0; 
+            border: 1px solid var(--border-color); 
+            background: var(--bg-card);
+            color: var(--text-dark);
             border-radius: 12px; 
             box-sizing: border-box; 
             font-size: 15px; 
@@ -93,29 +132,46 @@
         input:focus {
             outline: none;
             border-color: var(--primary);
-            box-shadow: 0 0 0 4px rgba(30, 64, 175, 0.1);
+            box-shadow: 0 0 0 4px rgba(4, 120, 87, 0.15);
         }
 
         button { 
             background-color: var(--primary); 
-            color: var(--white); 
+            color: #ffffff; 
             border: none; 
             cursor: pointer; 
             font-weight: 600; 
             margin-top: 8px; 
-            box-shadow: 0 4px 12px rgba(30, 64, 175, 0.15);
+            box-shadow: 0 4px 12px rgba(4, 120, 87, 0.2);
         }
         button:hover { background-color: var(--primary-hover); transform: translateY(-1px); }
         button:active { transform: translateY(0); }
 
-        /* Tampilan Kamera yang Lebih Elegan */
+        /* Tombol Cetak Outline Mewah */
+        .btn-print {
+            background-color: transparent;
+            color: var(--text-dark);
+            border: 2px solid var(--border-color);
+            margin-top: 16px;
+            box-shadow: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn-print:hover {
+            background-color: var(--bg-main);
+            border-color: var(--text-muted);
+            transform: translateY(-1px);
+        }
+
         .section-title {
-            font-size: 14px;
-            font-weight: 600;
+            font-size: 13px;
+            font-weight: 700;
             color: var(--text-muted);
             text-align: center;
             margin: 24px 0 12px 0;
-            position: relative;
+            letter-spacing: 0.5px;
         }
         #reader { 
             width: 100%; 
@@ -123,74 +179,91 @@
             overflow: hidden; 
             background: #000;
             border: none !important;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
-        #reader __video { border-radius: 16px; }
 
         .divider { 
             text-align: center; 
             margin: 24px 0; 
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 700; 
-            color: #cbd5e1; 
-            position: relative;
+            color: var(--text-muted); 
         }
 
-        /* Notifikasi Status Koneksi Mewah */
         .net-status { 
-            text-align: center; 
             font-weight: 600; 
-            font-size: 12px; 
-            margin-bottom: 20px; 
-            padding: 8px 12px; 
+            font-size: 11px; 
+            padding: 6px 12px; 
             border-radius: 20px;
             display: inline-block;
-            left: 50%;
-            transform: translateX(-50%);
-            position: relative;
         }
-        .online { background-color: #f0fdf4; color: var(--success); }
-        .offline { background-color: #fef2f2; color: #ef4444; }
+        .online { background-color: rgba(16, 185, 129, 0.1); color: var(--success); }
+        .offline { background-color: rgba(239, 68, 68, 0.1); color: #ef4444; }
         
-        /* Hasil Pencarian Pintar Pop-up */
         .search-results { 
-            position: absolute; width: 100%; background: var(--white); border: 1px solid #e2e8f0; 
+            position: absolute; width: 100%; background: var(--bg-card); border: 1px solid var(--border-color); 
             border-top: none; max-height: 220px; overflow-y: auto; z-index: 999; 
             border-bottom-left-radius: 12px; border-bottom-right-radius: 12px; 
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05); display: none;
+            box-shadow: 0 10px 15px -3px var(--shadow-color); display: none;
         }
-        .search-item { padding: 12px 16px; cursor: pointer; border-bottom: 1px solid #f1f5f9; font-size: 14px; }
-        .search-item:hover { background-color: #f8fafc; color: var(--primary); font-weight: 500; }
+        .search-item { padding: 12px 16px; cursor: pointer; border-bottom: 1px solid var(--border-color); font-size: 14px; }
+        .search-item:hover { background-color: var(--bg-main); color: var(--primary); font-weight: 500; }
 
-        /* Toast Notification Cantik */
         .toast-notif {
             position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
-            background: #0f172a; color: var(--white); padding: 12px 24px;
-            border-radius: 30px; font-size: 14px; font-weight: 500; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3);
-            display: none; z-index: 10000; text-align: center; white-space: nowrap;
+            background: #1e293b; color: #ffffff; padding: 12px 24px; border-radius: 30px; 
+            font-size: 14px; font-weight: 500; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3);
+            display: none; z-index: 10000; text-align: center;
+        }
+        [data-theme="dark"] .toast-notif { background: #f8fafc; color: #0f172a; }
+
+        /* Area Tabel Rekapan Khusus Cetak (Tersembunyi di Aplikasi Web) */
+        #print-area { display: none; width: 100%; margin-top: 30px; }
+        .print-table {
+            width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px;
+        }
+        .print-table th, .print-table td {
+            border: 1px solid #cbd5e1; padding: 10px 12px; text-align: left;
+        }
+        .print-table th { background-color: #f1f5f9; color: #0f172a; font-weight: 600; }
+
+        /* =======================================================
+           ATURAN KHUSUS PRINTER (CSS MEDIA PRINT)
+           ======================================================= */
+        @media print {
+            body { background: #ffffff !important; color: #000000 !important; display: block; padding: 0; margin: 0; }
+            .app-container { max-width: 100%; width: 100%; box-shadow: none !important; padding: 0; margin: 0; background: #fff !important; }
+            .theme-toggle-btn, #network-indicator, .section-title, #reader, .divider, 
+            .form-group, button, .search-results, .toast-notif { display: none !important; }
+            .brand-header { margin-bottom: 40px; text-align: center; }
+            .brand-logo { width: 90px; height: 90px; filter: grayscale(100%); }
+            .brand-header h2 { color: #000000 !important; font-size: 26px; }
+            #print-area { display: block !important; }
         }
     </style>
 </head>
 <body>
 
 <div class="app-container">
+    <button class="theme-toggle-btn" onclick="ubahTemaSistem()" id="theme-btn">🌙 Dark Mode</button>
+    
     <div id="network-indicator" class="net-status online">● Sistem Online</div>
     
     <div class="brand-header">
-        <img src="logo.png" alt="Logo" class="brand-logo" id="app-logo">
-        <h2>Presensi Generus</h2>
-        <p>Sistem Absensi Digital Multi-Desa</p>
+        <img src="logo insan qurany.jpg" alt="Logo Insan Qur'any" class="brand-logo" id="app-logo">
+        <h2>Presensi Kegiatan</h2>
+        <p>Insan Qur'any Tawangmangu</p>
     </div>
     
     <div class="form-group">
         <label for="kegiatan">Nama Agenda Pertemuan</label>
-        <input type="text" id="kegiatan" placeholder="Masukkan nama kegiatan...">
+        <input type="text" id="kegiatan" placeholder="Masukkan nama kegiatan..." oninput="updateJudulCetak()">
     </div>
 
     <div class="section-title">OPSI 1: SCAN BARCODE</div>
     <div id="reader"></div>
 
-    <div class="divider">PILIHAN LAIN</div>
+    <div class="divider">— ATAU —</div>
 
     <div class="section-title">OPSI 2: INPUT MANUAL</div>
     <div class="form-group">
@@ -201,12 +274,38 @@
     
     <input type="hidden" id="selected-id-generus">
     <button onclick="inputManualKehadiran()">Konfirmasi Kehadiran</button>
+
+    <!-- TOMBOL CETAK REKAP BARU -->
+    <button class="btn-print" onclick="cetakLaporanSekarang()">
+        🖨️ Cetak Rekap Kehadiran Saat Ini
+    </button>
+
+    <!-- STRUKTUR TABEL REKAP YANG AKAN MUNCUL SAAT DIPRINT -->
+    <div id="print-area">
+        <h3 style="text-align: center; margin: 0 0 5px 0; font-size: 18px;" id="cetak-judul-kegiatan">Laporan Presensi Kegiatan</h3>
+        <p style="text-align: center; margin: 0 0 20px 0; font-size: 13px; color: #475569;" id="cetak-waktu">Tanggal Cetak: -</p>
+        <table class="print-table">
+            <thead>
+                <tr>
+                    <th style="width: 8px;">No</th>
+                    <th>Nama Lengkap</th>
+                    <th>Kelompok</th>
+                    <th>Desa</th>
+                    <th>Waktu Hadir</th>
+                    <th>Metode</th>
+                </tr>
+            </thead>
+            <tbody id="tabel-list-cetak">
+                <!-- Baris data absensi dimasukkan otomatis lewat javascript saat tombol cetak diklik -->
+            </tbody>
+        </table>
+    </div>
 </div>
 
 <div id="toast-box" class="toast-notif"></div>
 
 <script>
-    // ISI DENGAN DATA DARI SUPABASE ANDA
+    // MASUKKAN KEMBALI URL & KEY SUPABASE ANDA DI SINI
     const SUPABASE_URL = "https://gttavghryoadthnvwthd.supabase.co"; 
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0dGF2Z2hyeW9hZHRobnZ3dGhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA5MDI5NDQsImV4cCI6MjA5NjQ3ODk0NH0.0O7I9EqSaiQq8_LKMJS9U-XDuitY6sPfYQVtBsJAeas";
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -215,8 +314,33 @@
     const searchInput = document.getElementById('search-input');
     const resultsBox = document.getElementById('search-results-box');
     const selectedIdInput = document.getElementById('selected-id-generus');
+    const themeBtn = document.getElementById('theme-btn');
     
     let semuaDataGenerus = [];
+    let logAbsensiHariIni = []; // Menyimpan sementara daftar siapa saja yang sudah absen di sesi ini
+
+    function ubahTemaSistem() {
+        const temaSekarang = document.documentElement.getAttribute('data-theme');
+        if (temaSekarang === 'dark') {
+            document.documentElement.removeAttribute('data-theme');
+            themeBtn.innerText = "🌙 Dark Mode";
+            localStorage.setItem('tema_pilihan', 'light');
+        } else {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            themeBtn.innerText = "☀️ Light Mode";
+            localStorage.setItem('tema_pilihan', 'dark');
+        }
+    }
+
+    if (localStorage.getItem('tema_pilihan') === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        themeBtn.innerText = "☀️ Light Mode";
+    }
+
+    function updateJudulCetak() {
+        let agenda = document.getElementById('kegiatan').value;
+        document.getElementById('cetak-judul-kegiatan').innerText = agenda ? `Laporan Presensi: ${agenda}` : "Laporan Presensi Kegiatan";
+    }
 
     window.addEventListener('online', () => {
         netIndicator.innerText = "● Sistem Online";
@@ -278,6 +402,9 @@
         let namaKegiatan = document.getElementById('kegiatan').value;
         if(!namaKegiatan) { alert("Harap isi Nama Agenda terlebih dahulu!"); return; }
 
+        // Cari profil objek dari memori lokal untuk tabel cetak
+        let profil = semuaDataGenerus.find(g => g.id_generus == idGenerus) || { nama: "ID: " + idGenerus, kelompok: "-", desa: "-" };
+
         const dataAbsen = {
             nama_kegiatan: namaKegiatan,
             id_generus: idGenerus,
@@ -285,10 +412,19 @@
             waktu_absen: new Date().toISOString()
         };
 
+        // Simpan ke log sesi lokal aplikasi agar langsung bisa dicetak tanpa menunggu reload
+        logAbsensiHariIni.push({
+            nama: profil.nama,
+            kelompok: profil.kelompok,
+            desa: profil.desa,
+            waktu: new Date().toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'}),
+            metode: metode
+        });
+
         if (navigator.onLine) {
             let { error } = await _supabase.from('absensi_kegiatan').insert([dataAbsen]);
             if (!error) {
-                tampilkanToast(`✓ Kehadiran berhasil dicatat`);
+                tampilkanToast(`✓ Kehadiran ${profil.nama} berhasil dicatat`);
                 if(metode === "Manual") { searchInput.value = ''; selectedIdInput.value = ''; }
             } else { simpanLokal(dataAbsen); }
         } else { simpanLokal(dataAbsen); }
@@ -317,6 +453,37 @@
         let idTerpilih = selectedIdInput.value;
         if(!idTerpilih) return alert("Cari dan pilih nama terlebih dahulu!");
         prosesAbsensi(idTerpilih, "Manual");
+    }
+
+    // FUNGSI UTAMA UNTUK MENYUSUN DAN MEMBUKA WINDOW PRINT CETAK
+    function cetakLaporanSekarang() {
+        if(logAbsensiHariIni.length === 0) {
+            alert("Belum ada data anggota yang melakukan absensi pada sesi ini!");
+            return;
+        }
+
+        let tbody = document.getElementById('tabel-list-cetak');
+        tbody.innerHTML = ""; // Kosongkan cetakan lama
+
+        // Buat baris tabel satu per satu dari daftar orang yang sudah mengklik absen tadi
+        logAbsensiHariIni.forEach((data, index) => {
+            let row = `<tr>
+                <td>${index + 1}</td>
+                <td style="font-weight: 600;">${data.nama}</td>
+                <td>${data.kelompok}</td>
+                <td>${data.desa}</td>
+                <td>${data.waktu} WIB</td>
+                <td style="font-size: 12px; color: #475569;">${data.metode}</td>
+            </tr>`;
+            tbody.innerHTML += row;
+        });
+
+        // Set info waktu cetak real-time
+        let opsiWaktu = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+        document.getElementById('cetak-waktu').innerText = "Waktu Cetak: " + new Date().toLocaleDateString('id-ID', opsiWaktu) + " WIB";
+
+        // Panggil fungsi cetak bawaan HP/Laptop
+        window.print();
     }
 
     function tampilkanToast(pesan) {
