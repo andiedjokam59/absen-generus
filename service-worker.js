@@ -1,25 +1,40 @@
-const CACHE_NAME = 'absensi-generus-v1';
-const ASSETS = [
+const CACHE_NAME = 'presensi-iq-v2';
+const assets = [
   './',
   './index.html',
-  'https://unpkg.com/html5-qrcode',
-  'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2'
+  './manifest.json',
+  './logo-baru.jpg'
 ];
 
-// Pasang aplikasi di penyimpanan lokal HP (cache)
+// Pasang Service Worker dan simpan aset ke memori cache
 self.addEventListener('install', e => {
   e.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
-      return cache.addAll(ASSETS);
+      return cache.addAll(assets);
     })
   );
 });
 
-// Menampilkan halaman web dari cache ketika tidak ada sinyal internet
+// Aktifkan Service Worker dan hapus cache versi lama jika ada
+self.addEventListener('activate', e => {
+  e.waitUntil(
+    caches.keys().then(keys => {
+      return Promise.all(
+        keys.map(key => {
+          if (key !== CACHE_NAME) {
+            return caches.delete(key);
+          }
+        })
+      );
+    })
+  );
+});
+
+// Strategi Fetch: Ambil dari internet dulu, jika offline ambil dari cache
 self.addEventListener('fetch', e => {
   e.respondWith(
-    caches.match(e.request).then(response => {
-      return response || fetch(e.request);
+    fetch(e.request).catch(() => {
+      return caches.match(e.request);
     })
   );
 });
