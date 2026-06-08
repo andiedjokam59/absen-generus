@@ -147,7 +147,6 @@
         button:hover { background-color: var(--primary-hover); transform: translateY(-1px); }
         button:active { transform: translateY(0); }
 
-        /* Desain Tombol Menu Cetak Rekap Berjejer */
         .print-grid {
             display: grid;
             grid-template-columns: 1fr;
@@ -225,7 +224,6 @@
         }
         [data-theme="dark"] .toast-notif { background: #f8fafc; color: #0f172a; }
 
-        /* Komponen Khusus Area Cetak Kertas */
         #print-area { display: none; width: 100%; margin-top: 30px; }
         .print-table {
             width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px;
@@ -255,7 +253,7 @@
     <div id="network-indicator" class="net-status online">● Sistem Online</div>
     
     <div class="brand-header">
-        <img src="logo insan qurany.jpg" alt="Logo Insan Qur'any" class="brand-logo" id="app-logo">
+        <img src="logo-baru.jpg" alt="Logo Insan Qur'any" class="brand-logo" id="app-logo">
         <h2>Presensi Kegiatan</h2>
         <p>Insan Qur'any Tawangmangu</p>
     </div>
@@ -280,11 +278,11 @@
     <input type="hidden" id="selected-id-generus">
     <button onclick="inputManualKehadiran()">Konfirmasi Kehadiran</button>
 
-    <div class="section-title">CETAK LAPORAN REKAP</div>
+    <div class="section-title">TARIK REKAP KESELURUHAN (SUPABASE)</div>
     <div class="print-grid">
-        <button class="btn-print-action" onclick="cetakLaporan('semua')">🖨️ Cetak Semua Daftar Hadir</button>
-        <button class="btn-print-action" onclick="cetakLaporan('desa')">📊 Cetak Total per Desa</button>
-        <button class="btn-print-action" onclick="cetakLaporan('kelompok')">👥 Cetak Total per Kelompok</button>
+        <button class="btn-print-action" onclick="tarikDanCetakLaporan('semua')">🖨️ Cetak Semua Daftar Hadir</button>
+        <button class="btn-print-action" onclick="tarikDanCetakLaporan('desa')">📊 Cetak Total per Desa</button>
+        <button class="btn-print-action" onclick="tarikDanCetakLaporan('kelompok')">👥 Cetak Total per Kelompok</button>
     </div>
 
     <div id="print-area">
@@ -297,7 +295,7 @@
 <div id="toast-box" class="toast-notif"></div>
 
 <script>
-    // ISI KEMBALI KUNCI PROYEK SUPABASE ANDA
+    // MASUKKAN KREDENSIAL SUPABASE ANDA SECARA BENAR
     const SUPABASE_URL = "https://gttavghryoadthnvwthd.supabase.co"; 
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0dGF2Z2hyeW9hZHRobnZ3dGhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA5MDI5NDQsImV4cCI6MjA5NjQ3ODk0NH0.0O7I9EqSaiQq8_LKMJS9U-XDuitY6sPfYQVtBsJAeas";
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -309,7 +307,6 @@
     const themeBtn = document.getElementById('theme-btn');
     
     let semuaDataGenerus = [];
-    let logAbsensiHariIni = []; 
 
     function ubahTemaSistem() {
         const temaSekarang = document.documentElement.getAttribute('data-theme');
@@ -394,7 +391,7 @@
         let namaKegiatan = document.getElementById('kegiatan').value;
         if(!namaKegiatan) { alert("Harap isi Nama Agenda terlebih dahulu!"); return; }
 
-        let profil = semuaDataGenerus.find(g => g.id_generus == idGenerus) || { nama: "ID: " + idGenerus, kelompok: "-", desa: "-" };
+        let profil = semuaDataGenerus.find(g => g.id_generus == idGenerus) || { nama: "ID: " + idGenerus };
 
         const dataAbsen = {
             nama_kegiatan: namaKegiatan,
@@ -403,18 +400,11 @@
             waktu_absen: new Date().toISOString()
         };
 
-        logAbsensiHariIni.push({
-            nama: profil.nama,
-            kelompok: profil.kelompok || "Tanpa Kelompok",
-            desa: profil.desa || "Tanpa Desa",
-            waktu: new Date().toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'}),
-            metode: metode
-        });
-
+        // Langsung tembak simpan ke database Supabase secara real-time
         if (navigator.onLine) {
             let { error } = await _supabase.from('absensi_kegiatan').insert([dataAbsen]);
             if (!error) {
-                tampilkanToast(`✓ Kehadiran ${profil.nama} berhasil dicatat`);
+                tampilkanToast(`✓ Kehadiran ${profil.nama} sukses disimpan ke database cloud!`);
                 if(metode === "Manual") { searchInput.value = ''; selectedIdInput.value = ''; }
             } else { simpanLokal(dataAbsen); }
         } else { simpanLokal(dataAbsen); }
@@ -424,7 +414,7 @@
         let antrean = JSON.parse(localStorage.getItem('antrean_absensi')) || [];
         antrean.push(data);
         localStorage.setItem('antrean_absensi', JSON.stringify(antrean));
-        tampilkanToast(`💾 Tersimpan lokal (Offline)`);
+        tampilkanToast(`💾 Tersimpan lokal (Akan disinkronkan saat online)`);
         if(data.metode_input === "Manual") { searchInput.value = ''; selectedIdInput.value = ''; }
     }
 
@@ -435,8 +425,7 @@
         for (let i = 0; i < antrean.length; i++) { await _supabase.from('absensi_kegiatan').insert([antrean[i]]); }
         localStorage.removeItem('antrean_absensi');
         netIndicator.innerText = "● Sistem Online";
-        tampilkanToast("✓ Semua data offline tersinkronisasi");
-        muatSemuaGenerus();
+        tampilkanToast("✓ Semua data offline berhasil digabungkan ke Supabase");
     }
 
     function inputManualKehadiran() {
@@ -445,113 +434,145 @@
         prosesAbsensi(idTerpilih, "Manual");
     }
 
-    // FUNGSI LOGIKA BARU UNTUK MEREKAP BERDASARKAN PARAMETER PILIHAN
-    function cetakLaporan(jenis) {
-        if(logAbsensiHariIni.length === 0) {
-            alert("Belum ada data kehadiran yang tercatat pada sesi ini!");
-            return;
+    // LOGIKA MASTER: MENARIK DAN OTOMATIS MENGGABUNGKAN DATA DARI SEMUA HP BERDASARKAN JUDUL KEGIATAN
+    async function tarikDanCetakLaporan(jenis) {
+        let namaKegiatan = document.getElementById('kegiatan').value;
+        if(!namaKegiatan) { 
+            alert("Harap masukkan Nama Agenda yang ingin ditarik rekapannya!"); 
+            return; 
         }
 
-        let container = document.getElementById('print-table-container');
-        container.innerHTML = ""; // Bersihkan template lama
+        tampilkanToast("🔄 Menarik seluruh data dari Supabase...");
 
-        let opsiWaktu = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
-        document.getElementById('cetak-waktu').innerText = "Waktu Cetak Laporan: " + new Date().toLocaleDateString('id-ID', opsiWaktu) + " WIB";
+        try {
+            // Ambil log kehadiran dari tabel absensi berdasarkan JUDUL KEGIATAN YANG SAMA
+            let { data: logAbsen, error: errorAbsen } = await _supabase
+                .from('absensi_kegiatan')
+                .select('id_generus, waktu_absen, metode_input')
+                .eq('nama_kegiatan', namaKegiatan);
 
-        if (jenis === 'semua') {
-            // OPTION A: CETAK SEMUA DATA DAFTAR HADIR
-            let html = `<table class="print-table">
-                <thead>
-                    <tr>
-                        <th style="width:20px;">No</th>
-                        <th>Nama Lengkap</th>
-                        <th>Kelompok</th>
-                        <th>Desa</th>
-                        <th>Waktu</th>
-                        <th>Metode</th>
-                    </tr>
-                </thead>
-                <tbody>`;
-            logAbsensiHariIni.forEach((data, index) => {
-                html += `<tr>
-                    <td>${index + 1}</td>
-                    <td style="font-weight:600;">${data.nama}</td>
-                    <td>${data.kelompok}</td>
-                    <td>${data.desa}</td>
-                    <td>${data.waktu} WIB</td>
-                    <td style="font-size:12px; color:#475569;">${data.metode}</td>
-                </tr>`;
-            });
-            html += `</tbody></table>`;
-            container.innerHTML = html;
+            if (errorAbsen) throw errorAbsen;
 
-        } else if (jenis === 'desa') {
-            // OPTION B: HITUNG REKAP TOTAL PER DESA
-            let rekapDesa = {};
-            logAbsensiHariIni.forEach(data => {
-                rekapDesa[data.desa] = (rekapDesa[data.desa] || 0) + 1;
-            });
-
-            let html = `<table class="print-table" style="max-width: 400px; margin: 0 auto;">
-                <thead>
-                    <tr>
-                        <th style="width:20px;">No</th>
-                        <th>Nama Wilayah Desa</th>
-                        <th style="text-align:center; width:100px;">Total Hadir</th>
-                    </tr>
-                </thead>
-                <tbody>`;
-            let idx = 1;
-            let grandTotal = 0;
-            for (let desa in rekapDesa) {
-                html += `<tr>
-                    <td>${idx++}</td>
-                    <td style="font-weight:600;">${desa}</td>
-                    <td style="text-align:center; font-weight:700; color:var(--primary);">${rekapDesa[desa]} Orang</td>
-                </tr>`;
-                grandTotal += rekapDesa[desa];
+            if(!logAbsen || logAbsen.length === 0) {
+                alert(`Tidak ditemukan data absensi untuk kegiatan dengan judul: "${namaKegiatan}"`);
+                return;
             }
-            html += `<tr style="background-color:#f8fafc; font-weight:700;">
-                <td colspan="2" style="text-align:right;">TOTAL KESELURUHAN JEMAAH:</td>
-                <td style="text-align:center; color:#b45309; font-size:16px;">${grandTotal}</td>
-            </tr></tbody></table>`;
-            container.innerHTML = html;
 
-        } else if (jenis === 'kelompok') {
-            // OPTION C: HITUNG REKAP TOTAL PER KELOMPOK
-            let rekapKelompok = {};
-            logAbsensiHariIni.forEach(data => {
-                rekapKelompok[data.kelompok] = (rekapKelompok[data.kelompok] || 0) + 1;
+            // Gabungkan/Mapping data absensi dengan master data_generus agar didapat Kelompok & Desa nya
+            let gabunganDataMurni = logAbsen.map(absen => {
+                let detail = semuaDataGenerus.find(g => g.id_generus == absen.id_generus) || { nama: "ID Terhapus: " + absen.id_generus, kelompok: "Tanpa Kelompok", desa: "Tanpa Desa" };
+                let waktuLokal = new Date(absen.waktu_absen).toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'});
+                return {
+                    nama: detail.nama,
+                    kelompok: detail.kelompok || "Tanpa Kelompok",
+                    desa: detail.desa || "Tanpa Desa",
+                    waktu: waktuLokal,
+                    metode: absen.metode_input
+                }
             });
 
-            let html = `<table class="print-table" style="max-width: 400px; margin: 0 auto;">
-                <thead>
-                    <tr>
-                        <th style="width:20px;">No</th>
-                        <th>Nama Kelompok</th>
-                        <th style="text-align:center; width:100px;">Total Hadir</th>
-                    </tr>
-                </thead>
-                <tbody>`;
-            let idx = 1;
-            let grandTotal = 0;
-            for (let kmp in rekapKelompok) {
-                html += `<tr>
-                    <td>${idx++}</td>
-                    <td style="font-weight:600;">Kelompok ${kmp}</td>
-                    <td style="text-align:center; font-weight:700; color:var(--primary);">${rekapKelompok[kmp]} Orang</td>
-                </tr>`;
-                grandTotal += rekapKelompok[kmp];
+            let container = document.getElementById('print-table-container');
+            container.innerHTML = ""; 
+
+            let opsiWaktu = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+            document.getElementById('cetak-waktu').innerText = "Waktu Tarik Laporan: " + new Date().toLocaleDateString('id-ID', opsiWaktu) + " WIB";
+
+            if (jenis === 'semua') {
+                let html = `<table class="print-table">
+                    <thead>
+                        <tr>
+                            <th style="width:20px;">No</th>
+                            <th>Nama Lengkap</th>
+                            <th>Kelompok</th>
+                            <th>Desa</th>
+                            <th>Waktu Masuk</th>
+                            <th>Metode</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+                gabunganDataMurni.forEach((data, index) => {
+                    html += `<tr>
+                        <td>${index + 1}</td>
+                        <td style="font-weight:600;">${data.nama}</td>
+                        <td>${data.kelompok}</td>
+                        <td>${data.desa}</td>
+                        <td>${data.waktu} WIB</td>
+                        <td style="font-size:12px; color:#475569;">${data.metode}</td>
+                    </tr>`;
+                });
+                html += `</tbody></table>`;
+                container.innerHTML = html;
+
+            } else if (jenis === 'desa') {
+                let rekapDesa = {};
+                gabunganDataMurni.forEach(data => {
+                    rekapDesa[data.desa] = (rekapDesa[data.desa] || 0) + 1;
+                });
+
+                let html = `<table class="print-table" style="max-width: 400px; margin: 0 auto;">
+                    <thead>
+                        <tr>
+                            <th style="width:20px;">No</th>
+                            <th>Nama Wilayah Desa</th>
+                            <th style="text-align:center; width:100px;">Total Hadir</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+                let idx = 1;
+                let grandTotal = 0;
+                for (let desa in rekapDesa) {
+                    html += `<tr>
+                        <td>${idx++}</td>
+                        <td style="font-weight:600;">${desa}</td>
+                        <td style="text-align:center; font-weight:700; color:var(--primary);">${rekapDesa[desa]} Orang</td>
+                    </tr>`;
+                    grandTotal += rekapDesa[desa];
+                }
+                html += `<tr style="background-color:#f8fafc; font-weight:700;">
+                    <td colspan="2" style="text-align:right;">TOTAL KESELURUHAN JEMAAH:</td>
+                    <td style="text-align:center; color:#b45309; font-size:16px;">${grandTotal}</td>
+                </tr></tbody></table>`;
+                container.innerHTML = html;
+
+            } else if (jenis === 'kelompok') {
+                let rekapKelompok = {};
+                gabunganDataMurni.forEach(data => {
+                    rekapKelompok[data.kelompok] = (rekapKelompok[data.kelompok] || 0) + 1;
+                });
+
+                let html = `<table class="print-table" style="max-width: 400px; margin: 0 auto;">
+                    <thead>
+                        <tr>
+                            <th style="width:20px;">No</th>
+                            <th>Nama Kelompok</th>
+                            <th style="text-align:center; width:100px;">Total Hadir</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+                let idx = 1;
+                let grandTotal = 0;
+                for (let kmp in rekapKelompok) {
+                    html += `<tr>
+                        <td>${idx++}</td>
+                        <td style="font-weight:600;">Kelompok ${kmp}</td>
+                        <td style="text-align:center; font-weight:700; color:var(--primary);">${rekapKelompok[kmp]} Orang</td>
+                    </tr>`;
+                    grandTotal += rekapKelompok[kmp];
+                }
+                html += `<tr style="background-color:#f8fafc; font-weight:700;">
+                    <td colspan="2" style="text-align:right;">TOTAL KESELURUHAN JEMAAH:</td>
+                    <td style="text-align:center; color:#b45309; font-size:16px;">${grandTotal}</td>
+                </tr></tbody></table>`;
+                container.innerHTML = html;
             }
-            html += `<tr style="background-color:#f8fafc; font-weight:700;">
-                <td colspan="2" style="text-align:right;">TOTAL KESELURUHAN JEMAAH:</td>
-                <td style="text-align:center; color:#b45309; font-size:16px;">${grandTotal}</td>
-            </tr></tbody></table>`;
-            container.innerHTML = html;
+
+            // Tampilkan layar print pratinjau bawaan gawai
+            window.print();
+
+        } catch (err) {
+            alert("Gagal mengambil data dari database cloud. Pastikan gawai Anda terhubung internet.");
+            console.error(err);
         }
-
-        // Jalankan mesin print preview HP/Laptop
-        window.print();
     }
 
     function tampilkanToast(pesan) {
