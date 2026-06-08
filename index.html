@@ -4,20 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistem Absensi Generus</title>
-    <!-- File Manifest agar bisa di-install di HP seperti aplikasi asli -->
     <link rel="manifest" href="manifest.json">
-    <!-- Library Scanner Barcode -->
     <script src="https://unpkg.com/html5-qrcode"></script>
-    <!-- Library Supabase untuk menghubungkan ke Database -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 15px; background-color: #f0f4f8; }
         .container { max-width: 550px; margin: 0 auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
         h2, h3 { text-align: center; color: #2c3e50; margin-top: 5px; }
-        .form-group { margin-bottom: 15px; }
+        .form-group { margin-bottom: 15px; position: relative; }
         label { display: block; font-weight: bold; margin-bottom: 5px; color: #34495e; }
-        input, select, button { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
-        button { background-color: #2563eb; color: white; border: none; cursor: pointer; font-weight: bold; margin-top: 5px; transition: 0.2s; }
+        input, button { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+        button { background-color: #2563eb; color: white; border: none; cursor: pointer; font-weight: bold; margin-top: 5px; }
         button:hover { background-color: #1d4ed8; }
         #reader { width: 100%; border-radius: 8px; overflow: hidden; background: #000; }
         .divider { text-align: center; margin: 20px 0; font-weight: bold; color: #94a3b8; }
@@ -25,6 +22,15 @@
         .net-status { text-align: center; font-weight: bold; font-size: 14px; margin-bottom: 15px; padding: 5px; border-radius: 5px; }
         .online { background-color: #dcfce7; color: #16a34a; }
         .offline { background-color: #fee2e2; color: #dc2626; }
+        
+        /* Gaya untuk Kotak Pencarian Pintar */
+        .search-results { 
+            position: absolute; width: 100%; background: white; border: 1px solid #cbd5e1; 
+            border-top: none; max-height: 200px; overflow-y: auto; z-index: 999; 
+            border-bottom-left-radius: 8px; border-bottom-right-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); display: none;
+        }
+        .search-item { padding: 10px; cursor: pointer; border-bottom: 1px solid #f1f5f9; font-size: 15px; }
+        .search-item:hover { background-color: #f0f4f8; }
     </style>
 </head>
 <body>
@@ -45,11 +51,12 @@
 
     <h3>[ Opsi 2: Input Manual ]</h3>
     <div class="form-group">
-        <label for="manual-select">Pilih Nama Generus (Jika Barcode Rusak):</label>
-        <select id="manual-select">
-            <option value="">-- Memuat Data Generus... --</option>
-        </select>
+        <label for="search-input">Cari Nama Generus:</label>
+        <input type="text" id="search-input" placeholder="Ketik nama untuk mencari..." oninput="cariNamaPintar()">
+        <div id="search-results-box" class="search-results"></div>
     </div>
+    
+    <input type="hidden" id="selected-id-generus">
     <button onclick="inputManualKehadiran()">Input Kehadiran Manual</button>
 
     <div id="status-notif" class="status-box"></div>
@@ -61,40 +68,72 @@
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0dGF2Z2hyeW9hZHRobnZ3dGhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA5MDI5NDQsImV4cCI6MjA5NjQ3ODk0NH0.0O7I9EqSaiQq8_LKMJS9U-XDuitY6sPfYQVtBsJAeas";
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // Ambil elemen HTML
     const netIndicator = document.getElementById('network-indicator');
-    const selectGenerus = document.getElementById('manual-select');
+    const searchInput = document.getElementById('search-input');
+    const resultsBox = document.getElementById('search-results-box');
+    const selectedIdInput = document.getElementById('selected-id-generus');
+    
+    let semuaDataGenerus = []; // Tempat menyimpan ribuan data di memori HP sementara agar pencarian kilat
 
-    // Indikator Status Internet Online/Offline
     window.addEventListener('online', () => {
         netIndicator.innerText = "Status: Terhubung Internet (Online)";
         netIndicator.className = "net-status online";
-        kirimDataTertunda(); // Sinkronisasi otomatis saat internet kembali ada
+        kirimDataTertunda();
     });
     window.addEventListener('offline', () => {
         netIndicator.innerText = "Status: Offline (Data disimpan lokal di HP)";
         netIndicator.className = "net-status offline";
     });
 
-    // Ambil data nama generus dari Supabase untuk Dropdown Manual
-    async function muatDaftarGenerus() {
+    // Ambal semua data dari Supabase saat aplikasi pertama dibuka (Hanya jalan jika online)
+    async function muatSemuaGenerus() {
         try {
-            let { data: generus, error } = await _supabase.from('data_generus').select('id_generus, nama, kelompok');
+            let { data: generus, error } = await _supabase.from('data_generus').select('id_generus, nama, kelompok, desa');
             if (error) throw error;
-            
-            selectGenerus.innerHTML = '<option value="">-- Pilih Nama --</option>';
-            generus.forEach(g => {
-                let opt = document.createElement('option');
-                opt.value = g.id_generus;
-                opt.innerText = `${g.nama} (${g.kelompok || '-'})`;
-                selectGenerus.appendChild(opt);
-            });
+            semuaDataGenerus = generus;
+            searchInput.placeholder = `Ketik nama (Total: ${generus.length} generus terdata)`;
         } catch (e) {
-            // Jika offline, coba muat dari data cadangan lokal jika ada
-            selectGenerus.innerHTML = '<option value="">Gagal memuat data cloud (Anda sedang offline)</option>';
+            searchInput.placeholder = "Gagal memuat database cloud (Anda offline)";
         }
     }
-    muatDaftarGenerus();
+    muatSemuaGenerus();
+
+    // Fungsi Pencarian Pintar (Sangat cepat meskipun datanya ribuan karena dicari di memori HP)
+    function cariNamaPintar() {
+        let keyword = searchInput.value.toLowerCase();
+        resultsBox.innerHTML = '';
+        
+        if (keyword.length < 2) { 
+            resultsBox.style.display = 'none'; 
+            return; 
+        }
+
+        // Filter data berdasarkan nama yang diketik admin
+        let hasilFilter = semuaDataGenerus.filter(g => g.nama.toLowerCase().includes(keyword)).slice(0, 10); // Batasi maks 10 saran tampil agar tidak penuh
+
+        if(hasilFilter.length > 0) {
+            resultsBox.style.display = 'block';
+            hasilFilter.forEach(g => {
+                let div = document.createElement('div');
+                div.className = 'search-item';
+                div.innerText = `${g.nama} - ${g.kelompok || '-'} [Desa: ${g.desa || '-'}]`;
+                div.onclick = function() {
+                    searchInput.value = g.nama;
+                    selectedIdInput.value = g.id_generus; // Simpan kodenya
+                    resultsBox.style.display = 'none';
+                };
+                resultsBox.appendChild(div);
+            });
+        } else {
+            resultsBox.style.display = 'block';
+            resultsBox.innerHTML = '<div class="search-item" style="color:red; cursor:default;">Nama tidak ditemukan</div>';
+        }
+    }
+
+    // Tutup kotak pencarian jika admin klik di luar area kotak
+    document.addEventListener('click', function(e) {
+        if (e.target !== searchInput) { resultsBox.style.display = 'none'; }
+    });
 
     // Kamera Scanner Barcode
     function onScanSuccess(decodedText) {
@@ -103,7 +142,7 @@
     let html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
     html5QrcodeScanner.render(onScanSuccess);
 
-    // Fungsi Utama Memproses Absen (Mendukung Sistem Offline)
+    // Proses Simpan Data
     async function prosesAbsensi(idGenerus, metode) {
         let namaKegiatan = document.getElementById('kegiatan').value;
         if(!namaKegiatan) {
@@ -119,15 +158,14 @@
         };
 
         if (navigator.onLine) {
-            // JIKA ONLINE: Langsung kirim ke Supabase
             let { error } = await _supabase.from('absensi_kegiatan').insert([dataAbsen]);
             if (!error) {
-                tampilkanNotif(`Sukses Absen Langsung ke Cloud! ID: ${idGenerus}`);
+                tampilkanNotif(`Sukses Absen! ID: ${idGenerus} (${metode})`);
+                if(metode === "Manual") { searchInput.value = ''; selectedIdInput.value = ''; }
             } else {
                 simpanLokal(dataAbsen);
             }
         } else {
-            // JIKA OFFLINE: Simpan di memori browser HP terlebih dahulu
             simpanLokal(dataAbsen);
         }
     }
@@ -137,27 +175,25 @@
         antrean.push(data);
         localStorage.setItem('antrean_absensi', JSON.stringify(antrean));
         tampilkanNotif(`Offline! Absen ID: ${data.id_generus} disimpan sementara di HP.`);
+        if(data.metode_input === "Manual") { searchInput.value = ''; selectedIdInput.value = ''; }
     }
 
-    // Fungsi Mengirim Data yang Tertunda saat Internet kembali Aktif
     async function kirimDataTertunda() {
         let antrean = JSON.parse(localStorage.getItem('antrean_absensi')) || [];
         if (antrean.length === 0) return;
-
-        netIndicator.innerText = "Sedang menyinkronkan data tertunda ke server...";
-        
+        netIndicator.innerText = "Sedang menyinkronkan data tertunda...";
         for (let i = 0; i < antrean.length; i++) {
             await _supabase.from('absensi_kegiatan').insert([antrean[i]]);
         }
-
-        localStorage.removeItem('antrean_absensi'); // Kosongkan antrean lokal jika sukses
+        localStorage.removeItem('antrean_absensi');
         netIndicator.innerText = "Status: Terhubung Internet (Online) - Sinkronisasi Selesai!";
-        tampilkanNotif("Semua data offline berhasil diunggah ke server pusat!");
+        tampilkanNotif("Semua data offline berhasil diunggah!");
+        muatSemuaGenerus(); // Segarkan data nama
     }
 
     function inputManualKehadiran() {
-        let idTerpilih = selectGenerus.value;
-        if(!idTerpilih) return alert("Pilih nama generus!");
+        let idTerpilih = selectedIdInput.value;
+        if(!idTerpilih) return alert("Silakan cari dan klik nama generus dari daftar terlebih dahulu!");
         prosesAbsensi(idTerpilih, "Manual");
     }
 
@@ -165,13 +201,10 @@
         let box = document.getElementById('status-notif');
         box.style.display = "block";
         box.innerText = pesan;
-        setTimeout(() => box.style.display = "none", 5000);
+        setTimeout(() => box.style.display = "none", 4000);
     }
 
-    // Daftarkan PWA Service Worker agar aplikasi bisa dibuka offline
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('service-worker.js');
-    }
+    if ('serviceWorker' in navigator) { navigator.serviceWorker.register('service-worker.js'); }
 </script>
 </body>
 </html>
