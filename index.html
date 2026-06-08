@@ -147,19 +147,27 @@
         button:hover { background-color: var(--primary-hover); transform: translateY(-1px); }
         button:active { transform: translateY(0); }
 
-        /* Tombol Cetak Outline Mewah */
-        .btn-print {
+        /* Desain Tombol Menu Cetak Rekap Berjejer */
+        .print-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .btn-print-action {
             background-color: transparent;
             color: var(--text-dark);
             border: 2px solid var(--border-color);
-            margin-top: 16px;
+            margin-top: 0;
             box-shadow: none;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
+            font-size: 14px;
+            padding: 12px;
         }
-        .btn-print:hover {
+        .btn-print-action:hover {
             background-color: var(--bg-main);
             border-color: var(--text-muted);
             transform: translateY(-1px);
@@ -217,7 +225,7 @@
         }
         [data-theme="dark"] .toast-notif { background: #f8fafc; color: #0f172a; }
 
-        /* Area Tabel Rekapan Khusus Cetak (Tersembunyi di Aplikasi Web) */
+        /* Komponen Khusus Area Cetak Kertas */
         #print-area { display: none; width: 100%; margin-top: 30px; }
         .print-table {
             width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px;
@@ -227,16 +235,13 @@
         }
         .print-table th { background-color: #f1f5f9; color: #0f172a; font-weight: 600; }
 
-        /* =======================================================
-           ATURAN KHUSUS PRINTER (CSS MEDIA PRINT)
-           ======================================================= */
         @media print {
             body { background: #ffffff !important; color: #000000 !important; display: block; padding: 0; margin: 0; }
             .app-container { max-width: 100%; width: 100%; box-shadow: none !important; padding: 0; margin: 0; background: #fff !important; }
             .theme-toggle-btn, #network-indicator, .section-title, #reader, .divider, 
-            .form-group, button, .search-results, .toast-notif { display: none !important; }
-            .brand-header { margin-bottom: 40px; text-align: center; }
-            .brand-logo { width: 90px; height: 90px; filter: grayscale(100%); }
+            .form-group, button, .print-grid, .search-results, .toast-notif { display: none !important; }
+            .brand-header { margin-bottom: 30px; text-align: center; }
+            .brand-logo { width: 90px; height: 90px; }
             .brand-header h2 { color: #000000 !important; font-size: 26px; }
             #print-area { display: block !important; }
         }
@@ -275,37 +280,24 @@
     <input type="hidden" id="selected-id-generus">
     <button onclick="inputManualKehadiran()">Konfirmasi Kehadiran</button>
 
-    <!-- TOMBOL CETAK REKAP BARU -->
-    <button class="btn-print" onclick="cetakLaporanSekarang()">
-        🖨️ Cetak Rekap Kehadiran Saat Ini
-    </button>
+    <div class="section-title">CETAK LAPORAN REKAP</div>
+    <div class="print-grid">
+        <button class="btn-print-action" onclick="cetakLaporan('semua')">🖨️ Cetak Semua Daftar Hadir</button>
+        <button class="btn-print-action" onclick="cetakLaporan('desa')">📊 Cetak Total per Desa</button>
+        <button class="btn-print-action" onclick="cetakLaporan('kelompok')">👥 Cetak Total per Kelompok</button>
+    </div>
 
-    <!-- STRUKTUR TABEL REKAP YANG AKAN MUNCUL SAAT DIPRINT -->
     <div id="print-area">
         <h3 style="text-align: center; margin: 0 0 5px 0; font-size: 18px;" id="cetak-judul-kegiatan">Laporan Presensi Kegiatan</h3>
         <p style="text-align: center; margin: 0 0 20px 0; font-size: 13px; color: #475569;" id="cetak-waktu">Tanggal Cetak: -</p>
-        <table class="print-table">
-            <thead>
-                <tr>
-                    <th style="width: 8px;">No</th>
-                    <th>Nama Lengkap</th>
-                    <th>Kelompok</th>
-                    <th>Desa</th>
-                    <th>Waktu Hadir</th>
-                    <th>Metode</th>
-                </tr>
-            </thead>
-            <tbody id="tabel-list-cetak">
-                <!-- Baris data absensi dimasukkan otomatis lewat javascript saat tombol cetak diklik -->
-            </tbody>
-        </table>
+        <div id="print-table-container"></div>
     </div>
 </div>
 
 <div id="toast-box" class="toast-notif"></div>
 
 <script>
-    // MASUKKAN KEMBALI URL & KEY SUPABASE ANDA DI SINI
+    // ISI KEMBALI KUNCI PROYEK SUPABASE ANDA
     const SUPABASE_URL = "https://gttavghryoadthnvwthd.supabase.co"; 
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0dGF2Z2hyeW9hZHRobnZ3dGhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA5MDI5NDQsImV4cCI6MjA5NjQ3ODk0NH0.0O7I9EqSaiQq8_LKMJS9U-XDuitY6sPfYQVtBsJAeas";
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -317,7 +309,7 @@
     const themeBtn = document.getElementById('theme-btn');
     
     let semuaDataGenerus = [];
-    let logAbsensiHariIni = []; // Menyimpan sementara daftar siapa saja yang sudah absen di sesi ini
+    let logAbsensiHariIni = []; 
 
     function ubahTemaSistem() {
         const temaSekarang = document.documentElement.getAttribute('data-theme');
@@ -402,7 +394,6 @@
         let namaKegiatan = document.getElementById('kegiatan').value;
         if(!namaKegiatan) { alert("Harap isi Nama Agenda terlebih dahulu!"); return; }
 
-        // Cari profil objek dari memori lokal untuk tabel cetak
         let profil = semuaDataGenerus.find(g => g.id_generus == idGenerus) || { nama: "ID: " + idGenerus, kelompok: "-", desa: "-" };
 
         const dataAbsen = {
@@ -412,11 +403,10 @@
             waktu_absen: new Date().toISOString()
         };
 
-        // Simpan ke log sesi lokal aplikasi agar langsung bisa dicetak tanpa menunggu reload
         logAbsensiHariIni.push({
             nama: profil.nama,
-            kelompok: profil.kelompok,
-            desa: profil.desa,
+            kelompok: profil.kelompok || "Tanpa Kelompok",
+            desa: profil.desa || "Tanpa Desa",
             waktu: new Date().toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'}),
             metode: metode
         });
@@ -455,34 +445,112 @@
         prosesAbsensi(idTerpilih, "Manual");
     }
 
-    // FUNGSI UTAMA UNTUK MENYUSUN DAN MEMBUKA WINDOW PRINT CETAK
-    function cetakLaporanSekarang() {
+    // FUNGSI LOGIKA BARU UNTUK MEREKAP BERDASARKAN PARAMETER PILIHAN
+    function cetakLaporan(jenis) {
         if(logAbsensiHariIni.length === 0) {
-            alert("Belum ada data anggota yang melakukan absensi pada sesi ini!");
+            alert("Belum ada data kehadiran yang tercatat pada sesi ini!");
             return;
         }
 
-        let tbody = document.getElementById('tabel-list-cetak');
-        tbody.innerHTML = ""; // Kosongkan cetakan lama
+        let container = document.getElementById('print-table-container');
+        container.innerHTML = ""; // Bersihkan template lama
 
-        // Buat baris tabel satu per satu dari daftar orang yang sudah mengklik absen tadi
-        logAbsensiHariIni.forEach((data, index) => {
-            let row = `<tr>
-                <td>${index + 1}</td>
-                <td style="font-weight: 600;">${data.nama}</td>
-                <td>${data.kelompok}</td>
-                <td>${data.desa}</td>
-                <td>${data.waktu} WIB</td>
-                <td style="font-size: 12px; color: #475569;">${data.metode}</td>
-            </tr>`;
-            tbody.innerHTML += row;
-        });
-
-        // Set info waktu cetak real-time
         let opsiWaktu = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
-        document.getElementById('cetak-waktu').innerText = "Waktu Cetak: " + new Date().toLocaleDateString('id-ID', opsiWaktu) + " WIB";
+        document.getElementById('cetak-waktu').innerText = "Waktu Cetak Laporan: " + new Date().toLocaleDateString('id-ID', opsiWaktu) + " WIB";
 
-        // Panggil fungsi cetak bawaan HP/Laptop
+        if (jenis === 'semua') {
+            // OPTION A: CETAK SEMUA DATA DAFTAR HADIR
+            let html = `<table class="print-table">
+                <thead>
+                    <tr>
+                        <th style="width:20px;">No</th>
+                        <th>Nama Lengkap</th>
+                        <th>Kelompok</th>
+                        <th>Desa</th>
+                        <th>Waktu</th>
+                        <th>Metode</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+            logAbsensiHariIni.forEach((data, index) => {
+                html += `<tr>
+                    <td>${index + 1}</td>
+                    <td style="font-weight:600;">${data.nama}</td>
+                    <td>${data.kelompok}</td>
+                    <td>${data.desa}</td>
+                    <td>${data.waktu} WIB</td>
+                    <td style="font-size:12px; color:#475569;">${data.metode}</td>
+                </tr>`;
+            });
+            html += `</tbody></table>`;
+            container.innerHTML = html;
+
+        } else if (jenis === 'desa') {
+            // OPTION B: HITUNG REKAP TOTAL PER DESA
+            let rekapDesa = {};
+            logAbsensiHariIni.forEach(data => {
+                rekapDesa[data.desa] = (rekapDesa[data.desa] || 0) + 1;
+            });
+
+            let html = `<table class="print-table" style="max-width: 400px; margin: 0 auto;">
+                <thead>
+                    <tr>
+                        <th style="width:20px;">No</th>
+                        <th>Nama Wilayah Desa</th>
+                        <th style="text-align:center; width:100px;">Total Hadir</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+            let idx = 1;
+            let grandTotal = 0;
+            for (let desa in rekapDesa) {
+                html += `<tr>
+                    <td>${idx++}</td>
+                    <td style="font-weight:600;">${desa}</td>
+                    <td style="text-align:center; font-weight:700; color:var(--primary);">${rekapDesa[desa]} Orang</td>
+                </tr>`;
+                grandTotal += rekapDesa[desa];
+            }
+            html += `<tr style="background-color:#f8fafc; font-weight:700;">
+                <td colspan="2" style="text-align:right;">TOTAL KESELURUHAN JEMAAH:</td>
+                <td style="text-align:center; color:#b45309; font-size:16px;">${grandTotal}</td>
+            </tr></tbody></table>`;
+            container.innerHTML = html;
+
+        } else if (jenis === 'kelompok') {
+            // OPTION C: HITUNG REKAP TOTAL PER KELOMPOK
+            let rekapKelompok = {};
+            logAbsensiHariIni.forEach(data => {
+                rekapKelompok[data.kelompok] = (rekapKelompok[data.kelompok] || 0) + 1;
+            });
+
+            let html = `<table class="print-table" style="max-width: 400px; margin: 0 auto;">
+                <thead>
+                    <tr>
+                        <th style="width:20px;">No</th>
+                        <th>Nama Kelompok</th>
+                        <th style="text-align:center; width:100px;">Total Hadir</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+            let idx = 1;
+            let grandTotal = 0;
+            for (let kmp in rekapKelompok) {
+                html += `<tr>
+                    <td>${idx++}</td>
+                    <td style="font-weight:600;">Kelompok ${kmp}</td>
+                    <td style="text-align:center; font-weight:700; color:var(--primary);">${rekapKelompok[kmp]} Orang</td>
+                </tr>`;
+                grandTotal += rekapKelompok[kmp];
+            }
+            html += `<tr style="background-color:#f8fafc; font-weight:700;">
+                <td colspan="2" style="text-align:right;">TOTAL KESELURUHAN JEMAAH:</td>
+                <td style="text-align:center; color:#b45309; font-size:16px;">${grandTotal}</td>
+            </tr></tbody></table>`;
+            container.innerHTML = html;
+        }
+
+        // Jalankan mesin print preview HP/Laptop
         window.print();
     }
 
