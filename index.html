@@ -355,41 +355,53 @@
         return data.length > 0;
     }
 
-    async function prosesAbsensi(idGenerus, metode) {
-        let namaKegiatan = document.getElementById('kegiatan').value;
-        if(!namaKegiatan) {
-            bunyikanSuaraGagal();
-            alert("Harap isi Nama Agenda terlebih dahulu!");
-            return;
-        }
-        
-        let profil = semuaDataGenerus.find(g => g.id_generus == idGenerus) || { nama: "ID: " + idGenerus };
-
-        // Pengecekan status kehadiran ganda secara mutlak
-        let sudahAbsen = await cekApakahSudahAbsen(idGenerus, namaKegiatan);
-        if (sudahAbsen) {
-            bunyikanSuaraGagal(); 
-            tampilkanToast(`⚠️ ${profil.nama} SUDAH MASUK! (Ditolak agar tidak dobel)`);
-            if(metode === "Manual") { searchInput.value = ''; selectedIdInput.value = ''; }
-            return;
-        }
-
-        const dataAbsen = {
-            nama_kegiatan: namaKegiatan.trim(),
-            id_generus: idGenerus,
-            metode_input: metode,
-            waktu_absen: new Date().toISOString()
-        };
-
-        if (navigator.onLine) {
-            let { error } = await _supabase.from('absensi_kegiatan').insert([dataAbsen]);
-            if (!error) {
-                bunyikanSuaraSukses(); 
-                tampilkanToast(`✓ Kehadiran ${profil.nama} sukses disimpan!`);
-                if(metode === "Manual") { searchInput.value = ''; selectedIdInput.value = ''; }
-            } else { simpanLokal(dataAbsen, profil.nama); }
-        } else { simpanLokal(dataAbsen, profil.nama); }
+async function prosesAbsensi(idGenerus, metode) {
+    let namaKegiatan = document.getElementById('kegiatan').value;
+    if(!namaKegiatan) {
+        bunyikanSuaraGagal();
+        alert("Harap isi Nama Agenda terlebih dahulu!");
+        return;
     }
+    
+    let profil = semuaDataGenerus.find(g => g.id_generus == idGenerus) || { nama: "ID: " + idGenerus };
+
+    // 1. Cek lokal dulu untuk menghemat kuota / mode offline
+    let sudahAbsen = await cekApakahSudahAbsen(idGenerus, namaKegiatan);
+    if (sudahAbsen) {
+        bunyikanSuaraGagal(); 
+        tampilkanToast(`⚠️ ${profil.nama} SUDAH MASUK! (Ditolak agar tidak dobel)`);
+        if(metode === "Manual") { searchInput.value = ''; selectedIdInput.value = ''; }
+        return;
+    }
+
+    const dataAbsen = {
+        nama_kegiatan: namaKegiatan.trim(),
+        id_generus: idGenerus,
+        metode_input: metode,
+        waktu_absen: new Date().toISOString()
+    };
+
+    if (navigator.onLine) {
+        let { error } = await _supabase.from('absensi_kegiatan').insert([dataAbsen]);
+        
+        // JIKA SUPABASE MENOLAK KARENA DOBEL (KODE ERROR 23505 ADALAH UNIQUE CONSTRAINT VIOLATION)
+        if (error) {
+            if (error.code === '23505') { 
+                bunyikanSuaraGagal();
+                tampilkanToast(`⚠️ ${profil.nama} SUDAH MASUK! (Ditolak oleh Server)`);
+            } else {
+                simpanLokal(dataAbsen, profil.nama);
+            }
+            if(metode === "Manual") { searchInput.value = ''; selectedIdInput.value = ''; }
+        } else {
+            bunyikanSuaraSukses(); 
+            tampilkanToast(`✓ Kehadiran ${profil.nama} sukses disimpan!`);
+            if(metode === "Manual") { searchInput.value = ''; selectedIdInput.value = ''; }
+        }
+    } else { 
+        simpanLokal(dataAbsen, profil.nama); 
+    }
+}
 
     function simpanLokal(data, namaOrang) {
         let antrean = JSON.parse(localStorage.getItem('antrean_absensi')) || [];
