@@ -21,7 +21,7 @@
             --border-color: #e2e8f0;
             --success: #10b981;
             --shadow: rgba(15, 23, 42, 0.04);
-            --icon-color: #475569; /* Warna ikon satu warna di mode terang */
+            --icon-color: #475569;
         }
 
         [data-theme="dark"] {
@@ -31,7 +31,7 @@
             --text-muted: #94a3b8;
             --border-color: #334155;
             --shadow: rgba(0, 0, 0, 0.2);
-            --icon-color: #94a3b8; /* Warna ikon otomatis berubah di mode gelap */
+            --icon-color: #94a3b8;
         }
 
         body { 
@@ -109,7 +109,6 @@
         .search-item { padding: 12px 16px; cursor: pointer; border-bottom: 1px solid var(--border-color); font-size: 14px; }
         .search-item:hover { background: var(--bg-main); color: var(--primary); }
 
-        /* ==================== PANEL MENU MONOKROM MEWAH ==================== */
         .action-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-top: 10px; }
         .btn-icon { 
             background: transparent; border: 1px solid var(--border-color); 
@@ -119,7 +118,6 @@
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); width: 100%; box-sizing: border-box;
         }
         
-        /* Pengaturan Ukuran & Warna Ikon Vektor SVG */
         .btn-icon svg { 
             width: 18px; height: 18px; 
             fill: none; stroke: var(--icon-color); 
@@ -127,22 +125,15 @@
             transition: all 0.2s ease;
         }
         
-        /* Efek Hover Mewah Tanpa Merusak Komposisi Warna */
-        .btn-icon:hover { 
-            background: var(--bg-main); 
-            border-color: var(--text-muted); 
-        }
-        .btn-icon:hover svg { 
-            stroke: var(--primary); 
-            transform: translateY(-1px); 
-        }
+        .btn-icon:hover { background: var(--bg-main); border-color: var(--text-muted); }
+        .btn-icon:hover svg { stroke: var(--primary); transform: translateY(-1px); }
         .btn-icon:active { transform: scale(0.95); }
-        /* ==================================================================== */
 
         .toast-notif {
             position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
             background: #1e293b; color: #fff; padding: 12px 24px; border-radius: 30px; 
             font-size: 14px; font-weight: 500; display: none; z-index: 10000; text-align: center;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3);
         }
         #print-area { display: none; width: 100%; margin-top: 30px; }
         .print-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; }
@@ -235,6 +226,9 @@
     const themeBtn = document.getElementById('theme-btn');
     
     let semuaDataGenerus = [];
+    
+    // VARIABEL BARU: Pengunci Scan Sementara di Memori HP (Mencegah Spam Kamera)
+    let pengunciScanAktif = false; 
 
     function ubahTemaSistem() {
         if (document.documentElement.getAttribute('data-theme') === 'dark') {
@@ -297,14 +291,65 @@
     }
     document.addEventListener('click', function(e) { if (e.target !== searchInput) { resultsBox.style.display = 'none'; } });
 
-    function onScanSuccess(decodedText) { prosesAbsensi(decodedText, "Scan Barcode"); }
-    let html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 220 });
+    // FUNGSI UTAMA SCAN BARCODE DENGAN PROTEKSI SPAM COOLDOWN
+    function onScanSuccess(decodedText) { 
+        if (pengunciScanAktif) return; // Jika kamera masih memproses scan sebelumnya, abaikan scan baru
+        pengunciScanAktif = true; 
+        
+        prosesAbsensi(decodedText, "Scan Barcode");
+
+        // Buka kembali kunci kamera setelah 3 detik untuk scan orang berikutnya
+        setTimeout(() => { pengunciScanAktif = false; }, 3000); 
+    }
+    
+    let html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 15, qrbox: 220 });
     html5QrcodeScanner.render(onScanSuccess);
+
+    // SYSTEM CEK VALIDASI ABSEN REKOR SUPABASE (BATAS WAKTU 3 JAM)
+    async function cekApakahSudahAbsen(idGenerus, namaKegiatan) {
+        if (!navigator.onLine) {
+            // JIKA OFFLINE: Cek riwayat di memori lokal HP
+            let antrean = JSON.parse(localStorage.getItem('antrean_absensi')) || [];
+            let riwayatLokal = JSON.parse(localStorage.getItem('riwayat_sukses_lokal')) || [];
+            let gabungan = [...antrean, ...riwayatLokal];
+            
+            let dataSama = gabungan.find(absen => 
+                absen.id_generus == idGenerus && 
+                absen.nama_kegiatan === namaKegiatan &&
+                (new Date() - new Date(absen.waktu_absen)) < (3 * 60 * 60 * 1000) // Kurang dari 3 Jam
+            );
+            return !!dataSama;
+        }
+
+        // JIKA ONLINE: Langsung query ke database cloud Supabase
+        let tigaJamLalu = new Date(Date.now() - (3 * 60 * 60 * 1000)).toISOString();
+        let { data, error } = await _supabase
+            .from('absensi_kegiatan')
+            .select('id_absensi')
+            .eq('id_generus', idGenerus)
+            .eq('nama_kegiatan', namaKegiatan)
+            .gte('waktu_absen', tigaJamLalu);
+            
+        if (error || !data) return false;
+        return data.length > 0;
+    }
 
     async function prosesAbsensi(idGenerus, metode) {
         let namaKegiatan = document.getElementById('kegiatan').value;
-        if(!namaKegiatan) return alert("Harap isi Nama Agenda terlebih dahulu!");
+        if(!namaKegiatan) {
+            alert("Harap isi Nama Agenda terlebih dahulu!");
+            return;
+        }
+        
         let profil = semuaDataGenerus.find(g => g.id_generus == idGenerus) || { nama: "ID: " + idGenerus };
+
+        // 1. JALANKAN VALIDASI 3 JAM
+        let sudahAbsen = await cekApakahSudahAbsen(idGenerus, namaKegiatan);
+        if (sudahAbsen) {
+            tampilkanToast(`⚠️ ${profil.nama} SUDAH MASUK! (Ditolak agar tidak dobel)`);
+            if(metode === "Manual") { searchInput.value = ''; selectedIdInput.value = ''; }
+            return;
+        }
 
         const dataAbsen = {
             nama_kegiatan: namaKegiatan,
@@ -313,20 +358,27 @@
             waktu_absen: new Date().toISOString()
         };
 
+        // 2. KIRIM DATA JIKA VALID
         if (navigator.onLine) {
             let { error } = await _supabase.from('absensi_kegiatan').insert([dataAbsen]);
             if (!error) {
-                tampilkanToast(`✓ Kehadiran ${profil.nama} sukses disimpan ke database cloud!`);
+                tampilkanToast(`✓ Kehadiran ${profil.nama} sukses disimpan!`);
                 if(metode === "Manual") { searchInput.value = ''; selectedIdInput.value = ''; }
-            } else { simpanLokal(dataAbsen); }
-        } else { simpanLokal(dataAbsen); }
+            } else { simpanLokal(dataAbsen, profil.nama); }
+        } else { simpanLokal(dataAbsen, profil.nama); }
     }
 
-    function simpanLokal(data) {
+    function simpanLokal(data, namaOrang) {
         let antrean = JSON.parse(localStorage.getItem('antrean_absensi')) || [];
         antrean.push(data);
         localStorage.setItem('antrean_absensi', JSON.stringify(antrean));
-        tampilkanToast(`💾 Tersimpan lokal (Akan disinkronkan saat online)`);
+        
+        // Simpan ke riwayat lokal sementara untuk validasi 3 jam saat offline
+        let riwayatLokal = JSON.parse(localStorage.getItem('riwayat_sukses_lokal')) || [];
+        riwayatLokal.push(data);
+        localStorage.setItem('riwayat_sukses_lokal', JSON.stringify(riwayatLokal));
+
+        tampilkanToast(`💾 Tersimpan lokal: ${namaOrang} (Akan sinkron otomatis)`);
         if(data.metode_input === "Manual") { searchInput.value = ''; selectedIdInput.value = ''; }
     }
 
@@ -336,6 +388,7 @@
         netIndicator.innerText = "🔄 Menyinkronkan...";
         for (let i = 0; i < antrean.length; i++) { await _supabase.from('absensi_kegiatan').insert([antrean[i]]); }
         localStorage.removeItem('antrean_absensi');
+        localStorage.removeItem('riwayat_sukses_lokal'); // Bersihkan riwayat lokal setelah sukses diunggah
         netIndicator.innerText = "● Online"; netIndicator.className = "net-status online";
         tampilkanToast("✓ Semua data offline berhasil digabungkan ke Supabase");
     }
