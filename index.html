@@ -228,46 +228,30 @@
     let semuaDataGenerus = [];
     let pengunciScanAktif = false; 
 
-    // FEATURE BARU: Generator Bunyi Bip Premium (Web Audio API)
     function bunyikanSuaraSukses() {
         try {
             let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             let oscillator = audioCtx.createOscillator();
             let gainNode = audioCtx.createGain();
-
-            oscillator.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
-
-            oscillator.type = 'sine'; // Jenis gelombang halus murni
-            oscillator.frequency.value = 880; // Nada tinggi jernih (Nada A5)
-            gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime); // Kontrol volume sedang nyaman
-
-            oscillator.start();
-            // Bunyi distop setelah 0.12 detik (bip pendek khas kasir minimarket)
-            oscillator.stop(audioCtx.currentTime + 0.12); 
-        } catch (e) {
-            console.log("Browser memblokir pemutaran audio otomatis sebelum ada interaksi.");
-        }
+            oscillator.connect(gainNode); gainNode.connect(audioCtx.destination);
+            oscillator.type = 'sine'; oscillator.frequency.value = 880; 
+            gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime); 
+            oscillator.start(); oscillator.stop(audioCtx.currentTime + 0.12); 
+        } catch (e) {}
     }
 
-    // FEATURE BARU: Generator Bunyi Peringatan Gagal / Dobel (Nada Rendah 2 Kali)
     function bunyikanSuaraGagal() {
         try {
             let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            
             function mainkanNadaRendah(waktuMulai) {
-                let osc = audioCtx.createOscillator();
-                let gain = audioCtx.createGain();
+                let osc = audioCtx.createOscillator(); let gain = audioCtx.createGain();
                 osc.connect(gain); gain.connect(audioCtx.destination);
-                osc.type = 'sawtooth'; // Suara agak bergetar tebal
-                osc.frequency.value = 180; // Nada rendah/nge-bass
+                osc.type = 'sawtooth'; osc.frequency.value = 180; 
                 gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-                osc.start(waktuMulai);
-                osc.stop(waktuMulai + 0.15);
+                osc.start(waktuMulai); osc.stop(waktuMulai + 0.15);
             }
-            
             mainkanNadaRendah(audioCtx.currentTime);
-            mainkanNadaRendah(audioCtx.currentTime + 0.2); // Bip kedua berjarak pendek
+            mainkanNadaRendah(audioCtx.currentTime + 0.2); 
         } catch (e) {}
     }
 
@@ -332,17 +316,21 @@
     }
     document.addEventListener('click', function(e) { if (e.target !== searchInput) { resultsBox.style.display = 'none'; } });
 
-    function onScanSuccess(decodedText) { 
+    // AMAN & PINTAR: Kamera otomatis terkunci sampai proses pemindaian ke server benar-benar selesai
+    async function onScanSuccess(decodedText) { 
         if (pengunciScanAktif) return; 
         pengunciScanAktif = true; 
         
-        prosesAbsensi(decodedText, "Scan Barcode");
-        setTimeout(() => { pengunciScanAktif = false; }, 3000); 
+        await prosesAbsensi(decodedText, "Scan Barcode");
+        
+        // Jeda 2 detik sebelum kamera diaktifkan kembali untuk memindai kartu berikutnya
+        setTimeout(() => { pengunciScanAktif = false; }, 2000); 
     }
     
-    let html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 15, qrbox: 220 });
+    let html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 220 });
     html5QrcodeScanner.render(onScanSuccess);
 
+    // FIX ANTIDOBEL: Memeriksa riwayat kehadiran tanpa menggunakan parameter jam/waktu server
     async function cekApakahSudahAbsen(idGenerus, namaKegiatan) {
         if (!navigator.onLine) {
             let antrean = JSON.parse(localStorage.getItem('antrean_absensi')) || [];
@@ -351,19 +339,17 @@
             
             let dataSama = gabungan.find(absen => 
                 absen.id_generus == idGenerus && 
-                absen.nama_kegiatan === namaKegiatan &&
-                (new Date() - new Date(absen.waktu_absen)) < (3 * 60 * 60 * 1000)
+                absen.nama_kegiatan.trim().toLowerCase() === namaKegiatan.trim().toLowerCase()
             );
             return !!dataSama;
         }
 
-        let tigaJamLalu = new Date(Date.now() - (3 * 60 * 60 * 1000)).toISOString();
+        // QUERY MUTLAK: Mencari apakah kombinasi Agenda & ID ini sudah ada di database Supabase
         let { data, error } = await _supabase
             .from('absensi_kegiatan')
             .select('id_absensi')
             .eq('id_generus', idGenerus)
-            .eq('nama_kegiatan', namaKegiatan)
-            .gte('waktu_absen', tigaJamLalu);
+            .eq('nama_kegiatan', namaKegiatan.trim());
             
         if (error || !data) return false;
         return data.length > 0;
@@ -379,16 +365,17 @@
         
         let profil = semuaDataGenerus.find(g => g.id_generus == idGenerus) || { nama: "ID: " + idGenerus };
 
+        // Pengecekan status kehadiran ganda secara mutlak
         let sudahAbsen = await cekApakahSudahAbsen(idGenerus, namaKegiatan);
         if (sudahAbsen) {
-            bunyikanSuaraGagal(); // MAINKAN BUNYI GAGAL/DOBEL (Bip-Bip Bass)
+            bunyikanSuaraGagal(); 
             tampilkanToast(`⚠️ ${profil.nama} SUDAH MASUK! (Ditolak agar tidak dobel)`);
             if(metode === "Manual") { searchInput.value = ''; selectedIdInput.value = ''; }
             return;
         }
 
         const dataAbsen = {
-            nama_kegiatan: namaKegiatan,
+            nama_kegiatan: namaKegiatan.trim(),
             id_generus: idGenerus,
             metode_input: metode,
             waktu_absen: new Date().toISOString()
@@ -397,7 +384,7 @@
         if (navigator.onLine) {
             let { error } = await _supabase.from('absensi_kegiatan').insert([dataAbsen]);
             if (!error) {
-                bunyikanSuaraSukses(); // MAINKAN BUNYI SUKSES (Bip Tinggi)
+                bunyikanSuaraSukses(); 
                 tampilkanToast(`✓ Kehadiran ${profil.nama} sukses disimpan!`);
                 if(metode === "Manual") { searchInput.value = ''; selectedIdInput.value = ''; }
             } else { simpanLokal(dataAbsen, profil.nama); }
@@ -413,7 +400,7 @@
         riwayatLokal.push(data);
         localStorage.setItem('riwayat_sukses_lokal', JSON.stringify(riwayatLokal));
 
-        bunyikanSuaraSukses(); // Tetap berbunyi sukses meskipun tersimpan lokal saat offline
+        bunyikanSuaraSukses(); 
         tampilkanToast(`💾 Tersimpan lokal: ${namaOrang} (Akan sinkron otomatis)`);
         if(data.metode_input === "Manual") { searchInput.value = ''; selectedIdInput.value = ''; }
     }
