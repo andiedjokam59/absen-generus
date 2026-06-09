@@ -20,7 +20,7 @@
             --text-muted: #64748b;
             --border-color: #e2e8f0;
             --success: #10b981;
-            --shadow: rgba(15, 23, 42, 0.05);
+            --shadow: rgba(15, 23, 42, 0.04);
         }
 
         [data-theme="dark"] {
@@ -45,78 +45,84 @@
         .app-container { 
             width: 100%; max-width: 440px; 
             background: var(--bg-card); 
-            padding: 24px; border-radius: 20px; 
-            box-shadow: 0 10px 25px -5px var(--shadow);
+            padding: 32px 24px; border-radius: 24px; 
+            box-shadow: 0 10px 25px -5px var(--shadow), 0 8px 10px -6px var(--shadow);
             box-sizing: border-box; margin: 16px;
             position: relative;
         }
 
         .theme-toggle-btn {
-            position: absolute; top: 20px; right: 24px;
+            position: absolute; top: 24px; right: 24px;
             background: var(--bg-main); border: 1px solid var(--border-color);
-            color: var(--text-dark); padding: 6px 12px; border-radius: 20px;
-            font-size: 11px; font-weight: 600; cursor: pointer;
+            color: var(--text-dark); padding: 8px 12px; border-radius: 20px;
+            font-size: 12px; font-weight: 600; cursor: pointer;
+            transition: all 0.2s ease;
         }
 
-        .brand-header { text-align: center; margin: 10px 0 20px 0; }
-        .brand-logo { width: 90px; height: 90px; object-fit: contain; border-radius: 12px; margin-bottom: 10px; }
-        .brand-header h2 { font-size: 21px; font-weight: 700; margin: 0; letter-spacing: -0.5px; }
-        .brand-header p { font-size: 12px; color: var(--accent); font-weight: 600; margin: 2px 0 0 0; text-transform: uppercase; }
-
-        .net-status { font-weight: 600; font-size: 11px; padding: 4px 10px; border-radius: 20px; display: inline-block; margin-bottom: 10px; }
+        .net-status { 
+            font-weight: 600; font-size: 11px; padding: 6px 12px; 
+            border-radius: 20px; display: inline-block; margin-bottom: 10px;
+        }
         .online { background: rgba(16, 185, 129, 0.1); color: var(--success); }
         .offline { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
 
-        .form-group { margin-bottom: 14px; position: relative; }
-        label { display: block; font-size: 11px; font-weight: 600; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); }
+        .brand-header { text-align: center; margin: 10px 0 24px 0; }
+        .brand-logo { width: 110px; height: 110px; object-fit: contain; border-radius: 12px; margin-bottom: 14px; }
+        .brand-header h2 { font-size: 24px; font-weight: 700; margin: 0; letter-spacing: -0.5px; }
+        .brand-header p { font-size: 13px; color: var(--accent); font-weight: 600; margin: 4px 0 0 0; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        .form-group { margin-bottom: 20px; position: relative; }
+        label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-dark); }
         
         input, button { 
-            width: 100%; padding: 12px 14px; 
+            width: 100%; padding: 14px 16px; 
             border: 1px solid var(--border-color); background: var(--bg-card);
-            color: var(--text-dark); border-radius: 10px; 
-            box-sizing: border-box; font-size: 14.5px; font-family: inherit;
+            color: var(--text-dark); border-radius: 12px; 
+            box-sizing: border-box; font-size: 15px; font-family: inherit;
+            transition: all 0.2s;
         }
-        input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(4, 120, 87, 0.15); }
+        input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(4, 120, 87, 0.15); }
 
-        .btn-primary { background: var(--primary); color: #fff; border: none; font-weight: 600; cursor: pointer; margin-top: 4px; }
+        .btn-primary { background: var(--primary); color: #fff; border: none; font-weight: 600; cursor: pointer; margin-top: 8px; box-shadow: 0 4px 12px rgba(4, 120, 87, 0.2); }
         .btn-primary:hover { background: var(--primary-hover); }
 
-        .section-title { font-size: 11px; font-weight: 700; color: var(--text-muted); text-align: center; margin: 18px 0 10px 0; letter-spacing: 0.5px; text-transform: uppercase; }
-        #reader { width: 100%; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 10px var(--shadow); border: none !important; }
-        .divider { text-align: center; margin: 16px 0; font-size: 11px; font-weight: 700; color: var(--text-muted); }
+        .section-title { font-size: 12px; font-weight: 700; color: var(--text-muted); text-align: center; margin: 24px 0 12px 0; letter-spacing: 0.8px; text-transform: uppercase; }
+        #reader { width: 100%; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border: none !important; }
+        .divider { text-align: center; margin: 24px 0; font-size: 11px; font-weight: 700; color: var(--text-muted); }
 
         .search-results { 
             position: absolute; width: 100%; background: var(--bg-card); border: 1px solid var(--border-color); 
-            max-height: 180px; overflow-y: auto; z-index: 999; border-radius: 10px; margin-top: 2px;
+            max-height: 220px; overflow-y: auto; z-index: 999; border-radius: 12px; margin-top: 2px;
             box-shadow: 0 10px 15px -3px var(--shadow); display: none;
         }
-        .search-item { padding: 10px 14px; cursor: pointer; border-bottom: 1px solid var(--border-color); font-size: 13.5px; }
+        .search-item { padding: 12px 16px; cursor: pointer; border-bottom: 1px solid var(--border-color); font-size: 14px; }
         .search-item:hover { background: var(--bg-main); color: var(--primary); }
 
-        /* Grid Tombol Minimalis (Ikon) */
-        .action-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: 10px; }
+        /* ==================== DESAIN TOMBOL SIMPEL MINIMALIS ==================== */
+        .action-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-top: 10px; }
         .btn-icon { 
-            background: var(--bg-card); border: 1px solid var(--border-color); 
-            color: var(--text-dark); padding: 12px 0; border-radius: 10px; 
+            background: transparent; border: 1px solid var(--border-color); 
+            color: var(--text-dark); padding: 10px 0; border-radius: 10px; 
             cursor: pointer; display: flex; flex-direction: column; align-items: center; 
-            justify-content: center; gap: 4px; font-size: 10px; font-weight: 600;
+            justify-content: center; gap: 2px; font-size: 10px; font-weight: 500;
+            transition: all 0.15s ease;
         }
-        .btn-icon:hover { background: var(--bg-main); border-color: var(--text-muted); }
-        .btn-icon span { font-size: 18px; }
+        .btn-icon span { font-size: 16px; opacity: 0.85; transition: transform 0.15s ease; }
         
-        .btn-cloud { background: rgba(4, 120, 87, 0.08); border-color: rgba(4, 120, 87, 0.3); color: var(--primary); }
-        .btn-cloud:hover { background: rgba(4, 120, 87, 0.15); }
-        .btn-excel { background: rgba(217, 119, 6, 0.08); border-color: rgba(217, 119, 6, 0.3); color: var(--accent); }
-        .btn-excel:hover { background: rgba(217, 119, 6, 0.15); }
+        /* Efek Hover Minimalis Saja Tanpa Warna Blok Mencolok */
+        .btn-icon:hover { background: var(--bg-main); border-color: var(--text-muted); }
+        .btn-icon:hover span { transform: scale(1.1); opacity: 1; }
+        .btn-icon:active { transform: scale(0.96); }
+        /* ======================================================================== */
 
         .toast-notif {
-            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-            background: #1e293b; color: #fff; padding: 10px 20px; border-radius: 30px; 
-            font-size: 13px; font-weight: 500; display: none; z-index: 10000; text-align: center;
+            position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+            background: #1e293b; color: #fff; padding: 12px 24px; border-radius: 30px; 
+            font-size: 14px; font-weight: 500; display: none; z-index: 10000; text-align: center;
         }
-        #print-area { display: none; width: 100%; margin-top: 20px; }
-        .print-table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 13px; }
-        .print-table th, .print-table td { border: 1px solid #cbd5e1; padding: 8px 10px; text-align: left; }
+        #print-area { display: none; width: 100%; margin-top: 30px; }
+        .print-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; }
+        .print-table th, .print-table td { border: 1px solid #cbd5e1; padding: 10px 12px; text-align: left; }
         .print-table th { background: #f1f5f9; color: #0f172a; font-weight: 600; }
 
         @media print {
@@ -130,8 +136,8 @@
 <body>
 
 <div class="app-container">
-    <button class="theme-toggle-btn" onclick="ubahTemaSistem()" id="theme-btn">🌙 Dark</button>
-    <div id="network-indicator" class="net-status online">● Online</div>
+    <button class="theme-toggle-btn" onclick="ubahTemaSistem()" id="theme-btn">🌙 Dark Mode</button>
+    <div id="network-indicator" class="net-status online">● Sistem Online</div>
     
     <div class="brand-header">
         <img src="logo-baru.jpg" alt="Logo" class="brand-logo" id="app-logo">
@@ -140,17 +146,17 @@
     </div>
     
     <div class="form-group">
-        <label for="kegiatan">Nama Agenda Kegiatan</label>
-        <input type="text" id="kegiatan" placeholder="Ketik nama agenda..." oninput="updateJudulCetak()">
+        <label for="kegiatan">Nama Agenda Pertemuan</label>
+        <input type="text" id="kegiatan" placeholder="Masukkan nama kegiatan..." oninput="updateJudulCetak()">
     </div>
 
-    <div class="section-title">Scan Barcode</div>
+    <div class="section-title">OPSI 1: SCAN BARCODE</div>
     <div id="reader"></div>
 
     <div class="divider">— ATAU —</div>
 
     <div class="form-group">
-        <label for="search-input">Input Manual Nama Anggota</label>
+        <label for="search-input">OPSI 2: INPUT MANUAL Nama Anggota</label>
         <input type="text" id="search-input" placeholder="Ketik nama untuk mencari..." oninput="cariNamaPintar()">
         <div id="search-results-box" class="search-results"></div>
     </div>
@@ -169,17 +175,17 @@
         <button class="btn-icon" onclick="tarikDanCetakLaporan('kelompok')" title="Rekap Kelompok">
             <span>👥</span>Klp
         </button>
-        <button class="btn-icon btn-cloud" onclick="sinkronisasiManual()" title="Simpan Cloud">
+        <button class="btn-icon" onclick="sinkronisasiManual()" title="Simpan Cloud">
             <span>☁️</span>Simpan
         </button>
-        <button class="btn-icon btn-excel" onclick="eksporKeExcel()" title="Ekspor Excel">
-            <span>===</span>Excel
+        <button class="btn-icon" onclick="eksporKeExcel()" title="Ekspor Excel">
+            <span>💹</span>Excel
         </button>
     </div>
 
     <div id="print-area">
-        <h3 style="text-align: center; margin: 0 0 5px 0; font-size: 16px;" id="cetak-judul-kegiatan">Laporan Presensi Kegiatan</h3>
-        <p style="text-align: center; margin: 0 0 15px 0; font-size: 12px; color: #475569;" id="cetak-waktu">-</p>
+        <h3 style="text-align: center; margin: 0 0 5px 0; font-size: 18px;" id="cetak-judul-kegiatan">Laporan Presensi Kegiatan</h3>
+        <p style="text-align: center; margin: 0 0 20px 0; font-size: 13px; color: #475569;" id="cetak-waktu">-</p>
         <div id="print-table-container"></div>
     </div>
 </div>
@@ -187,7 +193,6 @@
 <div id="toast-box" class="toast-notif"></div>
 
 <script>
-    // PASTIKAN KREDENSIAL SUPABASE ANDA DI BAWAH INI BENAR
     const SUPABASE_URL = "https://gttavghryoadthnvwthd.supabase.co"; 
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0dGF2Z2hyeW9hZHRobnZ3dGhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA5MDI5NDQsImV4cCI6MjA5NjQ3ODk0NH0.0O7I9EqSaiQq8_LKMJS9U-XDuitY6sPfYQVtBsJAeas";
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -203,17 +208,17 @@
     function ubahTemaSistem() {
         if (document.documentElement.getAttribute('data-theme') === 'dark') {
             document.documentElement.removeAttribute('data-theme');
-            themeBtn.innerText = "🌙 Dark";
+            themeBtn.innerText = "🌙 Dark Mode";
             localStorage.setItem('tema_pilihan', 'light');
         } else {
             document.documentElement.setAttribute('data-theme', 'dark');
-            themeBtn.innerText = "☀️ Light";
+            themeBtn.innerText = "☀️ Light Mode";
             localStorage.setItem('tema_pilihan', 'dark');
         }
     }
     if (localStorage.getItem('tema_pilihan') === 'dark') {
         document.documentElement.setAttribute('data-theme', 'dark');
-        themeBtn.innerText = "☀️ Light";
+        themeBtn.innerText = "☀️ Light Mode";
     }
 
     function updateJudulCetak() {
@@ -222,18 +227,18 @@
     }
 
     window.addEventListener('online', () => {
-        netIndicator.innerText = "● Online"; netIndicator.className = "net-status online";
+        netIndicator.innerText = "● Sistem Online"; netIndicator.className = "net-status online";
         sinkronisasiManual();
     });
     window.addEventListener('offline', () => {
-        netIndicator.innerText = "● Offline"; netIndicator.className = "net-status offline";
+        netIndicator.innerText = "● Mode Offline Aktif"; netIndicator.className = "net-status offline";
     });
 
     async function muatSemuaGenerus() {
         try {
             let { data: generus, error } = await _supabase.from('data_generus').select('id_generus, nama, kelompok, desa');
-            if (!error) { semuaDataGenerus = generus; searchInput.placeholder = `Cari di antara ${generus.length} nama...`; }
-        } catch (e) { searchInput.placeholder = "Mode Offline Aktif"; }
+            if (!error) { semuaDataGenerus = generus; searchInput.placeholder = `Cari di antara ${generus.length} data...`; }
+        } catch (e) { searchInput.placeholder = "Gagal memuat data (Mode Offline)"; }
     }
     muatSemuaGenerus();
 
@@ -241,7 +246,7 @@
         let keyword = searchInput.value.toLowerCase();
         resultsBox.innerHTML = '';
         if (keyword.length < 2) { resultsBox.style.display = 'none'; return; }
-        let hasilFilter = semuaDataGenerus.filter(g => g.nama.toLowerCase().includes(keyword)).slice(0, 6);
+        let hasilFilter = semuaDataGenerus.filter(g => g.nama.toLowerCase().includes(keyword)).slice(0, 8);
         if(hasilFilter.length > 0) {
             resultsBox.style.display = 'block';
             hasilFilter.forEach(g => {
@@ -256,13 +261,13 @@
             });
         } else {
             resultsBox.style.display = 'block';
-            resultsBox.innerHTML = '<div class="search-item" style="color:#ef4444; font-size:12px;">Nama tidak ditemukan</div>';
+            resultsBox.innerHTML = '<div class="search-item" style="color:#ef4444; font-size:13px;">Nama tidak ditemukan</div>';
         }
     }
     document.addEventListener('click', function(e) { if (e.target !== searchInput) { resultsBox.style.display = 'none'; } });
 
     function onScanSuccess(decodedText) { prosesAbsensi(decodedText, "Scan Barcode"); }
-    let html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 200 });
+    let html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 220 });
     html5QrcodeScanner.render(onScanSuccess);
 
     async function prosesAbsensi(idGenerus, metode) {
@@ -280,7 +285,7 @@
         if (navigator.onLine) {
             let { error } = await _supabase.from('absensi_kegiatan').insert([dataAbsen]);
             if (!error) {
-                tampilkanToast(`✓ Kehadiran ${profil.nama} disimpan Cloud!`);
+                tampilkanToast(`✓ Kehadiran ${profil.nama} sukses disimpan ke database cloud!`);
                 if(metode === "Manual") { searchInput.value = ''; selectedIdInput.value = ''; }
             } else { simpanLokal(dataAbsen); }
         } else { simpanLokal(dataAbsen); }
@@ -290,18 +295,18 @@
         let antrean = JSON.parse(localStorage.getItem('antrean_absensi')) || [];
         antrean.push(data);
         localStorage.setItem('antrean_absensi', JSON.stringify(antrean));
-        tampilkanToast(`💾 Tersimpan lokal (Offline)`);
+        tampilkanToast(`💾 Tersimpan lokal (Akan disinkronkan saat online)`);
         if(data.metode_input === "Manual") { searchInput.value = ''; selectedIdInput.value = ''; }
     }
 
     async function sinkronisasiManual() {
         let antrean = JSON.parse(localStorage.getItem('antrean_absensi')) || [];
         if (antrean.length === 0) return tampilkanToast("Tidak ada data offline tertunda");
-        netIndicator.innerText = "🔄 Sinkron...";
+        netIndicator.innerText = "🔄 Menyinkronkan data...";
         for (let i = 0; i < antrean.length; i++) { await _supabase.from('absensi_kegiatan').insert([antrean[i]]); }
         localStorage.removeItem('antrean_absensi');
-        netIndicator.innerText = "● Online"; netIndicator.className = "net-status online";
-        tampilkanToast("✓ Semua data offline tersinkronisasi!");
+        netIndicator.innerText = "● Sistem Online"; netIndicator.className = "net-status online";
+        tampilkanToast("✓ Semua data offline berhasil digabungkan ke Supabase");
     }
 
     function inputManualKehadiran() {
@@ -314,7 +319,7 @@
         let { data: logAbsen, error } = await _supabase.from('absensi_kegiatan').select('id_generus, waktu_absen, metode_input').eq('nama_kegiatan', namaKegiatan);
         if (error || !logAbsen || logAbsen.length === 0) return [];
         return logAbsen.map(absen => {
-            let detail = semuaDataGenerus.find(g => g.id_generus == absen.id_generus) || { nama: "ID: " + absen.id_generus, kelompok: "-", desa: "-" };
+            let detail = semuaDataGenerus.find(g => g.id_generus == absen.id_generus) || { nama: "ID Terhapus: " + absen.id_generus, kelompok: "Tanpa Kelompok", desa: "Tanpa Desa" };
             return {
                 nama: detail.nama, kelompok: detail.kelompok || "Tanpa Kelompok", desa: detail.desa || "Tanpa Desa",
                 waktu: new Date(absen.waktu_absen).toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'}),
@@ -325,26 +330,27 @@
 
     async function tarikDanCetakLaporan(jenis) {
         let namaKegiatan = document.getElementById('kegiatan').value;
-        if(!namaKegiatan) return alert("Harap masukkan Nama Agenda!");
-        tampilkanToast("🔄 Menarik data...");
+        if(!namaKegiatan) return alert("Harap masukkan Nama Agenda yang ingin ditarik rekapannya!");
+        tampilkanToast("🔄 Menarik seluruh data dari Supabase...");
         let dataMurni = await dapatkanDataGabungan(namaKegiatan);
-        if(dataMurni.length === 0) return alert("Data absensi tidak ditemukan!");
+        if(dataMurni.length === 0) return alert(`Tidak ditemukan data absensi untuk kegiatan: "${namaKegiatan}"`);
 
         let container = document.getElementById('print-table-container');
         container.innerHTML = "";
-        document.getElementById('cetak-waktu').innerText = "Waktu Cetak: " + new Date().toLocaleDateString('id-ID', {weekday:'long', day:'numeric', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit'}) + " WIB";
+        let opsiWaktu = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+        document.getElementById('cetak-waktu').innerText = "Waktu Tarik Laporan: " + new Date().toLocaleDateString('id-ID', opsiWaktu) + " WIB";
 
         if (jenis === 'semua') {
-            let html = `<table class="print-table"><thead><tr><th style="width:20px;">No</th><th>Nama Lengkap</th><th>Kelompok</th><th>Desa</th><th>Waktu</th><th>Metode</th></tr></thead><tbody>`;
-            dataMurni.forEach((d, i) => { html += `<tr><td>${i+1}</td><td><b>${d.nama}</b></td><td>${d.kelompok}</td><td>${d.desa}</td><td>${d.waktu}</td><td>${d.metode}</td></tr>`; });
+            let html = `<table class="print-table"><thead><tr><th style="width:20px;">No</th><th>Nama Lengkap</th><th>Kelompok</th><th>Desa</th><th>Waktu Masuk</th><th>Metode</th></tr></thead><tbody>`;
+            dataMurni.forEach((d, i) => { html += `<tr><td>${i+1}</td><td style="font-weight:600;">${d.nama}</td><td>${d.kelompok}</td><td>${d.desa}</td><td>${d.waktu} WIB</td><td>${d.metode}</td></tr>`; });
             html += `</tbody></table>`; container.innerHTML = html;
         } else {
             let rekap = {}, kunci = jenis === 'desa' ? 'desa' : 'kelompok';
             dataMurni.forEach(d => { rekap[d[kunci]] = (rekap[d[kunci]] || 0) + 1; });
-            let html = `<table class="print-table" style="max-width:380px; margin:0 auto;"><thead><tr><th style="width:20px;">No</th><th>${jenis === 'desa'?'Wilayah Desa':'Kelompok'}</th><th style="text-align:center; width:90px;">Hadir</th></tr></thead><tbody>`;
-            let idx = 1, grand = 0;
-            for (let k in rekap) { html += `<tr><td>${idx++}</td><td><b>${k}</b></td><td style="text-align:center; font-weight:700;">${rekap[k]} Orang</td></tr>`; grand += rekap[k]; }
-            html += `<tr style="background:#f8fafc; font-weight:700;"><td colspan="2" style="text-align:right;">TOTAL HADIR:</td><td style="text-align:center; color:var(--accent);">${grand}</td></tr></tbody></table>`;
+            let html = `<table class="print-table" style="max-width: 400px; margin: 0 auto;"><thead><tr><th style="width:20px;">No</th><th>${jenis === 'desa'?'Nama Wilayah Desa':'Nama Kelompok'}</th><th style="text-align:center; width:100px;">Total Hadir</th></tr></thead><tbody>`;
+            let idx = 1, grandTotal = 0;
+            for (let k in rekap) { html += `<tr><td>${idx++}</td><td style="font-weight:600;">${jenis==='kelompok'?'Kelompok ':''}${k}</td><td style="text-align:center; font-weight:700; color:var(--primary);">${rekap[k]} Orang</td></tr>`; grandTotal += rekap[k]; }
+            html += `<tr style="background-color:#f8fafc; font-weight:700;"><td colspan="2" style="text-align:right;">TOTAL KESELURUHAN JEMAAH:</td><td style="text-align:center; color:#b45309; font-size:16px;">${grandTotal}</td></tr></tbody></table>`;
             container.innerHTML = html;
         }
         window.print();
@@ -358,9 +364,7 @@
         if(dataMurni.length === 0) return alert("Tidak ada data untuk diekspor!");
 
         let csvContent = "data:text/csv;charset=utf-8,No,Nama Lengkap,Kelompok,Desa,Waktu Absen,Metode\n";
-        dataMurni.forEach((d, i) => {
-            csvContent += `${i+1},"${d.nama}","${d.kelompok}","${d.desa}","${d.waktu}","${d.metode}"\n`;
-        });
+        dataMurni.forEach((d, i) => { csvContent += `${i+1},"${d.nama}","${d.kelompok}","${d.desa}","${d.waktu}","${d.metode}"\n`; });
         
         let encodedUri = encodeURI(csvContent);
         let link = document.createElement("a");
