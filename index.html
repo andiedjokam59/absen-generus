@@ -3,249 +3,584 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pendaftaran Mandiri & QR Code</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <title>Sistem Presensi Kegiatan</title>
+    <link rel="manifest" href="manifest.json">
+    <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght=400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
         :root {
             --primary: #047857;
             --primary-hover: #065f46;
-            --bg-main: #f1f5f9;
+            --accent: #d97706;
+            --bg-main: #f8fafc; 
             --bg-card: #ffffff;
-            --text-dark: #0f172a;
+            --text-dark: #0f172a; 
             --text-muted: #64748b;
             --border-color: #e2e8f0;
+            --success: #10b981;
+            --shadow: rgba(15, 23, 42, 0.04);
+            --icon-color: #475569;
         }
 
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-main);
+        [data-theme="dark"] {
+            --bg-main: #0f172a; 
+            --bg-card: #1e293b; 
+            --text-dark: #f8fafc; 
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+            --shadow: rgba(0, 0, 0, 0.2);
+            --icon-color: #94a3b8;
+        }
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            margin: 0; padding: 0; 
+            background-color: var(--bg-main); 
             color: var(--text-dark);
-            margin: 0; padding: 16px;
             display: flex; justify-content: center; align-items: center;
             min-height: 100vh;
-            box-sizing: border-box;
+            transition: all 0.3s ease;
         }
 
-        .container {
-            width: 100%; max-width: 420px;
-            background: var(--bg-card);
-            padding: 28px 24px; border-radius: 20px;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
-            box-sizing: border-box;
+        .app-container { 
+            width: 100%; max-width: 440px; 
+            background: var(--bg-card); 
+            padding: 32px 24px; border-radius: 24px; 
+            box-shadow: 0 10px 25px -5px var(--shadow), 0 8px 10px -6px var(--shadow);
+            box-sizing: border-box; margin: 16px;
+            position: relative;
         }
 
-        h2 { text-align: center; margin: 0 0 6px 0; color: var(--primary); font-size: 22px; font-weight: 700; }
-        p.subtitle { text-align: center; color: var(--text-muted); font-size: 13px; margin: 0 0 24px 0; font-weight: 500; }
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            width: 100%;
+        }
 
-        .form-group { margin-bottom: 16px; }
-        label { display: block; font-size: 11px; font-weight: 700; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-dark); }
+        .theme-toggle-btn {
+            background: var(--bg-main); border: 1px solid var(--border-color);
+            color: var(--text-dark); padding: 8px 14px; border-radius: 20px;
+            font-size: 12px; font-weight: 600; cursor: pointer;
+            transition: all 0.2s ease;
+            width: auto;
+        }
+
+        .net-status { 
+            font-weight: 700; font-size: 11px; padding: 6px 14px; 
+            border-radius: 20px; display: inline-block;
+            text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .online { background: rgba(16, 185, 129, 0.12); color: #10b981 !important; }
+        .offline { background: rgba(239, 68, 68, 0.12); color: #ef4444 !important; }
+
+        .brand-header { text-align: center; margin: 10px 0 24px 0; }
+        .brand-logo { width: 110px; height: 110px; object-fit: contain; border-radius: 12px; margin-bottom: 14px; }
+        .brand-header h2 { font-size: 24px; font-weight: 700; margin: 0; letter-spacing: -0.5px; }
+        .brand-header p { font-size: 13px; color: var(--accent); font-weight: 600; margin: 4px 0 0 0; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        .form-group { margin-bottom: 20px; position: relative; }
+        label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-dark); }
         
-        input, select {
-            width: 100%; padding: 12px 14px;
-            border: 1px solid var(--border-color);
-            border-radius: 10px; box-sizing: border-box; font-size: 14px;
-            outline: none; transition: all 0.2s;
-            font-family: inherit; color: var(--text-dark);
+        input, .btn-primary { 
+            width: 100%; padding: 14px 16px; 
+            border: 1px solid var(--border-color); background: var(--bg-card);
+            color: var(--text-dark); border-radius: 12px; 
+            box-sizing: border-box; font-size: 15px; font-family: inherit;
+            transition: all 0.2s;
         }
-        input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(4, 120, 87, 0.1); }
+        input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(4, 120, 87, 0.15); }
+
+        .btn-primary { background: var(--primary); color: #fff; border: none; font-weight: 600; cursor: pointer; margin-top: 8px; box-shadow: 0 4px 12px rgba(4, 120, 87, 0.2); text-align: center; }
+        .btn-primary:hover { background: var(--primary-hover); }
+
+        .section-title { font-size: 12px; font-weight: 700; color: var(--text-muted); text-align: center; margin: 24px 0 12px 0; letter-spacing: 0.8px; text-transform: uppercase; }
+        #reader { width: 100%; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border: none !important; }
+        .divider { text-align: center; margin: 24px 0; font-size: 11px; font-weight: 700; color: var(--text-muted); }
+
+        .search-results { 
+            position: absolute; width: 100%; background: var(--bg-card); border: 1px solid var(--border-color); 
+            max-height: 220px; overflow-y: auto; z-index: 999; border-radius: 12px; margin-top: 2px;
+            box-shadow: 0 10px 15px -3px var(--shadow); display: none;
+        }
+        .search-item { padding: 12px 16px; cursor: pointer; border-bottom: 1px solid var(--border-color); font-size: 14px; }
+        .search-item:hover { background: var(--bg-main); color: var(--primary); }
+
+        .action-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-top: 10px; }
+        .btn-icon { 
+            background: transparent; border: 1px solid var(--border-color); 
+            color: var(--text-dark); padding: 12px 0; border-radius: 12px; 
+            cursor: pointer; display: flex; flex-direction: column; align-items: center; 
+            justify-content: center; gap: 6px; font-size: 10px; font-weight: 600;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); width: 100%; box-sizing: border-box;
+        }
         
-        /* Gaya khusus untuk input ID otomatis yang dikunci */
-        input[readonly] { background-color: #f8fafc; color: #475569; font-weight: 700; letter-spacing: 0.5px; border-style: dashed; }
-
-        .btn {
-            width: 100%; padding: 14px; background: var(--primary);
-            color: white; border: none; border-radius: 10px;
-            font-weight: 600; font-size: 15px; cursor: pointer;
-            transition: background 0.2s; margin-top: 8px;
-            box-shadow: 0 4px 12px rgba(4, 120, 87, 0.15);
+        .btn-icon svg { 
+            width: 18px; height: 18px; 
+            fill: none; stroke: var(--icon-color); 
+            stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+            transition: all 0.2s ease;
         }
-        .btn:hover { background: var(--primary-hover); }
+        
+        .btn-icon:hover { background: var(--bg-main); border-color: var(--text-muted); }
+        .btn-icon:hover svg { stroke: var(--primary); transform: translateY(-1px); }
+        .btn-icon:active { transform: scale(0.95); }
 
-        /* Kotak Hasil QR Code */
-        .qr-result-box {
-            margin-top: 24px; padding-top: 20px;
-            border-top: 2px dashed var(--border-color);
-            display: none; text-align: center;
-            animation: slideUp 0.4s ease-out;
+        .toast-notif {
+            position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+            background: #1e293b; color: #fff; padding: 12px 24px; border-radius: 30px; 
+            font-size: 14px; font-weight: 500; display: none; z-index: 10000; text-align: center;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3);
         }
-        #qrcode {
-            display: inline-block; padding: 12px;
-            background: white; border: 1px solid var(--border-color);
-            border-radius: 12px; margin-bottom: 12px;
-        }
-        .btn-download { background: #2563eb; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15); }
-        .btn-download:hover { background: #1d4ed8; }
+        
+        /* Area Cetak Laporan */
+        #print-area { display: none; width: 100%; margin-top: 30px; }
+        .print-box-wilayah { border: 1px solid #cbd5e1; background: #fff; padding: 15px; border-radius: 10px; margin-bottom: 15px; page-break-inside: avoid; }
+        .print-box-wilayah h4 { margin: 0 0 10px 0; font-size: 15px; color: #0f172a; text-transform: uppercase; border-bottom: 1px dashed #cbd5e1; padding-bottom: 5px; }
+        .print-gender-title { margin: 8px 0 4px 0; font-weight: 700; font-size: 13px; }
+        .print-list-nama { margin: 0 0 10px 0; padding-left: 22px; font-size: 13px; color: #334155; }
+        .print-list-nama li { margin-bottom: 3px; }
+        
+        .print-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 13px; }
+        .print-table th, .print-table td { border: 1px solid #cbd5e1; padding: 8px 10px; text-align: left; }
+        .print-table th { background: #f1f5f9; color: #0f172a; font-weight: 600; }
 
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(15px); }
-            to { opacity: 1; transform: translateY(0); }
+        @media print {
+            body { background: #fff!important; color: #000!important; display: block; padding: 0; margin: 0; }
+            .app-container { max-width: 100%; width: 100%; box-shadow: none!important; padding: 0; margin: 0; background: #fff!important; }
+            .top-bar, .section-title, #reader, .divider, .form-group, .btn-primary, .action-row, .search-results, .toast-notif { display: none!important; }
+            #print-area { display: block!important; }
         }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>Pendaftaran Mandiri</h2>
-    <p class="subtitle">Insan Qur'any Tawangmangu</p>
-    
-    <div class="form-group">
-        <label for="id_generus">ID Anggota Anda (Otomatis)</label>
-        <input type="text" id="id_generus" readonly>
+<div class="app-container">
+    <div class="top-bar">
+        <button class="theme-toggle-btn" onclick="ubahTemaSistem()" id="theme-btn">🌙 Dark Mode</button>
+        <div id="network-indicator" class="net-status online">● Online</div>
     </div>
     
+    <div class="brand-header">
+        <img src="logo insan qurany.jpg" alt="Logo" class="brand-logo" id="app-logo">
+        <h2>Presensi Kegiatan</h2>
+        <p>Insan Qur'any Tawangmangu</p>
+    </div>
+    
     <div class="form-group">
-        <label for="nama">Nama Lengkap</label>
-        <input type="text" id="nama" placeholder="Ketik nama lengkap sesuai KTP/KK...">
+        <label for="kegiatan">Nama Agenda Pertemuan</label>
+        <input type="text" id="kegiatan" placeholder="Masukkan nama kegiatan..." oninput="updateJudulCetak()">
     </div>
 
-    <div class="form-group">
-        <label for="jenis_kelamin">Jenis Kelamin</label>
-        <select id="jenis_kelamin">
-            <option value="Laki-laki">Laki-laki</option>
-            <option value="Perempuan">Perempuan</option>
-        </select>
-    </div>
+    <div class="section-title">OPSI 1: SCAN BARCODE</div>
+    <div id="reader"></div>
+
+    <div class="divider">— ATAU —</div>
 
     <div class="form-group">
-        <label for="status">Dapukan</label>
-        <select id="status">
-            <option value="Generus">Generus</option>
-            <option value="Pengurus">Pengurus</option>
-        </select>
+        <label for="search-input">OPSI 2: INPUT MANUAL Nama Anggota</label>
+        <input type="text" id="search-input" placeholder="Ketik nama untuk mencari..." oninput="cariNamaPintar()">
+        <div id="search-results-box" class="search-results"></div>
+    </div>
+    
+    <input type="hidden" id="selected-id-generus">
+    <button class="btn-primary" onclick="inputManualKehadiran()">Konfirmasi Kehadiran</button>
+
+    <div class="section-title">Menu Rekap & Penyimpanan</div>
+    <div class="action-row">
+        <button class="btn-icon" onclick="tarikDanCetakLaporan('semua')" title="Cetak Semua">
+            <svg viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+            Semua
+        </button>
+        <button class="btn-icon" onclick="tarikDanCetakLaporan('desa')" title="Rekap Desa">
+            <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+            Desa
+        </button>
+        <button class="btn-icon" onclick="tarikDanCetakLaporan('kelompok')" title="Rekap Kelompok">
+            <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+            Klp
+        </button>
+        <button class="btn-icon" onclick="sinkronisasiManual()" title="Simpan Cloud">
+            <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+            Simpan
+        </button>
+        <button class="btn-icon" onclick="eksporKeExcel()" title="Ekspor Excel">
+            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+            Excel
+        </button>
     </div>
 
-    <div class="form-group">
-        <label for="bidang">Bidang <span style="color: var(--text-muted); font-weight: normal; text-transform: lowercase;">(opsional)</span></label>
-        <input type="text" id="bidang" placeholder="Contoh: Ketua, Sekretaris, dll...">
-    </div>
-
-    <div class="form-group">
-        <label for="kelompok">Kelompok</label>
-        <input type="text" id="kelompok" placeholder="Contoh: Kelompok Blimbing 1">
-    </div>
-
-    <div class="form-group">
-        <label for="desa">Desa</label>
-        <input type="text" id="desa" placeholder="Contoh: Karanglo Selatan">
-    </div>
-
-    <button class="btn" id="btn-daftar" onclick="prosesPendaftaranMandiri()">Kirim & Buat QR Code</button>
-
-    <div id="result-section" class="qr-result-box">
-        <h3 style="margin: 0 0 4px 0; color: var(--primary); font-size: 16px;">✓ Pendaftaran Berhasil!</h3>
-        <p style="font-size: 12px; color: var(--text-muted); margin: 0 0 16px 0;">Silakan download QR Code ini untuk ditunjukkan saat absensi.</p>
-        <div id="qrcode"></div>
-        <p id="qr-info" style="font-size: 14px; font-weight: 700; margin: 0 0 16px 0; color: var(--text-dark);"></p>
-        <button class="btn btn-download" onclick="unduhQRCode()">⬇ Simpan QR Code ke HP</button>
+    <div id="print-area">
+        <h3 style="text-align: center; margin: 0 0 5px 0; font-size: 18px;" id="cetak-judul-kegiatan">Laporan Presensi Kegiatan</h3>
+        <p style="text-align: center; margin: 0 0 20px 0; font-size: 13px; color: #475569;" id="cetak-waktu">-</p>
+        <div id="print-table-container"></div>
     </div>
 </div>
 
+<div id="toast-box" class="toast-notif"></div>
+
 <script>
-    // MASUKKAN KREDENSIAL SUPABASE ANDA DI SINI
     const SUPABASE_URL = "https://gttavghryoadthnvwthd.supabase.co"; 
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0dGF2Z2hyeW9hZHRobnZ3dGhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA5MDI5NDQsImV4cCI6MjA5NjQ3ODk0NH0.0O7I9EqSaiQq8_LKMJS9U-XDuitY6sPfYQVtBsJAeas";
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // Fungsi Otomatis Membuat ID Acak saat Halaman Dibuka
-    function buatIdOtomatis() {
-        const teksAwalan = "IQ";
-        const angkaAcak = Math.floor(10000 + Math.random() * 90000); 
-        document.getElementById('id_generus').value = teksAwalan + angkaAcak;
+    const netIndicator = document.getElementById('network-indicator');
+    const searchInput = document.getElementById('search-input');
+    const resultsBox = document.getElementById('search-results-box');
+    const selectedIdInput = document.getElementById('selected-id-generus');
+    const themeBtn = document.getElementById('theme-btn');
+    
+    let semuaDataGenerus = [];
+    let pengunciScanAktif = false; 
+
+    function bunyikanSuaraSukses() {
+        try {
+            let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            let oscillator = audioCtx.createOscillator();
+            let gainNode = audioCtx.createGain();
+            oscillator.connect(gainNode); gainNode.connect(audioCtx.destination);
+            oscillator.type = 'sine'; oscillator.frequency.value = 880; 
+            gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime); 
+            oscillator.start(); oscillator.stop(audioCtx.currentTime + 0.12); 
+        } catch (e) {}
     }
 
-    window.onload = buatIdOtomatis;
-
-    async function prosesPendaftaranMandiri() {
-        let idGenerus = document.getElementById('id_generus').value.trim();
-        let nama = document.getElementById('nama').value.trim();
-        let jenisKelamin = document.getElementById('jenis_kelamin').value; // Nilai jenis kelamin
-        let status = document.getElementById('status').value;
-        let bidang = document.getElementById('bidang').value.trim(); 
-        let kelompok = document.getElementById('kelompok').value.trim();
-        let desa = document.getElementById('desa').value.trim();
-        let btnDaftar = document.getElementById('btn-daftar');
-
-        if(!nama) return alert("Harap masukkan Nama Lengkap Anda!");
-        if(!kelompok) return alert("Harap masukkan Nama Kelompok Anda!");
-        if(!desa) return alert("Harap masukkan Wilayah Desa Anda!");
-
-        btnDaftar.innerText = "Menyimpan data...";
-        btnDaftar.disabled = true;
-
-        const dataJemaah = {
-            id_generus: idGenerus,
-            nama: nama,
-            jenis_kelamin: jenisKelamin, // Sekarang sudah aktif kirim Jenis Kelamin
-            status: status,              // Sekarang sudah aktif kirim Dapukan
-            bidang: bidang,              // Diubah menjadi properti bidang untuk database Supabase
-            kelompok: kelompok,
-            desa: desa
-        };
-
-        // Simpan ke Supabase
-        let { error } = await _supabase.from('data_generus').insert([dataJemaah]);
-
-        if (error) {
-            if(error.code === '23505') {
-                buatIdOtomatis(); 
-                alert("Sistem mendeteksi ID sibuk. ID baru telah dibuat, silakan klik tombol sekali lagi!");
-            } else {
-                alert("Gagal mendaftar, silakan coba lagi: " + error.message);
+    function bunyikanSuaraGagal() {
+        try {
+            let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            function mainkanNadaRendah(waktuMulai) {
+                let osc = audioCtx.createOscillator(); let gain = audioCtx.createGain();
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.type = 'sawtooth'; osc.frequency.value = 180; 
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                osc.start(waktuMulai); osc.stop(waktuMulai + 0.15);
             }
-            btnDaftar.innerText = "Kirim & Buat QR Code";
-            btnDaftar.disabled = false;
+            mainkanNadaRendah(audioCtx.currentTime);
+            mainkanNadaRendah(audioCtx.currentTime + 0.2); 
+        } catch (e) {}
+    }
+
+    function ubahTemaSistem() {
+        if (document.documentElement.getAttribute('data-theme') === 'dark') {
+            document.documentElement.removeAttribute('data-theme');
+            themeBtn.innerText = "🌙 Dark Mode";
+            localStorage.setItem('tema_pilihan', 'light');
+        } else {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            themeBtn.innerText = "☀️ Light Mode";
+            localStorage.setItem('tema_pilihan', 'dark');
+        }
+    }
+    if (localStorage.getItem('tema_pilihan') === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        themeBtn.innerText = "☀️ Light Mode";
+    }
+
+    function updateJudulCetak() {
+        let agenda = document.getElementById('kegiatan').value;
+        document.getElementById('cetak-judul-kegiatan').innerText = agenda ? `Laporan Presensi: ${agenda}` : "Laporan Presensi Kegiatan";
+    }
+
+    window.addEventListener('online', () => {
+        netIndicator.innerText = "● Online"; netIndicator.className = "net-status online";
+        sinkronisasiManual();
+    });
+    window.addEventListener('offline', () => {
+        netIndicator.innerText = "● Offline"; netIndicator.className = "net-status offline";
+    });
+
+    async function muatSemuaGenerus() {
+        try {
+            // DIKEMBALIKAN: Membaca struktur asli database barcode Anda ('sebagai_apa')
+            let { data: generus, error } = await _supabase.from('data_generus').select('id_generus, nama, kelompok, desa, jenis_kelamin, status, sebagai_apa');
+            if (!error) { semuaDataGenerus = generus; searchInput.placeholder = `Cari di antara ${generus.length} data...`; }
+        } catch (e) { searchInput.placeholder = "Gagal memuat data (Mode Offline)"; }
+    }
+    muatSemuaGenerus();
+
+    function cariNamaPintar() {
+        let keyword = searchInput.value.toLowerCase();
+        resultsBox.innerHTML = '';
+        if (keyword.length < 2) { resultsBox.style.display = 'none'; return; }
+        let hasilFilter = semuaDataGenerus.filter(g => g.nama.toLowerCase().includes(keyword)).slice(0, 8);
+        if(hasilFilter.length > 0) {
+            resultsBox.style.display = 'block';
+            hasilFilter.forEach(g => {
+                let div = document.createElement('div');
+                div.className = 'search-item';
+                div.innerText = `${g.nama} — ${g.kelompok || '-'} [${g.desa || '-'}]`;
+                div.onclick = function() {
+                    searchInput.value = g.nama; selectedIdInput.value = g.id_generus;
+                    resultsBox.style.display = 'none';
+                };
+                resultsBox.appendChild(div);
+            });
+        } else {
+            resultsBox.style.display = 'block';
+            resultsBox.innerHTML = '<div class="search-item" style="color:#ef4444; font-size:13px;">Nama tidak ditemukan</div>';
+        }
+    }
+    document.addEventListener('click', function(e) { if (e.target !== searchInput) { resultsBox.style.display = 'none'; } });
+
+    async function onScanSuccess(decodedText) { 
+        if (pengunciScanAktif) return; 
+        pengunciScanAktif = true; 
+        
+        // Pembersihan spasi & konversi paksa string agar pencocokan ID saat scan selalu akurat
+        let idBersih = decodedText.toString().trim();
+        await prosesAbsensi(idBersih, "Scan Barcode");
+        setTimeout(() => { pengunciScanAktif = false; }, 2000); 
+    }
+    
+    let html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 220 });
+    html5QrcodeScanner.render(onScanSuccess);
+
+    async function cekApakahSudahAbsen(idGenerus, namaKegiatan) {
+        let idCek = idGenerus.toString().trim().toLowerCase();
+        if (!navigator.onLine) {
+            let antrean = JSON.parse(localStorage.getItem('antrean_absensi')) || [];
+            let riwayatLokal = JSON.parse(localStorage.getItem('riwayat_sukses_lokal')) || [];
+            let gabungan = [...antrean, ...riwayatLokal];
+            
+            let dataSama = gabungan.find(absen => 
+                absen.id_generus.toString().trim().toLowerCase() === idCek && 
+                absen.nama_kegiatan.trim().toLowerCase() === namaKegiatan.trim().toLowerCase()
+            );
+            return !!dataSama;
+        }
+
+        let { data, error } = await _supabase
+            .from('absensi_kegiatan')
+            .select('id_absensi')
+            .eq('id_generus', idGenerus)
+            .eq('nama_kegiatan', namaKegiatan.trim());
+            
+        if (error || !data) return false;
+        return data.length > 0;
+    }
+
+    async function prosesAbsensi(idGenerus, metode) {
+        let namaKegiatan = document.getElementById('kegiatan').value;
+        if(!namaKegiatan) {
+            bunyikanSuaraGagal();
+            alert("Harap isi Nama Agenda terlebih dahulu!");
+            return;
+        }
+        
+        let idCari = idGenerus.toString().trim().toLowerCase();
+        // PERBAIKAN: Pencarian profil diperketat menggunakan .toString() dan .trim() agar nama tidak hilang/terhapus saat di-scan
+        let profil = semuaDataGenerus.find(g => g.id_generus.toString().trim().toLowerCase() === idCari);
+        
+        if (!profil) {
+            profil = { nama: "ID Baru: " + idGenerus };
+        }
+
+        let sudahAbsen = await cekApakahSudahAbsen(idGenerus, namaKegiatan);
+        if (sudahAbsen) {
+            bunyikanSuaraGagal(); 
+            tampilkanToast(`⚠️ ${profil.nama} SUDAH MASUK! (Ditolak agar tidak dobel)`);
+            if(metode === "Manual") { searchInput.value = ''; selectedIdInput.value = ''; }
             return;
         }
 
-        tampilkanQRCode(idGenerus, nama);
+        const dataAbsen = {
+            nama_kegiatan: namaKegiatan.trim(),
+            id_generus: idGenerus,
+            metode_input: metode,
+            waktu_absen: new Date().toISOString()
+        };
+
+        if (navigator.onLine) {
+            let { error } = await _supabase.from('absensi_kegiatan').insert([dataAbsen]);
+            if (!error) {
+                bunyikanSuaraSukses(); 
+                tampilkanToast(`✓ Kehadiran ${profil.nama} sukses disimpan!`);
+                if(metode === "Manual") { searchInput.value = ''; selectedIdInput.value = ''; }
+            } else { simpanLokal(dataAbsen, profil.nama); }
+        } else { simpanLokal(dataAbsen, profil.nama); }
     }
 
-    function tampilkanQRCode(idText, namaOrang) {
-        let qrContainer = document.getElementById("qrcode");
-        qrContainer.innerHTML = ""; 
+    function simpanLokal(data, namaOrang) {
+        let antrean = JSON.parse(localStorage.getItem('antrean_absensi')) || [];
+        antrean.push(data);
+        localStorage.setItem('antrean_absensi', JSON.stringify(antrean));
+        
+        let riwayatLokal = JSON.parse(localStorage.getItem('riwayat_sukses_lokal')) || [];
+        riwayatLokal.push(data);
+        localStorage.setItem('riwayat_sukses_lokal', JSON.stringify(riwayatLokal));
 
-        new QRCode(qrContainer, {
-            text: idText,
-            width: 200,
-            height: 200,
-            colorDark : "#000000",
-            colorLight : "#ffffff",
-            correctLevel : QRCode.CorrectLevel.H
-        });
-
-        document.getElementById('qr-info').innerText = `${namaOrang} [${idText}]`;
-        document.getElementById('result-section').style.display = "block";
-        document.getElementById('btn-daftar').style.display = "none";
-
-        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        bunyikanSuaraSukses(); 
+        tampilkanToast(`💾 Tersimpan lokal: ${namaOrang} (Akan sinkron otomatis)`);
+        if(data.metode_input === "Manual") { searchInput.value = ''; selectedIdInput.value = ''; }
     }
 
-    function unduhQRCode() {
-        let idText = document.getElementById('id_generus').value.trim();
-        let namaOrang = document.getElementById('nama').value.trim();
-        let namaFile = `QR_${idText}_${namaOrang.replace(/\s+/g, '_')}.png`;
+    async function sinkronisasiManual() {
+        let antrean = JSON.parse(localStorage.getItem('antrean_absensi')) || [];
+        if (antrean.length === 0) return;
+        netIndicator.innerText = "🔄 Menyinkronkan...";
+        for (let i = 0; i < antrean.length; i++) { await _supabase.from('absensi_kegiatan').insert([antrean[i]]); }
+        localStorage.removeItem('antrean_absensi');
+        localStorage.removeItem('riwayat_sukses_lokal');
+        netIndicator.innerText = "● Online"; netIndicator.className = "net-status online";
+        tampilkanToast("✓ Semua data offline berhasil digabungkan ke Supabase");
+    }
 
-        let qrImg = document.querySelector("#qrcode img");
-        if (qrImg && qrImg.src) {
-            let link = document.createElement("a");
-            link.href = qrImg.src;
-            link.download = namaFile;
-            document.body.appendChild(link); link.click(); document.body.removeChild(link);
-        } else {
-            let qrCanvas = document.querySelector("#qrcode canvas");
-            if(qrCanvas) {
-                let link = document.createElement("a");
-                link.href = qrCanvas.toDataURL("image/png");
-                link.download = namaFile;
-                document.body.appendChild(link); link.click(); document.body.removeChild(link);
-            } else {
-                alert("Gambar QR Code belum siap. Silakan screenshot layar HP Anda.");
+    function inputManualKehadiran() {
+        let idTerpilih = selectedIdInput.value;
+        if(!idTerpilih) return alert("Cari dan pilih nama terlebih dahulu!");
+        prosesAbsensi(idTerpilih, "Manual");
+    }
+
+    async function dapatkanDataGabungan(namaKegiatan) {
+        let { data: logAbsen, error } = await _supabase.from('absensi_kegiatan').select('id_generus, waktu_absen, metode_input').eq('nama_kegiatan', namaKegiatan);
+        if (error || !logAbsen || logAbsen.length === 0) return [];
+        return logAbsen.map(absen => {
+            let idLog = absen.id_generus.toString().trim().toLowerCase();
+            let detail = semuaDataGenerus.find(g => g.id_generus.toString().trim().toLowerCase() === idLog) || { 
+                nama: "ID Tidak Terdaftar: " + absen.id_generus, 
+                kelompok: "Tanpa Kelompok", 
+                desa: "Tanpa Desa",
+                jenis_kelamin: "Laki-laki",
+                status: "Generus",
+                sebagai_apa: ""
+            };
+            return {
+                id: absen.id_generus,
+                nama: detail.nama, 
+                kelompok: detail.kelompok || "Tanpa Kelompok", 
+                desa: detail.desa || "Tanpa Desa",
+                jk: detail.jenis_kelamin || "Laki-laki",
+                dapukan: detail.status || "Generus",
+                detailDapukan: detail.sebagai_apa ? ` (${detail.sebagai_apa})` : "",
+                waktu: new Date(absen.waktu_absen).toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'}),
+                metode: absen.metode_input
             }
-        }
+        });
     }
+
+    async function tarikDanCetakLaporan(jenis) {
+        let namaKegiatan = document.getElementById('kegiatan').value;
+        if(!namaKegiatan) return alert("Harap masukkan Nama Agenda yang ingin ditarik rekapannya!");
+        tampilkanToast("🔄 Menarik seluruh data dari Supabase...");
+        let dataMurni = await dapatkanDataGabungan(namaKegiatan);
+        if(dataMurni.length === 0) return alert(`Tidak ditemukan data absensi untuk kegiatan: "${namaKegiatan}"`);
+
+        let container = document.getElementById('print-table-container');
+        container.innerHTML = "";
+        let opsiWaktu = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+        document.getElementById('cetak-waktu').innerText = "Waktu Tarik Laporan: " + new Date().toLocaleDateString('id-ID', opsiWaktu) + " WIB";
+
+        if (jenis === 'semua') {
+            let html = `<table class="print-table"><thead><tr><th style="width:20px;">No</th><th>Nama Lengkap</th><th>L/P</th><th>Kelompok</th><th>Desa</th><th>Status</th><th>Waktu</th><th>Metode</th></tr></thead><tbody>`;
+            dataMurni.forEach((d, i) => { 
+                html += `<tr><td>${i+1}</td><td style="font-weight:600;">${d.nama}</td><td>${d.jk == 'Laki-laki' ? 'L' : 'P'}</td><td>${d.kelompok}</td><td>${d.desa}</td><td>${d.dapukan}${d.detailDapukan}</td><td>${d.waktu}</td><td>${d.metode}</td></tr>`; 
+            });
+            html += `</tbody></table>`; 
+            container.innerHTML = html;
+        } else {
+            let rekapStruktur = {};
+            let kunciWilayah = jenis === 'desa' ? 'desa' : 'kelompok';
+
+            dataMurni.forEach(d => {
+                let namaWilayah = d[kunciWilayah];
+                if (!rekapStruktur[namaWilayah]) {
+                    rekapStruktur[namaWilayah] = { Laki: [], Perempuan: [] };
+                }
+                if (d.jk === "Perempuan") {
+                    rekapStruktur[namaWilayah].Perempuan.push(d);
+                } else {
+                    rekapStruktur[namaWilayah].Laki.push(d);
+                }
+            });
+
+            let html = "";
+            let grandTotalLaki = 0;
+            let grandTotalPerempuan = 0;
+
+            for (let wilayah in rekapStruktur) {
+                let listL = rekapStruktur[wilayah].Laki;
+                let listP = rekapStruktur[wilayah].Perempuan;
+                grandTotalLaki += listL.length;
+                grandTotalPerempuan += listP.length;
+
+                html += `<div class="print-box-wilayah">`;
+                html += `<h4>📁 ${jenis === 'desa' ? 'DESA' : 'KELOMPOK'} ${wilayah.toUpperCase()} (Total Hadir: ${listL.length + listP.length} Orang)</h4>`;
+                
+                html += `<div class="print-gender-title" style="color:#2563eb;">♂️ Laki-laki (${listL.length} Orang)</div>`;
+                html += `<ol class="print-list-nama">`;
+                if(listL.length === 0) { html += `<li style="list-style:none; color:#94a3b8; font-style:italic;">(Tidak ada)</li>`; }
+                else {
+                    listL.forEach(p => {
+                        html += `<li><strong>${p.nama}</strong> — <span style="font-size:11px; color:#475569;">${p.dapukan}${p.detailDapukan} [${p.waktu}]</span></li>`;
+                    });
+                }
+                html += `</ol>`;
+
+                html += `<div class="print-gender-title" style="color:#db2777;">♀️ Perempuan (${listP.length} Orang)</div>`;
+                html += `<ol class="print-list-nama">`;
+                if(listP.length === 0) { html += `<li style="list-style:none; color:#94a3b8; font-style:italic;">(Tidak ada)</li>`; }
+                else {
+                    listP.forEach(p => {
+                        html += `<li><strong>${p.nama}</strong> — <span style="font-size:11px; color:#475569;">${p.dapukan}${p.detailDapukan} [${p.waktu}]</span></li>`;
+                    });
+                }
+                html += `</ol>`;
+                
+                html += `</div>`;
+            }
+
+            html += `
+                <table class="print-table" style="margin-top:20px; background:#f8fafc;">
+                    <tr style="font-weight:700; font-size:14px;">
+                        <td style="text-align:right;">TOTAL LAKI-LAKI HADIR:</td>
+                        <td style="width:120px; text-align:center; color:#2563eb;">${grandTotalLaki} Orang</td>
+                    </tr>
+                    <tr style="font-weight:700; font-size:14px;">
+                        <td style="text-align:right;">TOTAL PEREMPUAN HADIR:</td>
+                        <td style="width:120px; text-align:center; color:#db2777;">${grandTotalPerempuan} Orang</td>
+                    </tr>
+                    <tr style="font-weight:700; font-size:15px; background:#f1f5f9; border-top:2px solid #94a3b8;">
+                        <td style="text-align:right; text-transform:uppercase;">Grand Total Seluruh Jemaah Hadir:</td>
+                        <td style="text-align:center; color:#b45309;">${grandTotalLaki + grandTotalPerempuan} Jemaah</td>
+                    </tr>
+                </table>
+            `;
+
+            container.innerHTML = html;
+        }
+        window.print();
+    }
+
+    async function eksporKeExcel() {
+        let namaKegiatan = document.getElementById('kegiatan').value;
+        if(!namaKegiatan) return alert("Harap masukkan Nama Agenda untuk diekspor!");
+        tampilkanToast("📊 Membuat file Excel...");
+        let dataMurni = await dapatkanDataGabungan(namaKegiatan);
+        if(dataMurni.length === 0) return alert("Tidak ada data untuk diekspor!");
+
+        let csvContent = "data:text/csv;charset=utf-8,No,Nama Lengkap,Jenis Kelamin,Kelompok,Desa,Status,Waktu Absen,Metode\n";
+        dataMurni.forEach((d, i) => { 
+            csvContent += `${i+1},"${d.nama}","${d.jk}","${d.kelompok}","${d.desa}","${d.dapukan}${d.detailDapukan}","${d.waktu}","${d.metode}"\n`; 
+        });
+        
+        let encodedUri = encodeURI(csvContent);
+        let link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `Rekap_Presensi_${namaKegiatan.replace(/\s+/g, '_')}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        tampilkanToast("✓ File Excel berhasil diunduh!");
+    }
+
+    function tampilkanToast(pesan) {
+        let toast = document.getElementById('toast-box'); toast.style.display = "block"; toast.innerText = pesan;
+        setTimeout(() => toast.style.display = "none", 3000);
+    }
+    if ('serviceWorker' in navigator) { navigator.serviceWorker.register('service-worker.js'); }
 </script>
 </body>
 </html>
