@@ -138,15 +138,15 @@
         
         /* Area Cetak Laporan */
         #print-area { display: none; width: 100%; margin-top: 30px; }
-        .print-box-wilayah { border: 1px solid #cbd5e1; background: #fff; padding: 15px; border-radius: 10px; margin-bottom: 15px; page-break-inside: avoid; }
-        .print-box-wilayah h4 { margin: 0 0 10px 0; font-size: 15px; color: #0f172a; text-transform: uppercase; border-bottom: 1px dashed #cbd5e1; padding-bottom: 5px; }
-        .print-gender-title { margin: 8px 0 4px 0; font-weight: 700; font-size: 13px; }
-        .print-list-nama { margin: 0 0 10px 0; padding-left: 22px; font-size: 13px; color: #334155; }
-        .print-list-nama li { margin-bottom: 3px; }
+        .print-box-wilayah { margin-bottom: 30px; page-break-inside: avoid; }
+        .print-box-wilayah h4 { margin: 0 0 8px 0; font-size: 15px; color: #0f172a; text-transform: uppercase; border-bottom: 2px solid #0f172a; padding-bottom: 4px; }
+        .print-gender-section { margin-top: 10px; margin-bottom: 15px; }
+        .print-gender-title { font-weight: 700; font-size: 13px; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
         
-        .print-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 13px; }
-        .print-table th, .print-table td { border: 1px solid #cbd5e1; padding: 8px 10px; text-align: left; }
+        .print-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; font-size: 12px; }
+        .print-table th, .print-table td { border: 1px solid #94a3b8; padding: 6px 8px; text-align: left; }
         .print-table th { background: #f1f5f9; color: #0f172a; font-weight: 600; }
+        .print-table td.empty-row { text-align: center; color: #94a3b8; font-style: italic; background: #fafafa; }
 
         @media print {
             body { background: #fff!important; color: #000!important; display: block; padding: 0; margin: 0; }
@@ -294,9 +294,11 @@
 
     async function muatSemuaGenerus() {
         try {
-            // DIKEMBALIKAN: Membaca struktur asli database barcode Anda ('sebagai_apa')
-            let { data: generus, error } = await _supabase.from('data_generus').select('id_generus, nama, kelompok, desa, jenis_kelamin, status, sebagai_apa');
-            if (!error) { semuaDataGenerus = generus; searchInput.placeholder = `Cari di antara ${generus.length} data...`; }
+            let { data: generus, error } = await _supabase.from('data_generus').select('*');
+            if (!error) { 
+                semuaDataGenerus = generus; 
+                searchInput.placeholder = `Cari di antara ${generus.length} data...`; 
+            }
         } catch (e) { searchInput.placeholder = "Gagal memuat data (Mode Offline)"; }
     }
     muatSemuaGenerus();
@@ -305,7 +307,7 @@
         let keyword = searchInput.value.toLowerCase();
         resultsBox.innerHTML = '';
         if (keyword.length < 2) { resultsBox.style.display = 'none'; return; }
-        let hasilFilter = semuaDataGenerus.filter(g => g.nama.toLowerCase().includes(keyword)).slice(0, 8);
+        let hasilFilter = semuaDataGenerus.filter(g => g.nama && g.nama.toLowerCase().includes(keyword)).slice(0, 8);
         if(hasilFilter.length > 0) {
             resultsBox.style.display = 'block';
             hasilFilter.forEach(g => {
@@ -329,9 +331,7 @@
         if (pengunciScanAktif) return; 
         pengunciScanAktif = true; 
         
-        // Pembersihan spasi & konversi paksa string agar pencocokan ID saat scan selalu akurat
-        let idBersih = decodedText.toString().trim();
-        await prosesAbsensi(idBersih, "Scan Barcode");
+        await prosesAbsensi(decodedText, "Scan Barcode");
         setTimeout(() => { pengunciScanAktif = false; }, 2000); 
     }
     
@@ -339,14 +339,13 @@
     html5QrcodeScanner.render(onScanSuccess);
 
     async function cekApakahSudahAbsen(idGenerus, namaKegiatan) {
-        let idCek = idGenerus.toString().trim().toLowerCase();
         if (!navigator.onLine) {
             let antrean = JSON.parse(localStorage.getItem('antrean_absensi')) || [];
             let riwayatLokal = JSON.parse(localStorage.getItem('riwayat_sukses_lokal')) || [];
             let gabungan = [...antrean, ...riwayatLokal];
             
             let dataSama = gabungan.find(absen => 
-                absen.id_generus.toString().trim().toLowerCase() === idCek && 
+                absen.id_generus == idGenerus && 
                 absen.nama_kegiatan.trim().toLowerCase() === namaKegiatan.trim().toLowerCase()
             );
             return !!dataSama;
@@ -370,13 +369,7 @@
             return;
         }
         
-        let idCari = idGenerus.toString().trim().toLowerCase();
-        // PERBAIKAN: Pencarian profil diperketat menggunakan .toString() dan .trim() agar nama tidak hilang/terhapus saat di-scan
-        let profil = semuaDataGenerus.find(g => g.id_generus.toString().trim().toLowerCase() === idCari);
-        
-        if (!profil) {
-            profil = { nama: "ID Baru: " + idGenerus };
-        }
+        let profil = semuaDataGenerus.find(g => g.id_generus == idGenerus) || { nama: "ID: " + idGenerus };
 
         let sudahAbsen = await cekApakahSudahAbsen(idGenerus, namaKegiatan);
         if (sudahAbsen) {
@@ -419,7 +412,7 @@
 
     async function sinkronisasiManual() {
         let antrean = JSON.parse(localStorage.getItem('antrean_absensi')) || [];
-        if (antrean.length === 0) return;
+        if (antrean.length === 0) return tampilkanToast("Tidak ada data offline tertunda");
         netIndicator.innerText = "🔄 Menyinkronkan...";
         for (let i = 0; i < antrean.length; i++) { await _supabase.from('absensi_kegiatan').insert([antrean[i]]); }
         localStorage.removeItem('antrean_absensi');
@@ -437,25 +430,31 @@
     async function dapatkanDataGabungan(namaKegiatan) {
         let { data: logAbsen, error } = await _supabase.from('absensi_kegiatan').select('id_generus, waktu_absen, metode_input').eq('nama_kegiatan', namaKegiatan);
         if (error || !logAbsen || logAbsen.length === 0) return [];
+        
         return logAbsen.map(absen => {
-            let idLog = absen.id_generus.toString().trim().toLowerCase();
-            let detail = semuaDataGenerus.find(g => g.id_generus.toString().trim().toLowerCase() === idLog) || { 
-                nama: "ID Tidak Terdaftar: " + absen.id_generus, 
-                kelompok: "Tanpa Kelompok", 
-                desa: "Tanpa Desa",
-                jenis_kelamin: "Laki-laki",
-                status: "Generus",
-                sebagai_apa: ""
-            };
+            let detail = semuaDataGenerus.find(g => g.id_generus == absen.id_generus);
+            
+            let namaFix = detail ? detail.nama : "ID Terhapus: " + absen.id_generus;
+            let kelompokFix = detail ? (detail.kelompok || "Tanpa Kelompok") : "Tanpa Kelompok";
+            let desaFix = detail ? (detail.desa || "Tanpa Desa") : "Tanpa Desa";
+            let jkFix = detail ? (detail.jenis_kelamin || "Laki-laki") : "Laki-laki";
+            let statusFix = detail ? (detail.status || "Generus") : "Generus";
+            
+            // Mengubah penarikan ke kolom baru 'bidang'
+            let detailBidang = "";
+            if (detail && detail.bidang) {
+                detailBidang = ` (${detail.bidang})`;
+            }
+
             return {
                 id: absen.id_generus,
-                nama: detail.nama, 
-                kelompok: detail.kelompok || "Tanpa Kelompok", 
-                desa: detail.desa || "Tanpa Desa",
-                jk: detail.jenis_kelamin || "Laki-laki",
-                dapukan: detail.status || "Generus",
-                detailDapukan: detail.sebagai_apa ? ` (${detail.sebagai_apa})` : "",
-                waktu: new Date(absen.waktu_absen).toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'}),
+                nama: namaFix, 
+                kelompok: kelompokFix, 
+                desa: desaFix,
+                jk: jkFix,
+                dapukan: statusFix,
+                detailBidang: detailBidang,
+                waktu: new Date(absen.waktu_absen).toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'}).replace('.', ':'),
                 metode: absen.metode_input
             }
         });
@@ -474,9 +473,9 @@
         document.getElementById('cetak-waktu').innerText = "Waktu Tarik Laporan: " + new Date().toLocaleDateString('id-ID', opsiWaktu) + " WIB";
 
         if (jenis === 'semua') {
-            let html = `<table class="print-table"><thead><tr><th style="width:20px;">No</th><th>Nama Lengkap</th><th>L/P</th><th>Kelompok</th><th>Desa</th><th>Status</th><th>Waktu</th><th>Metode</th></tr></thead><tbody>`;
+            let html = `<table class="print-table"><thead><tr><th style="width:30px;">No</th><th>Nama Lengkap</th><th style="width:40px;">L/P</th><th>Kelompok</th><th>Desa</th><th>Status</th><th style="width:60px;">Waktu</th><th>Metode</th></tr></thead><tbody>`;
             dataMurni.forEach((d, i) => { 
-                html += `<tr><td>${i+1}</td><td style="font-weight:600;">${d.nama}</td><td>${d.jk == 'Laki-laki' ? 'L' : 'P'}</td><td>${d.kelompok}</td><td>${d.desa}</td><td>${d.dapukan}${d.detailDapukan}</td><td>${d.waktu}</td><td>${d.metode}</td></tr>`; 
+                html += `<tr><td>${i+1}</td><td style="font-weight:600;">${d.nama}</td><td>${d.jk == 'Laki-laki' ? 'L' : 'P'}</td><td>${d.kelompok}</td><td>${d.desa}</td><td>${d.dapukan}${d.detailBidang}</td><td>${d.waktu}</td><td>${d.metode}</td></tr>`; 
             });
             html += `</tbody></table>`; 
             container.innerHTML = html;
@@ -485,7 +484,7 @@
             let kunciWilayah = jenis === 'desa' ? 'desa' : 'kelompok';
 
             dataMurni.forEach(d => {
-                let namaWilayah = d[kunciWilayah];
+                let namaWilayah = d[kunciWilayah] || "Tanpa Wilayah";
                 if (!rekapStruktur[namaWilayah]) {
                     rekapStruktur[namaWilayah] = { Laki: [], Perempuan: [] };
                 }
@@ -507,50 +506,93 @@
                 grandTotalPerempuan += listP.length;
 
                 html += `<div class="print-box-wilayah">`;
-                html += `<h4>📁 ${jenis === 'desa' ? 'DESA' : 'KELOMPOK'} ${wilayah.toUpperCase()} (Total Hadir: ${listL.length + listP.length} Orang)</h4>`;
+                html += `<h4>📁 ${jenis === 'desa' ? 'WILAYAH DESA' : 'KELOMPOK'}: ${wilayah.toUpperCase()} (Total Hadir: ${listL.length + listP.length} Orang)</h4>`;
                 
-                html += `<div class="print-gender-title" style="color:#2563eb;">♂️ Laki-laki (${listL.length} Orang)</div>`;
-                html += `<ol class="print-list-nama">`;
-                if(listL.length === 0) { html += `<li style="list-style:none; color:#94a3b8; font-style:italic;">(Tidak ada)</li>`; }
-                else {
-                    listL.forEach(p => {
-                        html += `<li><strong>${p.nama}</strong> — <span style="font-size:11px; color:#475569;">${p.dapukan}${p.detailDapukan} [${p.waktu}]</span></li>`;
+                // TABEL LAKI-LAKI
+                html += `<div class="print-gender-section">`;
+                html += `<div class="print-gender-title" style="color:#1d4ed8;">♂️ Daftar Hadir Laki-Laki (${listL.length} Orang)</div>`;
+                html += `<table class="print-table">
+                            <thead>
+                                <tr>
+                                    <th style="width:35px;">No</th>
+                                    <th>Nama Lengkap</th>
+                                    <th>Kelompok</th>
+                                    <th>Desa</th>
+                                    <th>Status (Bidang)</th>
+                                    <th style="width:70px;">Jam Masuk</th>
+                                </tr>
+                            </thead>
+                            <tbody>`;
+                if(listL.length === 0) {
+                    html += `<tr><td colspan="6" class="empty-row">Tidak ada jemaah laki-laki yang hadir</td></tr>`;
+                } else {
+                    listL.forEach((p, idx) => {
+                        html += `<tr>
+                                    <td>${idx+1}</td>
+                                    <td style="font-weight:600;">${p.nama}</td>
+                                    <td>${p.kelompok}</td>
+                                    <td>${p.desa}</td>
+                                    <td>${p.dapukan}${p.detailBidang}</td>
+                                    <td>${p.waktu}</td>
+                                 </tr>`;
                     });
                 }
-                html += `</ol>`;
+                html += `</tbody></table></div>`;
 
-                html += `<div class="print-gender-title" style="color:#db2777;">♀️ Perempuan (${listP.length} Orang)</div>`;
-                html += `<ol class="print-list-nama">`;
-                if(listP.length === 0) { html += `<li style="list-style:none; color:#94a3b8; font-style:italic;">(Tidak ada)</li>`; }
-                else {
-                    listP.forEach(p => {
-                        html += `<li><strong>${p.nama}</strong> — <span style="font-size:11px; color:#475569;">${p.dapukan}${p.detailDapukan} [${p.waktu}]</span></li>`;
+                // TABEL PEREMPUAN
+                html += `<div class="print-gender-section">`;
+                html += `<div class="print-gender-title" style="color:#be185d;">♀️ Daftar Hadir Perempuan (${listP.length} Orang)</div>`;
+                html += `<table class="print-table">
+                            <thead>
+                                <tr>
+                                    <th style="width:35px;">No</th>
+                                    <th>Nama Lengkap</th>
+                                    <th>Kelompok</th>
+                                    <th>Desa</th>
+                                    <th>Status (Bidang)</th>
+                                    <th style="width:70px;">Jam Masuk</th>
+                                </tr>
+                            </thead>
+                            <tbody>`;
+                if(listP.length === 0) {
+                    html += `<tr><td colspan="6" class="empty-row">Tidak ada jemaah perempuan yang hadir</td></tr>`;
+                } else {
+                    listP.forEach((p, idx) => {
+                        html += `<tr>
+                                    <td>${idx+1}</td>
+                                    <td style="font-weight:600;">${p.nama}</td>
+                                    <td>${p.kelompok}</td>
+                                    <td>${p.desa}</td>
+                                    <td>${p.dapukan}${p.detailBidang}</td>
+                                    <td>${p.waktu}</td>
+                                 </tr>`;
                     });
                 }
-                html += `</ol>`;
+                html += `</tbody></table></div>`;
                 
                 html += `</div>`;
             }
 
             html += `
-                <table class="print-table" style="margin-top:20px; background:#f8fafc;">
-                    <tr style="font-weight:700; font-size:14px;">
-                        <td style="text-align:right;">TOTAL LAKI-LAKI HADIR:</td>
-                        <td style="width:120px; text-align:center; color:#2563eb;">${grandTotalLaki} Orang</td>
+                <table class="print-table" style="margin-top:25px; background:#f8fafc; border: 2px solid #64748b;">
+                    <tr style="font-weight:700; font-size:13px;">
+                        <td style="text-align:right; border:none; padding: 8px;">TOTAL LAKI-LAKI HADIR:</td>
+                        <td style="width:140px; text-align:center; color:#1d4ed8; border:none; padding: 8px;">${grandTotalLaki} Orang</td>
                     </tr>
-                    <tr style="font-weight:700; font-size:14px;">
-                        <td style="text-align:right;">TOTAL PEREMPUAN HADIR:</td>
-                        <td style="width:120px; text-align:center; color:#db2777;">${grandTotalPerempuan} Orang</td>
+                    <tr style="font-weight:700; font-size:13px;">
+                        <td style="text-align:right; border:none; padding: 4px 8px;">TOTAL PEREMPUAN HADIR:</td>
+                        <td style="width:140px; text-align:center; color:#be185d; border:none; padding: 4px 8px;">${grandTotalPerempuan} Orang</td>
                     </tr>
-                    <tr style="font-weight:700; font-size:15px; background:#f1f5f9; border-top:2px solid #94a3b8;">
-                        <td style="text-align:right; text-transform:uppercase;">Grand Total Seluruh Jemaah Hadir:</td>
-                        <td style="text-align:center; color:#b45309;">${grandTotalLaki + grandTotalPerempuan} Jemaah</td>
+                    <tr style="font-weight:700; font-size:14px; background:#f1f5f9; border-top:1px solid #cbd5e1;">
+                        <td style="text-align:right; padding: 10px;">GRAND TOTAL SELURUH JEMAAH:</td>
+                        <td style="text-align:center; color:#b45309; padding: 10px; font-size:16px;">${grandTotalLaki + grandTotalPerempuan} Jemaah</td>
                     </tr>
                 </table>
             `;
 
             container.innerHTML = html;
         }
+        
         window.print();
     }
 
@@ -561,9 +603,9 @@
         let dataMurni = await dapatkanDataGabungan(namaKegiatan);
         if(dataMurni.length === 0) return alert("Tidak ada data untuk diekspor!");
 
-        let csvContent = "data:text/csv;charset=utf-8,No,Nama Lengkap,Jenis Kelamin,Kelompok,Desa,Status,Waktu Absen,Metode\n";
+        let csvContent = "data:text/csv;charset=utf-8,No,Nama Lengkap,Jenis Kelamin,Kelompok,Desa,Status (Bidang),Waktu Absen,Metode\n";
         dataMurni.forEach((d, i) => { 
-            csvContent += `${i+1},"${d.nama}","${d.jk}","${d.kelompok}","${d.desa}","${d.dapukan}${d.detailDapukan}","${d.waktu}","${d.metode}"\n`; 
+            csvContent += `${i+1},"${d.nama}","${d.jk}","${d.kelompok}","${d.desa}","${d.dapukan}${d.detailBidang}","${d.waktu}","${d.metode}"\n`; 
         });
         
         let encodedUri = encodeURI(csvContent);
