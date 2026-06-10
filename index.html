@@ -7,7 +7,7 @@
     <link rel="manifest" href="manifest.json">
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght=400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
         :root {
@@ -135,9 +135,17 @@
             font-size: 14px; font-weight: 500; display: none; z-index: 10000; text-align: center;
             box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3);
         }
+        
+        /* Area Cetak Laporan */
         #print-area { display: none; width: 100%; margin-top: 30px; }
-        .print-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; }
-        .print-table th, .print-table td { border: 1px solid #cbd5e1; padding: 10px 12px; text-align: left; }
+        .print-box-wilayah { border: 1px solid #cbd5e1; background: #fff; padding: 15px; border-radius: 10px; margin-bottom: 15px; page-break-inside: avoid; }
+        .print-box-wilayah h4 { margin: 0 0 10px 0; font-size: 15px; color: #0f172a; text-transform: uppercase; border-bottom: 1px dashed #cbd5e1; padding-bottom: 5px; }
+        .print-gender-title { margin: 8px 0 4px 0; font-weight: 700; font-size: 13px; }
+        .print-list-nama { margin: 0 0 10px 0; padding-left: 22px; font-size: 13px; color: #334155; }
+        .print-list-nama li { margin-bottom: 3px; }
+        
+        .print-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 13px; }
+        .print-table th, .print-table td { border: 1px solid #cbd5e1; padding: 8px 10px; text-align: left; }
         .print-table th { background: #f1f5f9; color: #0f172a; font-weight: 600; }
 
         @media print {
@@ -286,7 +294,8 @@
 
     async function muatSemuaGenerus() {
         try {
-            let { data: generus, error } = await _supabase.from('data_generus').select('id_generus, nama, kelompok, desa');
+            // MENARIK SEMUA DATA BARU (Lengkap dengan Jenis Kelamin & Dapukan)
+            let { data: generus, error } = await _supabase.from('data_generus').select('id_generus, nama, kelompok, desa, jenis_kelamin, status, sebagai_apa');
             if (!error) { semuaDataGenerus = generus; searchInput.placeholder = `Cari di antara ${generus.length} data...`; }
         } catch (e) { searchInput.placeholder = "Gagal memuat data (Mode Offline)"; }
     }
@@ -316,21 +325,17 @@
     }
     document.addEventListener('click', function(e) { if (e.target !== searchInput) { resultsBox.style.display = 'none'; } });
 
-    // AMAN & PINTAR: Kamera otomatis terkunci sampai proses pemindaian ke server benar-benar selesai
     async function onScanSuccess(decodedText) { 
         if (pengunciScanAktif) return; 
         pengunciScanAktif = true; 
         
         await prosesAbsensi(decodedText, "Scan Barcode");
-        
-        // Jeda 2 detik sebelum kamera diaktifkan kembali untuk memindai kartu berikutnya
         setTimeout(() => { pengunciScanAktif = false; }, 2000); 
     }
     
     let html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 220 });
     html5QrcodeScanner.render(onScanSuccess);
 
-    // FIX ANTIDOBEL: Memeriksa riwayat kehadiran tanpa menggunakan parameter jam/waktu server
     async function cekApakahSudahAbsen(idGenerus, namaKegiatan) {
         if (!navigator.onLine) {
             let antrean = JSON.parse(localStorage.getItem('antrean_absensi')) || [];
@@ -344,7 +349,6 @@
             return !!dataSama;
         }
 
-        // QUERY MUTLAK: Mencari apakah kombinasi Agenda & ID ini sudah ada di database Supabase
         let { data, error } = await _supabase
             .from('absensi_kegiatan')
             .select('id_absensi')
@@ -355,53 +359,40 @@
         return data.length > 0;
     }
 
-async function prosesAbsensi(idGenerus, metode) {
-    let namaKegiatan = document.getElementById('kegiatan').value;
-    if(!namaKegiatan) {
-        bunyikanSuaraGagal();
-        alert("Harap isi Nama Agenda terlebih dahulu!");
-        return;
-    }
-    
-    let profil = semuaDataGenerus.find(g => g.id_generus == idGenerus) || { nama: "ID: " + idGenerus };
-
-    // 1. Cek lokal dulu untuk menghemat kuota / mode offline
-    let sudahAbsen = await cekApakahSudahAbsen(idGenerus, namaKegiatan);
-    if (sudahAbsen) {
-        bunyikanSuaraGagal(); 
-        tampilkanToast(`⚠️ ${profil.nama} SUDAH MASUK! (Ditolak agar tidak dobel)`);
-        if(metode === "Manual") { searchInput.value = ''; selectedIdInput.value = ''; }
-        return;
-    }
-
-    const dataAbsen = {
-        nama_kegiatan: namaKegiatan.trim(),
-        id_generus: idGenerus,
-        metode_input: metode,
-        waktu_absen: new Date().toISOString()
-    };
-
-    if (navigator.onLine) {
-        let { error } = await _supabase.from('absensi_kegiatan').insert([dataAbsen]);
-        
-        // JIKA SUPABASE MENOLAK KARENA DOBEL (KODE ERROR 23505 ADALAH UNIQUE CONSTRAINT VIOLATION)
-        if (error) {
-            if (error.code === '23505') { 
-                bunyikanSuaraGagal();
-                tampilkanToast(`⚠️ ${profil.nama} SUDAH MASUK! (Ditolak oleh Server)`);
-            } else {
-                simpanLokal(dataAbsen, profil.nama);
-            }
-            if(metode === "Manual") { searchInput.value = ''; selectedIdInput.value = ''; }
-        } else {
-            bunyikanSuaraSukses(); 
-            tampilkanToast(`✓ Kehadiran ${profil.nama} sukses disimpan!`);
-            if(metode === "Manual") { searchInput.value = ''; selectedIdInput.value = ''; }
+    async function prosesAbsensi(idGenerus, metode) {
+        let namaKegiatan = document.getElementById('kegiatan').value;
+        if(!namaKegiatan) {
+            bunyikanSuaraGagal();
+            alert("Harap isi Nama Agenda terlebih dahulu!");
+            return;
         }
-    } else { 
-        simpanLokal(dataAbsen, profil.nama); 
+        
+        let profil = semuaDataGenerus.find(g => g.id_generus == idGenerus) || { nama: "ID: " + idGenerus };
+
+        let sudahAbsen = await cekApakahSudahAbsen(idGenerus, namaKegiatan);
+        if (sudahAbsen) {
+            bunyikanSuaraGagal(); 
+            tampilkanToast(`⚠️ ${profil.nama} SUDAH MASUK! (Ditolak agar tidak dobel)`);
+            if(metode === "Manual") { searchInput.value = ''; selectedIdInput.value = ''; }
+            return;
+        }
+
+        const dataAbsen = {
+            nama_kegiatan: namaKegiatan.trim(),
+            id_generus: idGenerus,
+            metode_input: metode,
+            waktu_absen: new Date().toISOString()
+        };
+
+        if (navigator.onLine) {
+            let { error } = await _supabase.from('absensi_kegiatan').insert([dataAbsen]);
+            if (!error) {
+                bunyikanSuaraSukses(); 
+                tampilkanToast(`✓ Kehadiran ${profil.nama} sukses disimpan!`);
+                if(metode === "Manual") { searchInput.value = ''; selectedIdInput.value = ''; }
+            } else { simpanLokal(dataAbsen, profil.nama); }
+        } else { simpanLokal(dataAbsen, profil.nama); }
     }
-}
 
     function simpanLokal(data, namaOrang) {
         let antrean = JSON.parse(localStorage.getItem('antrean_absensi')) || [];
@@ -438,15 +429,31 @@ async function prosesAbsensi(idGenerus, metode) {
         let { data: logAbsen, error } = await _supabase.from('absensi_kegiatan').select('id_generus, waktu_absen, metode_input').eq('nama_kegiatan', namaKegiatan);
         if (error || !logAbsen || logAbsen.length === 0) return [];
         return logAbsen.map(absen => {
-            let detail = semuaDataGenerus.find(g => g.id_generus == absen.id_generus) || { nama: "ID Terhapus: " + absen.id_generus, kelompok: "Tanpa Kelompok", desa: "Tanpa Desa" };
+            let detail = semuaDataGenerus.find(g => g.id_generus == absen.id_generus) || { 
+                nama: "ID Terhapus: " + absen.id_generus, 
+                kelompok: "Tanpa Kelompok", 
+                desa: "Tanpa Desa",
+                jenis_kelamin: "Laki-laki",
+                status: "Generus",
+                sebagai_apa: ""
+            };
             return {
-                nama: detail.nama, kelompok: detail.kelompok || "Tanpa Kelompok", desa: detail.desa || "Tanpa Desa",
+                id: absen.id_generus,
+                nama: detail.nama, 
+                kelompok: detail.kelompok || "Tanpa Kelompok", 
+                desa: detail.desa || "Tanpa Desa",
+                jk: detail.jenis_kelamin || "Laki-laki",
+                dapukan: detail.status || "Generus",
+                detailDapukan: detail.sebagai_apa ? ` (${detail.sebagai_apa})` : "",
                 waktu: new Date(absen.waktu_absen).toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'}),
                 metode: absen.metode_input
             }
         });
     }
 
+    // ==========================================
+    // SISTEM BARU: HITUNG & URUT DAFTAR NAMA TERPISAH GENDER
+    // ==========================================
     async function tarikDanCetakLaporan(jenis) {
         let namaKegiatan = document.getElementById('kegiatan').value;
         if(!namaKegiatan) return alert("Harap masukkan Nama Agenda yang ingin ditarik rekapannya!");
@@ -460,18 +467,92 @@ async function prosesAbsensi(idGenerus, metode) {
         document.getElementById('cetak-waktu').innerText = "Waktu Tarik Laporan: " + new Date().toLocaleDateString('id-ID', opsiWaktu) + " WIB";
 
         if (jenis === 'semua') {
-            let html = `<table class="print-table"><thead><tr><th style="width:20px;">No</th><th>Nama Lengkap</th><th>Kelompok</th><th>Desa</th><th>Waktu Masuk</th><th>Metode</th></tr></thead><tbody>`;
-            dataMurni.forEach((d, i) => { html += `<tr><td>${i+1}</td><td style="font-weight:600;">${d.nama}</td><td>${d.kelompok}</td><td>${d.desa}</td><td>${d.waktu} WIB</td><td>${d.metode}</td></tr>`; });
-            html += `</tbody></table>`; container.innerHTML = html;
+            // Opsi 1: Cetak Semua (Bentuk Tabel Database Lengkap)
+            let html = `<table class="print-table"><thead><tr><th style="width:20px;">No</th><th>Nama Lengkap</th><th>L/P</th><th>Kelompok</th><th>Desa</th><th>Status</th><th>Waktu</th><th>Metode</th></tr></thead><tbody>`;
+            dataMurni.forEach((d, i) => { 
+                html += `<tr><td>${i+1}</td><td style="font-weight:600;">${d.nama}</td><td>${d.jk == 'Laki-laki' ? 'L' : 'P'}</td><td>${d.kelompok}</td><td>${d.desa}</td><td>${d.dapukan}${d.detailDapukan}</td><td>${d.waktu}</td><td>${d.metode}</td></tr>`; 
+            });
+            html += `</tbody></table>`; 
+            container.innerHTML = html;
         } else {
-            let rekap = {}, kunci = jenis === 'desa' ? 'desa' : 'kelompok';
-            dataMurni.forEach(d => { rekap[d[kunci]] = (rekap[d[kunci]] || 0) + 1; });
-            let html = `<table class="print-table" style="max-width: 400px; margin: 0 auto;"><thead><tr><th style="width:20px;">No</th><th>${jenis === 'desa'?'Nama Wilayah Desa':'Nama Kelompok'}</th><th style="text-align:center; width:100px;">Total Hadir</th></tr></thead><tbody>`;
-            let idx = 1, grandTotal = 0;
-            for (let k in rekap) { html += `<tr><td>${idx++}</td><td style="font-weight:600;">${jenis==='kelompok'?'Kelompok ':''}${k}</td><td style="text-align:center; font-weight:700; color:var(--primary);">${rekap[k]} Orang</td></tr>`; grandTotal += rekap[k]; }
-            html += `<tr style="background-color:#f8fafc; font-weight:700;"><td colspan="2" style="text-align:right;">TOTAL KESELURUHAN JEMAAH:</td><td style="text-align:center; color:#b45309; font-size:16px;">${grandTotal}</td></tr></tbody></table>`;
+            // Opsi 2 & 3: Rekap Kelompok / Desa dengan Pemisahan Gender + Nama Anggota
+            let rekapStruktur = {};
+            let kunciWilayah = jenis === 'desa' ? 'desa' : 'kelompok';
+
+            // Menyusun struktur data berdasarkan Wilayah -> Gender -> List Nama Anggota
+            dataMurni.forEach(d => {
+                let namaWilayah = d[kunciWilayah];
+                if (!rekapStruktur[namaWilayah]) {
+                    rekapStruktur[namaWilayah] = { Laki: [], Perempuan: [] };
+                }
+                if (d.jk === "Perempuan") {
+                    rekapStruktur[namaWilayah].Perempuan.push(d);
+                } else {
+                    rekapStruktur[namaWilayah].Laki.push(d);
+                }
+            });
+
+            let html = "";
+            let grandTotalLaki = 0;
+            let grandTotalPerempuan = 0;
+
+            // Looping membuat box laporan per Kelompok / Desa
+            for (let wilayah in rekapStruktur) {
+                let listL = rekapStruktur[wilayah].Laki;
+                let listP = rekapStruktur[wilayah].Perempuan;
+                grandTotalLaki += listL.length;
+                grandTotalPerempuan += listP.length;
+
+                html += `<div class="print-box-wilayah">`;
+                html += `<h4>📁 ${jenis === 'desa' ? 'DESA' : 'KELOMPOK'} ${wilayah.toUpperCase()} (Total Hadir: ${listL.length + listP.length} Orang)</h4>`;
+                
+                // Urutan Daftar Nama Laki-laki
+                html += `<div class="print-gender-title" style="color:#2563eb;">♂️ Laki-laki (${listL.length} Orang)</div>`;
+                html += `<ol class="print-list-nama">`;
+                if(listL.length === 0) { html += `<li style="list-style:none; color:#94a3b8; font-style:italic;">(Tidak ada)</li>`; }
+                else {
+                    listL.forEach(p => {
+                        html += `<li><strong>${p.nama}</strong> — <span style="font-size:11px; color:#475569;">${p.dapukan}${p.detailDapukan} [${p.waktu}]</span></li>`;
+                    });
+                }
+                html += `</ol>`;
+
+                // Urutan Daftar Nama Perempuan
+                html += `<div class="print-gender-title" style="color:#db2777;">♀️ Perempuan (${listP.length} Orang)</div>`;
+                html += `<ol class="print-list-nama">`;
+                if(listP.length === 0) { html += `<li style="list-style:none; color:#94a3b8; font-style:italic;">(Tidak ada)</li>`; }
+                else {
+                    listP.forEach(p => {
+                        html += `<li><strong>${p.nama}</strong> — <span style="font-size:11px; color:#475569;">${p.dapukan}${p.detailDapukan} [${p.waktu}]</span></li>`;
+                    });
+                }
+                html += `</ol>`;
+                
+                html += `</div>`;
+            }
+
+            // Tambahkan baris kesimpulan / ringkasan Grand Total paling bawah halaman
+            html += `
+                <table class="print-table" style="margin-top:20px; background:#f8fafc;">
+                    <tr style="font-weight:700; font-size:14px;">
+                        <td style="text-align:right;">TOTAL LAKI-LAKI HADIR:</td>
+                        <td style="width:120px; text-align:center; color:#2563eb;">${grandTotalLaki} Orang</td>
+                    </tr>
+                    <tr style="font-weight:700; font-size:14px;">
+                        <td style="text-align:right;">TOTAL PEREMPUAN HADIR:</td>
+                        <td style="width:120px; text-align:center; color:#db2777;">${grandTotalPerempuan} Orang</td>
+                    </tr>
+                    <tr style="font-weight:700; font-size:15px; background:#f1f5f9; border-top:2px solid #94a3b8;">
+                        <td style="text-align:right; text-transform:uppercase;">Grand Total Seluruh Jemaah Hadir:</td>
+                        <td style="text-align:center; color:#b45309;">${grandTotalLaki + grandTotalPerempuan} Jemaah</td>
+                    </tr>
+                </table>
+            `;
+
             container.innerHTML = html;
         }
+        
+        // Membuka jendela print browser bawaan secara otomatis
         window.print();
     }
 
@@ -482,8 +563,10 @@ async function prosesAbsensi(idGenerus, metode) {
         let dataMurni = await dapatkanDataGabungan(namaKegiatan);
         if(dataMurni.length === 0) return alert("Tidak ada data untuk diekspor!");
 
-        let csvContent = "data:text/csv;charset=utf-8,No,Nama Lengkap,Kelompok,Desa,Waktu Absen,Metode\n";
-        dataMurni.forEach((d, i) => { csvContent += `${i+1},"${d.nama}","${d.kelompok}","${d.desa}","${d.waktu}","${d.metode}"\n`; });
+        let csvContent = "data:text/csv;charset=utf-8,No,Nama Lengkap,Jenis Kelamin,Kelompok,Desa,Status,Waktu Absen,Metode\n";
+        dataMurni.forEach((d, i) => { 
+            csvContent += `${i+1},"${d.nama}","${d.jk}","${d.kelompok}","${d.desa}","${d.dapukan}${d.detailDapukan}","${d.waktu}","${d.metode}"\n`; 
+        });
         
         let encodedUri = encodeURI(csvContent);
         let link = document.createElement("a");
