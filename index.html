@@ -94,6 +94,9 @@
         }
         input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(4, 120, 87, 0.15); }
 
+        /* Khusus mengunci kapital secara visual di input kegiatan */
+        #kegiatan { text-transform: uppercase; }
+
         .btn-primary { background: var(--primary); color: #fff; border: none; font-weight: 600; cursor: pointer; margin-top: 8px; box-shadow: 0 4px 12px rgba(4, 120, 87, 0.2); text-align: center; }
         .btn-primary:hover { background: var(--primary-hover); }
 
@@ -190,7 +193,7 @@
     
     <div class="form-group">
         <label for="kegiatan">Nama Agenda Pertemuan</label>
-        <input type="text" id="kegiatan" placeholder="Masukkan nama kegiatan..." oninput="updateJudulCetak()">
+        <input type="text" id="kegiatan" placeholder="Masukkan nama kegiatan..." oninput="this.value = this.value.toUpperCase(); updateJudulCetak();">
     </div>
 
     <div class="section-title">OPSI 1: SCAN BARCODE</div>
@@ -298,7 +301,8 @@
     }
 
     function updateJudulCetak() {
-        let agenda = document.getElementById('kegiatan').value;
+        // Dipastikan teks judul cetak ter-convert ke uppercase juga
+        let agenda = document.getElementById('kegiatan').value.toUpperCase();
         document.getElementById('cetak-judul-kegiatan').innerText = agenda ? `Laporan Presensi: ${agenda}` : "Laporan Presensi Kegiatan";
     }
 
@@ -364,7 +368,7 @@
             
             let dataSama = gabungan.find(absen => 
                 absen.id_generus == idGenerus && 
-                absen.nama_kegiatan.trim().toLowerCase() === namaKegiatan.trim().toLowerCase()
+                absen.nama_kegiatan.trim().toUpperCase() === namaKegiatan.trim().toUpperCase()
             );
             return !!dataSama;
         }
@@ -373,14 +377,15 @@
             .from('absensi_kegiatan')
             .select('id_absensi')
             .eq('id_generus', idGenerus)
-            .eq('nama_kegiatan', namaKegiatan.trim());
+            .eq('nama_kegiatan', namaKegiatan.trim().toUpperCase());
             
         if (error || !data) return false;
         return data.length > 0;
     }
 
     async function prosesAbsensi(idGenerus, metode) {
-        let namaKegiatan = document.getElementById('kegiatan').value;
+        // Dipastikan nama kegiatan yang diambil murni kapital
+        let namaKegiatan = document.getElementById('kegiatan').value.toUpperCase();
         if(!namaKegiatan) {
             bunyikanSuaraGagal();
             alert("Harap isi Nama Agenda terlebih dahulu!");
@@ -446,7 +451,7 @@
     }
 
     async function dapatkanDataGabungan(namaKegiatan) {
-        let { data: logAbsen, error } = await _supabase.from('absensi_kegiatan').select('id_generus, waktu_absen, metode_input').eq('nama_kegiatan', namaKegiatan);
+        let { data: logAbsen, error } = await _supabase.from('absensi_kegiatan').select('id_generus, waktu_absen, metode_input').eq('nama_kegiatan', namaKegiatan.toUpperCase());
         if (error || !logAbsen || logAbsen.length === 0) return [];
         
         return logAbsen.map(absen => {
@@ -470,7 +475,7 @@
     }
 
     async function tarikDanCetakLaporan(jenis) {
-        let namaKegiatan = document.getElementById('kegiatan').value;
+        let namaKegiatan = document.getElementById('kegiatan').value.toUpperCase();
         if(!namaKegiatan) return alert("Harap masukkan Nama Agenda yang ingin ditarik rekapannya!");
         tampilkanToast("🔄 Menarik seluruh data dari Supabase...");
         let dataMurni = await dapatkanDataGabungan(namaKegiatan);
@@ -603,7 +608,7 @@
     }
 
     async function eksporKeExcel() {
-        let namaKegiatan = document.getElementById('kegiatan').value;
+        let namaKegiatan = document.getElementById('kegiatan').value.toUpperCase();
         if(!namaKegiatan) return alert("Harap masukkan Nama Agenda untuk diekspor!");
         tampilkanToast("📊 Membuat file Excel...");
         let dataMurni = await dapatkanDataGabungan(namaKegiatan);
