@@ -301,6 +301,13 @@
         document.getElementById('cetak-judul-kegiatan').innerText = agenda ? `Laporan Presensi: ${agenda}` : "Laporan Presensi Kegiatan";
     }
 
+    function tampilkanToast(pesan) {
+        let box = document.getElementById('toast-box');
+        box.innerText = pesan;
+        box.style.display = 'block';
+        setTimeout(() => { box.style.display = 'none'; }, 3000);
+    }
+
     window.addEventListener('online', () => {
         netIndicator.innerText = "● Online"; netIndicator.className = "net-status online";
         sinkronisasiManual();
@@ -320,37 +327,34 @@
     }
     muatSemuaGenerus();
 
-function cariNamaPintar() {
-    let keyword = searchInput.value.toLowerCase();
-    resultsBox.innerHTML = '';
-    if (keyword.length < 2) { resultsBox.style.display = 'none'; return; }
-    
-    // Memfilter data berdasarkan kolom nama_lengkap dari Supabase
-    let hasilFilter = semuaDataGenerus.filter(g => g.nama_lengkap && g.nama_lengkap.toLowerCase().includes(keyword)).slice(0, 8);
-    
-    if(hasilFilter.length > 0) {
-        resultsBox.style.display = 'block';
-        hasilFilter.forEach(g => {
-            let div = document.createElement('div');
-            div.className = 'search-item';
-            
-            // Menampilkan informasi tambahan (Status & Usia/Dapukan) pada daftar pencarian
-            let infoTambahan = g.status ? ` — [${g.status}${g.usia_dapukan ? ': ' + g.usia_dapukan : ''}]` : '';
-            div.innerText = `${g.nama_lengkap}${infoTambahan} — ${g.kelompok || '-'} [${g.desa || '-'}]`;
-            
-            // PERBAIKAN: Mengubah g.nama menjadi g.nama_lengkap agar nama tidak hilang saat diklik
-            div.onclick = function() {
-                searchInput.value = g.nama_lengkap; 
-                selectedIdInput.value = g.id_generus;
-                resultsBox.style.display = 'none';
-            };
-            resultsBox.appendChild(div);
-        });
-    } else {
-        resultsBox.style.display = 'block';
-        resultsBox.innerHTML = '<div class="search-item" style="color:#ef4444; font-size:13px;">Nama tidak ditemukan</div>';
+    function cariNamaPintar() {
+        let keyword = searchInput.value.toLowerCase();
+        resultsBox.innerHTML = '';
+        if (keyword.length < 2) { resultsBox.style.display = 'none'; return; }
+        
+        let hasilFilter = semuaDataGenerus.filter(g => g.nama_lengkap && g.nama_lengkap.toLowerCase().includes(keyword)).slice(0, 8);
+        
+        if(hasilFilter.length > 0) {
+            resultsBox.style.display = 'block';
+            hasilFilter.forEach(g => {
+                let div = document.createElement('div');
+                div.className = 'search-item';
+                
+                let infoTambahan = g.status ? ` — [${g.status}${g.usia_dapukan ? ': ' + g.usia_dapukan : ''}]` : '';
+                div.innerText = `${g.nama_lengkap}${infoTambahan} — ${g.kelompok || '-'} [${g.desa || '-'}]`;
+                
+                div.onclick = function() {
+                    searchInput.value = g.nama_lengkap; 
+                    selectedIdInput.value = g.id_generus;
+                    resultsBox.style.display = 'none';
+                };
+                resultsBox.appendChild(div);
+            });
+        } else {
+            resultsBox.style.display = 'block';
+            resultsBox.innerHTML = '<div class="search-item" style="color:#ef4444; font-size:13px;">Nama tidak ditemukan</div>';
+        }
     }
-}
     document.addEventListener('click', function(e) { if (e.target !== searchInput) { resultsBox.style.display = 'none'; } });
 
     async function onScanSuccess(decodedText) { 
@@ -395,12 +399,13 @@ function cariNamaPintar() {
             return;
         }
         
-        let profil = semuaDataGenerus.find(g => g.id_generus == idGenerus) || { nama: "ID: " + idGenerus };
+        // PERBAIKAN: profil nama diganti menjadi g.nama_lengkap
+        let profil = semuaDataGenerus.find(g => g.id_generus == idGenerus) || { nama_lengkap: "ID: " + idGenerus };
 
         let sudahAbsen = await cekApakahSudahAbsen(idGenerus, namaKegiatan);
         if (sudahAbsen) {
             bunyikanSuaraGagal(); 
-            tampilkanToast(`⚠️ ${profil.nama} SUDAH MASUK!`);
+            tampilkanToast(`⚠️ ${profil.nama_lengkap} SUDAH MASUK!`);
             if(metode === "Manual") { searchInput.value = ''; selectedIdInput.value = ''; }
             return;
         }
@@ -416,14 +421,14 @@ function cariNamaPintar() {
             let { error } = await _supabase.from('absensi_kegiatan').insert([dataAbsen]);
             if (!error) {
                 bunyikanSuaraSukses(); 
-                tampilkanToast(`✓ Kehadiran ${profil.nama} sukses disimpan!`);
+                tampilkanToast(`✓ Kehadiran ${profil.nama_lengkap} sukses disimpan!`);
                 if(metode === "Manual") { searchInput.value = ''; selectedIdInput.value = ''; }
-            } else { simpanLokal(dataAbsen, profil.nama); }
-        } else { simpanLokal(dataAbsen, profil.nama); }
+            } else { simpanLokal(dataAbsen, profil.nama_lengkap); }
+        } else { simpanLokal(dataAbsen, profil.nama_lengkap); }
     }
 
     function simpanLokal(data, namaOrang) {
-        let antrean = JSON.parse(localStorage.getItem('antrean_absensi')) || [];
+        let antrean = JSON.parse(localStorage.getItem('antrean_absening')) || [];
         antrean.push(data);
         localStorage.setItem('antrean_absensi', JSON.stringify(antrean));
         
@@ -460,14 +465,13 @@ function cariNamaPintar() {
         return logAbsen.map(absen => {
             let detail = semuaDataGenerus.find(g => g.id_generus == absen.id_generus);
             
-            let namaFix = detail ? detail.nama : "ID Terhapus: " + absen.id_generus;
+            // PERBAIKAN DISINI: detail.nama diganti g.nama_lengkap & detail.bidang diganti detail.usia_dapukan
+            let namaFix = detail ? detail.nama_lengkap : "ID Terhapus: " + absen.id_generus;
             let kelompokFix = detail ? (detail.kelompok || "Tanpa Kelompok") : "Tanpa Kelompok";
             let desaFix = detail ? (detail.desa || "Tanpa Desa") : "Tanpa Desa";
             let jkFix = detail ? (detail.jenis_kelamin || "Laki-laki") : "Laki-laki";
-            
-            // Penambahan pemetaan data baru (Status & Detail Bidang/Usia)
             let statusFix = detail ? (detail.status || "-") : "-";
-            let detailStatusFix = detail ? (detail.bidang || "-") : "-";
+            let detailStatusFix = detail ? (detail.usia_dapukan || "-") : "-";
 
             return {
                 id: absen.id_generus,
@@ -495,7 +499,6 @@ function cariNamaPintar() {
         let opsiWaktu = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
         document.getElementById('cetak-waktu').innerText = "Waktu Tarik Laporan: " + new Date().toLocaleDateString('id-ID', opsiWaktu) + " WIB";
 
-        // 1. REKAP SEMUA (Tabel ini telah disesuaikan dengan kolom Status & Usia/Dapukan)
         if (jenis === 'semua') {
             let html = `<table class="print-table">
                             <thead>
@@ -528,8 +531,6 @@ function cariNamaPintar() {
             html += `</tbody></table>`; 
             container.innerHTML = html;
         } 
-        
-        // 2. REKAP DESA
         else if (jenis === 'desa') {
             let rekapDesa = {};
             dataMurni.forEach(d => {
@@ -583,8 +584,6 @@ function cariNamaPintar() {
             html += `</tbody></table>`;
             container.innerHTML = html;
         } 
-        
-        // 3. REKAP KELOMPOK
         else if (jenis === 'kelompok') {
             let rekapKelompok = {};
             dataMurni.forEach(d => {
@@ -651,27 +650,19 @@ function cariNamaPintar() {
         let dataMurni = await dapatkanDataGabungan(namaKegiatan);
         if(dataMurni.length === 0) return alert("Tidak ada data untuk diekspor!");
 
-        // Struktur CSV disesuaikan dengan penambahan kolom Status dan Detailnya
         let csvContent = "data:text/csv;charset=utf-8,No,Nama Lengkap,Jenis Kelamin,Status,Usia atau Dapukan,Kelompok,Desa,Waktu Absen,Metode\n";
         dataMurni.forEach((d, i) => { 
-            csvContent += `${i+1},"${d.name}","${d.jk}","${d.status}","${d.detail_status}","${d.kelompok}","${d.desa}","${d.waktu}","${d.metode}"\n`; 
+            csvContent += `${i+1},"${d.name}","${d.jk}","${d.status}","${d.detail_status}","${d.kelompok}","${d.desa}","${d.waktu}","${d.metode}"\n`;
         });
         
         let encodedUri = encodeURI(csvContent);
         let link = document.createElement("a");
         link.setAttribute("href", encodedUri);
-        link.setAttribute("download", `Rekap_Presensi_${namaKegiatan.replace(/\s+/g, '_')}.csv`);
+        link.setAttribute("download", `REKAP_PRESENSI_${namaKegiatan.replace(/\s+/g, '_')}.csv`);
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        tampilkanToast("✓ File Excel berhasil diunduh!");
     }
-
-    function tampilkanToast(pesan) {
-        let toast = document.getElementById('toast-box'); toast.style.display = "block"; toast.innerText = pesan;
-        setTimeout(() => toast.style.display = "none", 3000);
-    }
-    if ('serviceWorker' in navigator) { navigator.serviceWorker.register('service-worker.js'); }
 </script>
 </body>
 </html>
