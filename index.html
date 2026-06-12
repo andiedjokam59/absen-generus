@@ -94,7 +94,6 @@
         }
         input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(4, 120, 87, 0.15); }
 
-        /* Khusus mengunci kapital secara visual di input kegiatan */
         #kegiatan { text-transform: uppercase; }
 
         .btn-primary { background: var(--primary); color: #fff; border: none; font-weight: 600; cursor: pointer; margin-top: 8px; box-shadow: 0 4px 12px rgba(4, 120, 87, 0.2); text-align: center; }
@@ -102,7 +101,6 @@
 
         .section-title { font-size: 12px; font-weight: 700; color: var(--text-muted); text-align: center; margin: 24px 0 12px 0; letter-spacing: 0.8px; text-transform: uppercase; }
         
-        /* Area Scanner & Custom Tombol Scan Internal */
         #reader { width: 100%; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: none !important; background: var(--bg-card); }
         #reader button {
             background-color: var(--primary) !important;
@@ -159,15 +157,13 @@
             box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3);
         }
         
-        /* Area Cetak Laporan */
         #print-area { display: none; width: 100%; margin-top: 30px; }
         .print-box-wilayah { margin-bottom: 25px; page-break-inside: avoid; }
         .print-box-wilayah h4 { margin: 0 0 8px 0; font-size: 14px; color: #0f172a; text-transform: uppercase; border-bottom: 2px solid #0f172a; padding-bottom: 4px; }
         
-        .print-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; font-size: 12px; }
+        .print-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; font-size: 11px; }
         .print-table th, .print-table td { border: 1px solid #94a3b8; padding: 6px 8px; text-align: left; }
         .print-table th { background: #f1f5f9; color: #0f172a; font-weight: 600; }
-        .print-table td.empty-row { text-align: center; color: #94a3b8; font-style: italic; background: #fafafa; }
 
         @media print {
             body { background: #fff!important; color: #000!important; display: block; padding: 0; margin: 0; }
@@ -301,7 +297,6 @@
     }
 
     function updateJudulCetak() {
-        // Dipastikan teks judul cetak ter-convert ke uppercase juga
         let agenda = document.getElementById('kegiatan').value.toUpperCase();
         document.getElementById('cetak-judul-kegiatan').innerText = agenda ? `Laporan Presensi: ${agenda}` : "Laporan Presensi Kegiatan";
     }
@@ -335,7 +330,9 @@
             hasilFilter.forEach(g => {
                 let div = document.createElement('div');
                 div.className = 'search-item';
-                div.innerText = `${g.nama} — ${g.kelompok || '-'} [${g.desa || '-'}]`;
+                // Menampilkan info tambahan Status & Detail pada live search input
+                let infoTambahan = g.status ? ` — [${g.status}${g.bidang ? ': ' + g.bidang : ''}]` : '';
+                div.innerText = `${g.nama}${infoTambahan} — ${g.kelompok || '-'} [${g.desa || '-'}]`;
                 div.onclick = function() {
                     searchInput.value = g.nama; selectedIdInput.value = g.id_generus;
                     resultsBox.style.display = 'none';
@@ -384,7 +381,6 @@
     }
 
     async function prosesAbsensi(idGenerus, metode) {
-        // Dipastikan nama kegiatan yang diambil murni kapital
         let namaKegiatan = document.getElementById('kegiatan').value.toUpperCase();
         if(!namaKegiatan) {
             bunyikanSuaraGagal();
@@ -397,7 +393,7 @@
         let sudahAbsen = await cekApakahSudahAbsen(idGenerus, namaKegiatan);
         if (sudahAbsen) {
             bunyikanSuaraGagal(); 
-            tampilkanToast(`⚠️ ${profil.nama} SUDAH MASUK! (Ditolak agar tidak dobel)`);
+            tampilkanToast(`⚠️ ${profil.nama} SUDAH MASUK!`);
             if(metode === "Manual") { searchInput.value = ''; selectedIdInput.value = ''; }
             return;
         }
@@ -429,7 +425,7 @@
         localStorage.setItem('riwayat_sukses_lokal', JSON.stringify(riwayatLokal));
 
         bunyikanSuaraSukses(); 
-        tampilkanToast(`💾 Tersimpan lokal: ${namaOrang} (Akan sinkron otomatis)`);
+        tampilkanToast(`💾 Tersimpan lokal: ${namaOrang}`);
         if(data.metode_input === "Manual") { searchInput.value = ''; selectedIdInput.value = ''; }
     }
 
@@ -461,6 +457,10 @@
             let kelompokFix = detail ? (detail.kelompok || "Tanpa Kelompok") : "Tanpa Kelompok";
             let desaFix = detail ? (detail.desa || "Tanpa Desa") : "Tanpa Desa";
             let jkFix = detail ? (detail.jenis_kelamin || "Laki-laki") : "Laki-laki";
+            
+            // Penambahan pemetaan data baru (Status & Detail Bidang/Usia)
+            let statusFix = detail ? (detail.status || "-") : "-";
+            let detailStatusFix = detail ? (detail.bidang || "-") : "-";
 
             return {
                 id: absen.id_generus,
@@ -468,6 +468,8 @@
                 kelompok: kelompokFix, 
                 desa: desaFix,
                 jk: jkFix,
+                status: statusFix,
+                detail_status: detailStatusFix,
                 waktu: new Date(absen.waktu_absen).toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'}).replace('.', ':'),
                 metode: absen.metode_input
             }
@@ -486,11 +488,35 @@
         let opsiWaktu = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
         document.getElementById('cetak-waktu').innerText = "Waktu Tarik Laporan: " + new Date().toLocaleDateString('id-ID', opsiWaktu) + " WIB";
 
-        // 1. REKAP SEMUA
+        // 1. REKAP SEMUA (Tabel ini telah disesuaikan dengan kolom Status & Usia/Dapukan)
         if (jenis === 'semua') {
-            let html = `<table class="print-table"><thead><tr><th style="width:35px;">No</th><th>Nama Lengkap</th><th style="width:50px;">L/P</th><th>Kelompok</th><th>Desa</th><th style="width:70px;">Waktu</th><th>Metode</th></tr></thead><tbody>`;
+            let html = `<table class="print-table">
+                            <thead>
+                                <tr>
+                                    <th style="width:30px;">No</th>
+                                    <th>Nama Lengkap</th>
+                                    <th style="width:35px;">L/P</th>
+                                    <th>Status</th>
+                                    <th>Usia / Dapukan</th>
+                                    <th>Kelompok</th>
+                                    <th>Desa</th>
+                                    <th style="width:50px;">Waktu</th>
+                                    <th style="width:55px;">Metode</th>
+                                </tr>
+                            </thead>
+                            <tbody>`;
             dataMurni.forEach((d, i) => { 
-                html += `<tr><td>${i+1}</td><td style="font-weight:600;">${d.name}</td><td>${d.jk == 'Laki-laki' ? 'L' : 'P'}</td><td>${d.kelompok}</td><td>${d.desa}</td><td>${d.waktu}</td><td>${d.metode}</td></tr>`; 
+                html += `<tr>
+                            <td>${i+1}</td>
+                            <td style="font-weight:600;">${d.name}</td>
+                            <td>${d.jk == 'Laki-laki' ? 'L' : 'P'}</td>
+                            <td>${d.status}</td>
+                            <td>${d.detail_status}</td>
+                            <td>${d.kelompok}</td>
+                            <td>${d.desa}</td>
+                            <td>${d.waktu}</td>
+                            <td>${d.metode}</td>
+                         </tr>`; 
             });
             html += `</tbody></table>`; 
             container.innerHTML = html;
@@ -574,7 +600,9 @@
                                 <tr>
                                     <th style="width:40px; text-align:center;">No</th>
                                     <th>Nama Lengkap</th>
-                                    <th style="width:110px;">Jenis Kelamin</th>
+                                    <th style="width:60px;">Status</th>
+                                    <th>Usia / Dapukan</th>
+                                    <th style="width:90px;">Jenis Kelamin</th>
                                 </tr>
                             </thead>
                             <tbody>`;
@@ -583,12 +611,14 @@
                     html += `<tr>
                                 <td style="text-align:center;">${idx+1}</td>
                                 <td style="font-weight:600;">${a.name}</td>
+                                <td>${a.status}</td>
+                                <td>${a.detail_status}</td>
                                 <td>${a.jk}</td>
                              </tr>`;
                 });
 
                 html += `<tr style="font-weight:700; background:#f8fafc;">
-                            <td colspan="2" style="text-align:right;">Jumlah Total Kelompok ${klp}:</td>
+                            <td colspan="4" style="text-align:right;">Jumlah Total Kelompok ${klp}:</td>
                             <td style="color:#b45309;">${anggota.length} Orang</td>
                          </tr>`;
                 html += `</tbody></table></div>`;
@@ -614,9 +644,10 @@
         let dataMurni = await dapatkanDataGabungan(namaKegiatan);
         if(dataMurni.length === 0) return alert("Tidak ada data untuk diekspor!");
 
-        let csvContent = "data:text/csv;charset=utf-8,No,Nama Lengkap,Jenis Kelamin,Kelompok,Desa,Waktu Absen,Metode\n";
+        // Struktur CSV disesuaikan dengan penambahan kolom Status dan Detailnya
+        let csvContent = "data:text/csv;charset=utf-8,No,Nama Lengkap,Jenis Kelamin,Status,Usia atau Dapukan,Kelompok,Desa,Waktu Absen,Metode\n";
         dataMurni.forEach((d, i) => { 
-            csvContent += `${i+1},"${d.name}","${d.jk}","${d.kelompok}","${d.desa}","${d.waktu}","${d.metode}"\n`; 
+            csvContent += `${i+1},"${d.name}","${d.jk}","${d.status}","${d.detail_status}","${d.kelompok}","${d.desa}","${d.waktu}","${d.metode}"\n`; 
         });
         
         let encodedUri = encodeURI(csvContent);
