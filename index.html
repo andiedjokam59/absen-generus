@@ -320,30 +320,37 @@
     }
     muatSemuaGenerus();
 
-    function cariNamaPintar() {
-        let keyword = searchInput.value.toLowerCase();
-        resultsBox.innerHTML = '';
-        if (keyword.length < 2) { resultsBox.style.display = 'none'; return; }
-        let hasilFilter = semuaDataGenerus.filter(g => g.nama && g.nama.toLowerCase().includes(keyword)).slice(0, 8);
-        if(hasilFilter.length > 0) {
-            resultsBox.style.display = 'block';
-            hasilFilter.forEach(g => {
-                let div = document.createElement('div');
-                div.className = 'search-item';
-                // Menampilkan info tambahan Status & Detail pada live search input
-                let infoTambahan = g.status ? ` — [${g.status}${g.bidang ? ': ' + g.bidang : ''}]` : '';
-                div.innerText = `${g.nama}${infoTambahan} — ${g.kelompok || '-'} [${g.desa || '-'}]`;
-                div.onclick = function() {
-                    searchInput.value = g.nama; selectedIdInput.value = g.id_generus;
-                    resultsBox.style.display = 'none';
-                };
-                resultsBox.appendChild(div);
-            });
-        } else {
-            resultsBox.style.display = 'block';
-            resultsBox.innerHTML = '<div class="search-item" style="color:#ef4444; font-size:13px;">Nama tidak ditemukan</div>';
-        }
+function cariNamaPintar() {
+    let keyword = searchInput.value.toLowerCase();
+    resultsBox.innerHTML = '';
+    if (keyword.length < 2) { resultsBox.style.display = 'none'; return; }
+    
+    // Memfilter data berdasarkan kolom nama_lengkap dari Supabase
+    let hasilFilter = semuaDataGenerus.filter(g => g.nama_lengkap && g.nama_lengkap.toLowerCase().includes(keyword)).slice(0, 8);
+    
+    if(hasilFilter.length > 0) {
+        resultsBox.style.display = 'block';
+        hasilFilter.forEach(g => {
+            let div = document.createElement('div');
+            div.className = 'search-item';
+            
+            // Menampilkan informasi tambahan (Status & Usia/Dapukan) pada daftar pencarian
+            let infoTambahan = g.status ? ` — [${g.status}${g.usia_dapukan ? ': ' + g.usia_dapukan : ''}]` : '';
+            div.innerText = `${g.nama_lengkap}${infoTambahan} — ${g.kelompok || '-'} [${g.desa || '-'}]`;
+            
+            // PERBAIKAN: Mengubah g.nama menjadi g.nama_lengkap agar nama tidak hilang saat diklik
+            div.onclick = function() {
+                searchInput.value = g.nama_lengkap; 
+                selectedIdInput.value = g.id_generus;
+                resultsBox.style.display = 'none';
+            };
+            resultsBox.appendChild(div);
+        });
+    } else {
+        resultsBox.style.display = 'block';
+        resultsBox.innerHTML = '<div class="search-item" style="color:#ef4444; font-size:13px;">Nama tidak ditemukan</div>';
     }
+}
     document.addEventListener('click', function(e) { if (e.target !== searchInput) { resultsBox.style.display = 'none'; } });
 
     async function onScanSuccess(decodedText) { 
