@@ -254,9 +254,10 @@
     let pengunciScanAktif = false; 
     let globalAudioCtx = null;
 
-    // SEKARANG MENGGUNAKAN MAP: Menyimpan ID sekaligus Waktu ISO Terakhir agar bisa dihitung selisihnya
-    let cachePresensiMenitIni = new Map();
+    // CACHE RAM INSTAN: Menangkap double-scan cepat secara real-time
+    let cachePresensiMenitIni = new Set();
 
+    // Menembus Autoplay Policy Browser
     function bukaKunciAudioKonstruktor() {
         if (!globalAudioCtx) {
             globalAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -284,6 +285,7 @@
             bukaKunciAudioKonstruktor();
             let ctx = globalAudioCtx || new (window.AudioContext || window.webkitAudioContext)();
             
+            // Suara "TE"
             let osc1 = ctx.createOscillator(); 
             let gain1 = ctx.createGain();
             osc1.connect(gain1); gain1.connect(ctx.destination);
@@ -293,6 +295,7 @@
             osc1.start(ctx.currentTime); 
             osc1.stop(ctx.currentTime + 0.18);
 
+            // Suara "TOT"
             let osc2 = ctx.createOscillator(); 
             let gain2 = ctx.createGain();
             osc2.connect(gain2); gain2.connect(ctx.destination);
@@ -394,14 +397,11 @@
 
     async function cekApakahSudahAbsen(idGenerus, namaKegiatan) {
         let sekarang = new Date();
-        let batasWaktuMiliDetik = 3 * 60 * 60 * 1000; // Jeda Mutlak 3 Jam
+        let batasWaktuMiliDetik = 3 * 60 * 60 * 1000; // Pembatasan Interval 3 Jam
 
-        // 1. Validasi Super Cepat Berbasis Waktu via RAM Cache
+        // 1. Validasi super cepat via RAM cache lokal
         if (cachePresensiMenitIni.has(String(idGenerus))) {
-            let waktuTerakhirCache = new Date(cachePresensiMenitIni.get(String(idGenerus)));
-            if ((sekarang - waktuTerakhirCache) < batasWaktuMiliDetik) {
-                return true; // Blokir jika di bawah 3 jam
-            }
+            return true;
         }
 
         // 2. Validasi via Penyimpanan Browser Terbuka (Offline Storage)
@@ -451,7 +451,7 @@
         
         let profil = semuaDataGenerus.find(g => g.id_generus == idGenerus) || { nama_lengkap: "ID: " + idGenerus };
 
-        // VALIDASI DOUBLE SCAN
+        // VALIDASI TOTAL DOUBLE SCAN
         let sudahAbsen = await cekApakahSudahAbsen(idGenerus, namaKegiatan);
         if (sudahAbsen) {
             bunyikanSuaraGagal(); 
@@ -460,15 +460,14 @@
             return; 
         }
 
-        // Simpan ID & waktu absen terbaru saat ini ke dalam RAM Cache
-        let waktuSkrgISO = new Date().toISOString();
-        cachePresensiMenitIni.set(String(idGenerus), waktuSkrgISO);
+        // Simpan langsung di memori jangka pendek agar scan kedua langsung tertolak seketika
+        cachePresensiMenitIni.add(String(idGenerus));
 
         const dataAbsen = {
             nama_kegiatan: namaKegiatan.trim(),
             id_generus: idGenerus,
             metode_input: metode,
-            waktu_absen: waktuSkrgISO
+            waktu_absen: new Date().toISOString()
         };
 
         if (navigator.onLine) {
@@ -502,8 +501,7 @@
         for (let i = 0; i < antrean.length; i++) { await _supabase.from('absensi_kegiatan').insert([antrean[i]]); }
         localStorage.removeItem('antrean_absensi');
         localStorage.removeItem('riwayat_sukses_lokal');
-        
-        // RAM Cache tidak dihapus total, melainkan difilter ulang berdasarkan waktu saat sinkronisasi
+        cachePresensiMenitIni.clear(); 
         netIndicator.innerText = "● Online"; netIndicator.className = "net-status online";
         tampilkanToast("✓ Semua data offline berhasil digabungkan ke Supabase");
     }
@@ -699,16 +697,20 @@
         let dataMurni = await dapatkanDataGabungan(namaKegiatan);
         if(dataMurni.length === 0) return alert("Tidak ada data untuk diekspor!");
 
+        // 1. Definisikan header kolom CSV
         let csvContent = "No,Nama Lengkap,Jenis Kelamin,Status,Usia atau Dapukan,Kelompok,Desa,Waktu Absen,Metode\n";
         
+        // 2. Masukkan data murni ke dalam baris-baris CSV
         dataMurni.forEach((d, i) => { 
             let jenisKelamin = d.jk.includes('Perempuan') || d.jk === 'P' ? 'P' : 'L';
             csvContent += `${i+1},"${d.name}","${jenisKelamin}","${d.status}","${d.detail_status}","${d.kelompok}","${d.desa}","${d.waktu}","${d.metode}"\n`;
         });
         
+        // 3. Tambahkan BOM (\uFEFF) agar Microsoft Excel membaca format UTF-8 dengan benar
         let blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
         let url = URL.createObjectURL(blob);
         
+        // 4. Proses unduh otomatis
         let link = document.createElement("a");
         link.setAttribute("href", url);
         link.setAttribute("download", `REKAP_PRESENSI_${namaKegiatan.replace(/\s+/g, '_')}.csv`);
@@ -716,6 +718,7 @@
         
         link.click();
         
+        // 5. Bersihkan sisa elemen
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
         tampilkanToast("✓ File CSV berhasil diunduh!");
