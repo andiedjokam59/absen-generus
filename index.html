@@ -173,7 +173,7 @@
         }
     </style>
 </head>
-<body>
+<body onclick="bukaKunciAudioKonstruktor()">
 
 <div class="app-container">
     <div class="top-bar">
@@ -252,31 +252,55 @@
     
     let semuaDataGenerus = [];
     let pengunciScanAktif = false; 
+    let globalAudioCtx = null;
+
+    // Menembus Autoplay Policy Browser
+    function bukaKunciAudioKonstruktor() {
+        if (!globalAudioCtx) {
+            globalAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (globalAudioCtx.state === 'suspended') {
+            globalAudioCtx.resume();
+        }
+    }
 
     function bunyikanSuaraSukses() {
         try {
-            let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            let oscillator = audioCtx.createOscillator();
-            let gainNode = audioCtx.createGain();
-            oscillator.connect(gainNode); gainNode.connect(audioCtx.destination);
+            bukaKunciAudioKonstruktor();
+            let ctx = globalAudioCtx || new (window.AudioContext || window.webkitAudioContext)();
+            let oscillator = ctx.createOscillator();
+            let gainNode = ctx.createGain();
+            oscillator.connect(gainNode); gainNode.connect(ctx.destination);
             oscillator.type = 'sine'; oscillator.frequency.value = 880; 
-            gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime); 
-            oscillator.start(); oscillator.stop(audioCtx.currentTime + 0.12); 
+            gainNode.gain.setValueAtTime(0.15, ctx.currentTime); 
+            oscillator.start(); oscillator.stop(ctx.currentTime + 0.12); 
         } catch (e) {}
     }
 
     function bunyikanSuaraGagal() {
         try {
-            let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            function mainkanNadaRendah(waktuMulai) {
-                let osc = audioCtx.createOscillator(); let gain = audioCtx.createGain();
-                osc.connect(gain); gain.connect(audioCtx.destination);
-                osc.type = 'sawtooth'; osc.frequency.value = 180; 
-                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-                osc.start(waktuMulai); osc.stop(waktuMulai + 0.15);
-            }
-            mainkanNadaRendah(audioCtx.currentTime);
-            mainkanNadaRendah(audioCtx.currentTime + 0.2); 
+            bukaKunciAudioKonstruktor();
+            let ctx = globalAudioCtx || new (window.AudioContext || window.webkitAudioContext)();
+            
+            // Suara "TE"
+            let osc1 = ctx.createOscillator(); 
+            let gain1 = ctx.createGain();
+            osc1.connect(gain1); gain1.connect(ctx.destination);
+            osc1.type = 'sawtooth'; 
+            osc1.frequency.value = 140; 
+            gain1.gain.setValueAtTime(0.2, ctx.currentTime);
+            osc1.start(ctx.currentTime); 
+            osc1.stop(ctx.currentTime + 0.18);
+
+            // Suara "TOT"
+            let osc2 = ctx.createOscillator(); 
+            let gain2 = ctx.createGain();
+            osc2.connect(gain2); gain2.connect(ctx.destination);
+            osc2.type = 'sawtooth'; 
+            osc2.frequency.value = 100; 
+            gain2.gain.setValueAtTime(0.2, ctx.currentTime + 0.2);
+            osc2.start(ctx.currentTime + 0.2); 
+            osc2.stop(ctx.currentTime + 0.5);
         } catch (e) {}
     }
 
@@ -369,26 +393,31 @@
     html5QrcodeScanner.render(onScanSuccess);
 
     async function cekApakahSudahAbsen(idGenerus, namaKegiatan) {
-        if (!navigator.onLine) {
-            let antrean = JSON.parse(localStorage.getItem('antrean_absensi')) || [];
-            let riwayatLokal = JSON.parse(localStorage.getItem('riwayat_sukses_lokal')) || [];
-            let gabungan = [...antrean, ...riwayatLokal];
-            
-            let dataSama = gabungan.find(absen => 
-                absen.id_generus == idGenerus && 
-                absen.nama_kegiatan.trim().toUpperCase() === namaKegiatan.trim().toUpperCase()
-            );
-            return !!dataSama;
-        }
+        // 1. Cek dari Storage Lokal Terlebih Dahulu
+        let antrean = JSON.parse(localStorage.getItem('antrean_absensi')) || [];
+        let riwayatLokal = JSON.parse(localStorage.getItem('riwayat_sukses_lokal')) || [];
+        let gabunganLokal = [...antrean, ...riwayatLokal];
+        
+        let dataSamaLokal = gabunganLokal.find(absen => 
+            String(absen.id_generus) === String(idGenerus) && 
+            String(absen.nama_kegiatan).trim().toUpperCase() === String(namaKegiatan).trim().toUpperCase()
+        );
+        
+        if (dataSamaLokal) return true;
 
-        let { data, error } = await _supabase
-            .from('absensi_kegiatan')
-            .select('id_absensi')
-            .eq('id_generus', idGenerus)
-            .eq('nama_kegiatan', namaKegiatan.trim().toUpperCase());
-            
-        if (error || !data) return false;
-        return data.length > 0;
+        // 2. Jika Device Online, Cek ke Cloud Database
+        if (navigator.onLine) {
+            try {
+                let { data, error } = await _supabase
+                    .from('absensi_kegiatan')
+                    .select('id_absensi')
+                    .eq('id_generus', idGenerus)
+                    .eq('nama_kegiatan', namaKegiatan.trim().toUpperCase());
+                    
+                if (!error && data && data.length > 0) return true;
+            } catch (e) {}
+        }
+        return false;
     }
 
     async function prosesAbsensi(idGenerus, metode) {
@@ -399,15 +428,15 @@
             return;
         }
         
-        // PERBAIKAN: profil nama diganti menjadi g.nama_lengkap
         let profil = semuaDataGenerus.find(g => g.id_generus == idGenerus) || { nama_lengkap: "ID: " + idGenerus };
 
+        // VALIDASI DOUBLE SCAN MUTLAK
         let sudahAbsen = await cekApakahSudahAbsen(idGenerus, namaKegiatan);
         if (sudahAbsen) {
             bunyikanSuaraGagal(); 
-            tampilkanToast(`⚠️ ${profil.nama_lengkap} SUDAH MASUK!`);
+            tampilkanToast(`❌ BARCODE DOUBLE: ${profil.nama_lengkap} SUDAH ABSEN!`);
             if(metode === "Manual") { searchInput.value = ''; selectedIdInput.value = ''; }
-            return;
+            return; 
         }
 
         const dataAbsen = {
@@ -428,7 +457,7 @@
     }
 
     function simpanLokal(data, namaOrang) {
-        let antrean = JSON.parse(localStorage.getItem('antrean_absening')) || [];
+        let antrean = JSON.parse(localStorage.getItem('antrean_absensi')) || [];
         antrean.push(data);
         localStorage.setItem('antrean_absensi', JSON.stringify(antrean));
         
@@ -463,24 +492,16 @@
         if (error || !logAbsen || logAbsen.length === 0) return [];
         
         return logAbsen.map(absen => {
-            let detail = semuaDataGenerus.find(g => g.id_generus == absen.id_generus);
+            let detail = semuaDataGenerus.find(g => String(g.id_generus) === String(absen.id_generus));
             
-            // PERBAIKAN DISINI: detail.nama diganti g.nama_lengkap & detail.bidang diganti detail.usia_dapukan
-            let namaFix = detail ? detail.nama_lengkap : "ID Terhapus: " + absen.id_generus;
-            let kelompokFix = detail ? (detail.kelompok || "Tanpa Kelompok") : "Tanpa Kelompok";
-            let desaFix = detail ? (detail.desa || "Tanpa Desa") : "Tanpa Desa";
-            let jkFix = detail ? (detail.jenis_kelamin || "Laki-laki") : "Laki-laki";
-            let statusFix = detail ? (detail.status || "-") : "-";
-            let detailStatusFix = detail ? (detail.usia_dapukan || "-") : "-";
-
             return {
                 id: absen.id_generus,
-                name: namaFix, 
-                kelompok: kelompokFix, 
-                desa: desaFix,
-                jk: jkFix,
-                status: statusFix,
-                detail_status: detailStatusFix,
+                name: detail ? detail.nama_lengkap : "ID Terhapus: " + absen.id_generus, 
+                kelompok: detail ? (detail.kelompok || "-") : "-", 
+                desa: detail ? (detail.desa || "-") : "-",
+                jk: detail ? (detail.jenis_kelamin || "-") : "-",
+                status: detail ? (detail.status || "-") : "-",
+                detail_status: detail ? (detail.usia_dapukan || "-") : "-",
                 waktu: new Date(absen.waktu_absen).toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'}).replace('.', ':'),
                 metode: absen.metode_input
             }
@@ -519,7 +540,7 @@
                 html += `<tr>
                             <td>${i+1}</td>
                             <td style="font-weight:600;">${d.name}</td>
-                            <td>${d.jk == 'Laki-laki' ? 'L' : 'P'}</td>
+                            <td>${d.jk.includes('Perempuan') || d.jk === 'P' ? 'P' : 'L'}</td>
                             <td>${d.status}</td>
                             <td>${d.detail_status}</td>
                             <td>${d.kelompok}</td>
@@ -538,7 +559,7 @@
                 if (!rekapDesa[desa]) {
                     rekapDesa[desa] = { laki: 0, perempuan: 0 };
                 }
-                if (d.jk === "Perempuan") {
+                if (d.jk.includes("Perempuan") || d.jk === 'P') {
                     rekapDesa[desa].perempuan++;
                 } else {
                     rekapDesa[desa].laki++;
@@ -606,7 +627,7 @@
                                 <tr>
                                     <th style="width:40px; text-align:center;">No</th>
                                     <th>Nama Lengkap</th>
-                                    <th style="width:60px;">Status</th>
+                                    <th style="width:80px;">Status</th>
                                     <th>Usia / Dapukan</th>
                                     <th style="width:90px;">Jenis Kelamin</th>
                                 </tr>
@@ -646,22 +667,36 @@
     async function eksporKeExcel() {
         let namaKegiatan = document.getElementById('kegiatan').value.toUpperCase();
         if(!namaKegiatan) return alert("Harap masukkan Nama Agenda untuk diekspor!");
-        tampilkanToast("📊 Membuat file Excel...");
+        
+        tampilkanToast("📊 Membuat file Excel/CSV...");
         let dataMurni = await dapatkanDataGabungan(namaKegiatan);
         if(dataMurni.length === 0) return alert("Tidak ada data untuk diekspor!");
 
-        let csvContent = "data:text/csv;charset=utf-8,No,Nama Lengkap,Jenis Kelamin,Status,Usia atau Dapukan,Kelompok,Desa,Waktu Absen,Metode\n";
+        // 1. Definisikan header kolom CSV
+        let csvContent = "No,Nama Lengkap,Jenis Kelamin,Status,Usia atau Dapukan,Kelompok,Desa,Waktu Absen,Metode\n";
+        
+        // 2. Masukkan data murni ke dalam baris-baris CSV
         dataMurni.forEach((d, i) => { 
-            csvContent += `${i+1},"${d.name}","${d.jk}","${d.status}","${d.detail_status}","${d.kelompok}","${d.desa}","${d.waktu}","${d.metode}"\n`;
+            let jenisKelamin = d.jk.includes('Perempuan') || d.jk === 'P' ? 'P' : 'L';
+            csvContent += `${i+1},"${d.name}","${jenisKelamin}","${d.status}","${d.detail_status}","${d.kelompok}","${d.desa}","${d.waktu}","${d.metode}"\n`;
         });
         
-        let encodedUri = encodeURI(csvContent);
+        // 3. Tambahkan BOM (\uFEFF) agar Microsoft Excel membaca format UTF-8 dengan benar
+        let blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+        let url = URL.createObjectURL(blob);
+        
+        // 4. Proses unduh otomatis
         let link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
+        link.setAttribute("href", url);
         link.setAttribute("download", `REKAP_PRESENSI_${namaKegiatan.replace(/\s+/g, '_')}.csv`);
         document.body.appendChild(link);
+        
         link.click();
+        
+        // 5. Bersihkan sisa elemen
         document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        tampilkanToast("✓ File CSV berhasil diunduh!");
     }
 </script>
 </body>
