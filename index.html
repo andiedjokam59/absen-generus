@@ -268,26 +268,15 @@
     function bunyikanSuaraGagal() {
         try {
             let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            
-            // Nada pertama suara tetot (Rendah dan Kasar)
-            let osc1 = audioCtx.createOscillator(); 
-            let gain1 = audioCtx.createGain();
-            osc1.connect(gain1); gain1.connect(audioCtx.destination);
-            osc1.type = 'sawtooth'; 
-            osc1.frequency.value = 150; 
-            gain1.gain.setValueAtTime(0.15, audioCtx.currentTime);
-            osc1.start(audioCtx.currentTime); 
-            osc1.stop(audioCtx.currentTime + 0.18);
-
-            // Nada kedua suara tetot (Sedikit jeda, frekuensi diturunkan agar efek "tetot" terasa)
-            let osc2 = audioCtx.createOscillator(); 
-            let gain2 = audioCtx.createGain();
-            osc2.connect(gain2); gain2.connect(audioCtx.destination);
-            osc2.type = 'sawtooth'; 
-            osc2.frequency.value = 110; 
-            gain2.gain.setValueAtTime(0.15, audioCtx.currentTime + 0.2);
-            osc2.start(audioCtx.currentTime + 0.2); 
-            osc2.stop(audioCtx.currentTime + 0.45);
+            function mainkanNadaRendah(waktuMulai) {
+                let osc = audioCtx.createOscillator(); let gain = audioCtx.createGain();
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.type = 'sawtooth'; osc.frequency.value = 180; 
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                osc.start(waktuMulai); osc.stop(waktuMulai + 0.15);
+            }
+            mainkanNadaRendah(audioCtx.currentTime);
+            mainkanNadaRendah(audioCtx.currentTime + 0.2); 
         } catch (e) {}
     }
 
@@ -331,7 +320,7 @@
         try {
             let { data: generus, error } = await _supabase.from('data_generus').select('*');
             if (!error) { 
-                semuDataGenerus = generus; 
+                semuaDataGenerus = generus; 
                 searchInput.placeholder = `Cari di antara ${generus.length} data...`; 
             }
         } catch (e) { searchInput.placeholder = "Gagal memuat data (Mode Offline)"; }
@@ -410,15 +399,15 @@
             return;
         }
         
+        // PERBAIKAN: profil nama diganti menjadi g.nama_lengkap
         let profil = semuaDataGenerus.find(g => g.id_generus == idGenerus) || { nama_lengkap: "ID: " + idGenerus };
 
-        // DETEKSI UTAMA: Jika scan ganda terdeteksi, langsung ditolak & bunyi tetot
         let sudahAbsen = await cekApakahSudahAbsen(idGenerus, namaKegiatan);
         if (sudahAbsen) {
-            bunyikanSuaraGagal(); // Bunyi TETOT 
-            tampilkanToast(`❌ TOLAK: ${profil.nama_lengkap} SUDAH ABSEN!`);
+            bunyikanSuaraGagal(); 
+            tampilkanToast(`⚠️ ${profil.nama_lengkap} SUDAH MASUK!`);
             if(metode === "Manual") { searchInput.value = ''; selectedIdInput.value = ''; }
-            return; // DIHENTIKAN langsung di sini tanpa panggil simpanLokal()
+            return;
         }
 
         const dataAbsen = {
@@ -439,7 +428,7 @@
     }
 
     function simpanLokal(data, namaOrang) {
-        let antrean = JSON.parse(localStorage.getItem('antrean_absensi')) || [];
+        let antrean = JSON.parse(localStorage.getItem('antrean_absening')) || [];
         antrean.push(data);
         localStorage.setItem('antrean_absensi', JSON.stringify(antrean));
         
@@ -476,6 +465,7 @@
         return logAbsen.map(absen => {
             let detail = semuaDataGenerus.find(g => g.id_generus == absen.id_generus);
             
+            // PERBAIKAN DISINI: detail.nama diganti g.nama_lengkap & detail.bidang diganti detail.usia_dapukan
             let namaFix = detail ? detail.nama_lengkap : "ID Terhapus: " + absen.id_generus;
             let kelompokFix = detail ? (detail.kelompok || "Tanpa Kelompok") : "Tanpa Kelompok";
             let desaFix = detail ? (detail.desa || "Tanpa Desa") : "Tanpa Desa";
