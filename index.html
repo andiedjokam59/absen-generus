@@ -254,6 +254,9 @@
     let pengunciScanAktif = false; 
     let globalAudioCtx = null;
 
+    // CACHE RAM INSTAN: Menangkap double-scan cepat secara real-time
+    let cachePresensiMenitIni = new Set();
+
     // Menembus Autoplay Policy Browser
     function bukaKunciAudioKonstruktor() {
         if (!globalAudioCtx) {
@@ -386,35 +389,53 @@
         pengunciScanAktif = true; 
         
         await prosesAbsensi(decodedText, "Scan Barcode");
-        setTimeout(() => { pengunciScanAktif = false; }, 2000); 
+        setTimeout(() => { pengunciScanAktif = false; }, 1500); 
     }
     
     let html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 220 });
     html5QrcodeScanner.render(onScanSuccess);
 
     async function cekApakahSudahAbsen(idGenerus, namaKegiatan) {
-        // 1. Cek dari Storage Lokal Terlebih Dahulu
+        let sekarang = new Date();
+        let batasWaktuMiliDetik = 3 * 60 * 60 * 1000; // Pembatasan Interval 3 Jam
+
+        // 1. Validasi super cepat via RAM cache lokal
+        if (cachePresensiMenitIni.has(String(idGenerus))) {
+            return true;
+        }
+
+        // 2. Validasi via Penyimpanan Browser Terbuka (Offline Storage)
         let antrean = JSON.parse(localStorage.getItem('antrean_absensi')) || [];
         let riwayatLokal = JSON.parse(localStorage.getItem('riwayat_sukses_lokal')) || [];
         let gabunganLokal = [...antrean, ...riwayatLokal];
         
-        let dataSamaLokal = gabunganLokal.find(absen => 
-            String(absen.id_generus) === String(idGenerus) && 
-            String(absen.nama_kegiatan).trim().toUpperCase() === String(namaKegiatan).trim().toUpperCase()
-        );
+        let dataSamaLokal = gabunganLokal.find(absen => {
+            let waktuAbsenLokal = new Date(absen.waktu_absen);
+            let selisihWaktu = sekarang - waktuAbsenLokal;
+
+            return String(absen.id_generus) === String(idGenerus) && 
+                   String(absen.nama_kegiatan).trim().toUpperCase() === String(namaKegiatan).trim().toUpperCase() &&
+                   selisihWaktu < batasWaktuMiliDetik;
+        });
         
         if (dataSamaLokal) return true;
 
-        // 2. Jika Device Online, Cek ke Cloud Database
+        // 3. Validasi via Database Online Cloud Supabase
         if (navigator.onLine) {
             try {
                 let { data, error } = await _supabase
                     .from('absensi_kegiatan')
-                    .select('id_absensi')
+                    .select('waktu_absen')
                     .eq('id_generus', idGenerus)
                     .eq('nama_kegiatan', namaKegiatan.trim().toUpperCase());
                     
-                if (!error && data && data.length > 0) return true;
+                if (!error && data && data.length > 0) {
+                    let sudahAdaDataBaru = data.some(db => {
+                        let waktuDB = new Date(db.waktu_absen);
+                        return (sekarang - waktuDB) < batasWaktuMiliDetik;
+                    });
+                    if (sudahAdaDataBaru) return true;
+                }
             } catch (e) {}
         }
         return false;
@@ -430,7 +451,7 @@
         
         let profil = semuaDataGenerus.find(g => g.id_generus == idGenerus) || { nama_lengkap: "ID: " + idGenerus };
 
-        // VALIDASI DOUBLE SCAN MUTLAK
+        // VALIDASI TOTAL DOUBLE SCAN
         let sudahAbsen = await cekApakahSudahAbsen(idGenerus, namaKegiatan);
         if (sudahAbsen) {
             bunyikanSuaraGagal(); 
@@ -438,6 +459,9 @@
             if(metode === "Manual") { searchInput.value = ''; selectedIdInput.value = ''; }
             return; 
         }
+
+        // Simpan langsung di memori jangka pendek agar scan kedua langsung tertolak seketika
+        cachePresensiMenitIni.add(String(idGenerus));
 
         const dataAbsen = {
             nama_kegiatan: namaKegiatan.trim(),
@@ -477,6 +501,7 @@
         for (let i = 0; i < antrean.length; i++) { await _supabase.from('absensi_kegiatan').insert([antrean[i]]); }
         localStorage.removeItem('antrean_absensi');
         localStorage.removeItem('riwayat_sukses_lokal');
+        cachePresensiMenitIni.clear(); 
         netIndicator.innerText = "● Online"; netIndicator.className = "net-status online";
         tampilkanToast("✓ Semua data offline berhasil digabungkan ke Supabase");
     }
