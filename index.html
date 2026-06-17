@@ -94,6 +94,7 @@
         }
         input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(4, 120, 87, 0.15); }
 
+        /* SOLUSI SPASI: Mengubah tampilan visual menjadi kapital lewat CSS tanpa merusak ketikan keyboard HP */
         #kegiatan { text-transform: uppercase; }
 
         .btn-primary { background: var(--primary); color: #fff; border: none; font-weight: 600; cursor: pointer; margin-top: 8px; box-shadow: 0 4px 12px rgba(4, 120, 87, 0.2); text-align: center; }
@@ -189,7 +190,7 @@
     
     <div class="form-group">
         <label for="kegiatan">Nama Agenda Pertemuan</label>
-        <input type="text" id="kegiatan" placeholder="Masukkan nama kegiatan..." oninput="this.value = this.value.toUpperCase(); updateJudulCetak();">
+        <input type="text" id="kegiatan" placeholder="Masukkan nama kegiatan..." onkeyup="updateJudulCetak()">
     </div>
 
     <div class="section-title">OPSI 1: SCAN BARCODE</div>
@@ -253,11 +254,8 @@
     let semuaDataGenerus = [];
     let pengunciScanAktif = false; 
     let globalAudioCtx = null;
+    let cachePresensiMenitIni = new Map();
 
-    // CACHE RAM INSTAN: Menangkap double-scan cepat secara real-time
-    let cachePresensiMenitIni = new Set();
-
-    // Menembus Autoplay Policy Browser
     function bukaKunciAudioKonstruktor() {
         if (!globalAudioCtx) {
             globalAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -285,7 +283,6 @@
             bukaKunciAudioKonstruktor();
             let ctx = globalAudioCtx || new (window.AudioContext || window.webkitAudioContext)();
             
-            // Suara "TE"
             let osc1 = ctx.createOscillator(); 
             let gain1 = ctx.createGain();
             osc1.connect(gain1); gain1.connect(ctx.destination);
@@ -295,7 +292,6 @@
             osc1.start(ctx.currentTime); 
             osc1.stop(ctx.currentTime + 0.18);
 
-            // Suara "TOT"
             let osc2 = ctx.createOscillator(); 
             let gain2 = ctx.createGain();
             osc2.connect(gain2); gain2.connect(ctx.destination);
@@ -397,14 +393,15 @@
 
     async function cekApakahSudahAbsen(idGenerus, namaKegiatan) {
         let sekarang = new Date();
-        let batasWaktuMiliDetik = 3 * 60 * 60 * 1000; // Pembatasan Interval 3 Jam
+        let batasWaktuMiliDetik = 3 * 60 * 60 * 1000; 
 
-        // 1. Validasi super cepat via RAM cache lokal
         if (cachePresensiMenitIni.has(String(idGenerus))) {
-            return true;
+            let waktuTerakhirCache = new Date(cachePresensiMenitIni.get(String(idGenerus)));
+            if ((sekarang - waktuTerakhirCache) < batasWaktuMiliDetik) {
+                return true; 
+            }
         }
 
-        // 2. Validasi via Penyimpanan Browser Terbuka (Offline Storage)
         let antrean = JSON.parse(localStorage.getItem('antrean_absensi')) || [];
         let riwayatLokal = JSON.parse(localStorage.getItem('riwayat_sukses_lokal')) || [];
         let gabunganLokal = [...antrean, ...riwayatLokal];
@@ -420,7 +417,6 @@
         
         if (dataSamaLokal) return true;
 
-        // 3. Validasi via Database Online Cloud Supabase
         if (navigator.onLine) {
             try {
                 let { data, error } = await _supabase
@@ -442,7 +438,7 @@
     }
 
     async function prosesAbsensi(idGenerus, metode) {
-        let namaKegiatan = document.getElementById('kegiatan').value.toUpperCase();
+        let namaKegiatan = document.getElementById('kegiatan').value.toUpperCase().trim();
         if(!namaKegiatan) {
             bunyikanSuaraGagal();
             alert("Harap isi Nama Agenda terlebih dahulu!");
@@ -451,7 +447,6 @@
         
         let profil = semuaDataGenerus.find(g => g.id_generus == idGenerus) || { nama_lengkap: "ID: " + idGenerus };
 
-        // VALIDASI TOTAL DOUBLE SCAN
         let sudahAbsen = await cekApakahSudahAbsen(idGenerus, namaKegiatan);
         if (sudahAbsen) {
             bunyikanSuaraGagal(); 
@@ -460,14 +455,14 @@
             return; 
         }
 
-        // Simpan langsung di memori jangka pendek agar scan kedua langsung tertolak seketika
-        cachePresensiMenitIni.add(String(idGenerus));
+        let waktuSkrgISO = new Date().toISOString();
+        cachePresensiMenitIni.set(String(idGenerus), waktuSkrgISO);
 
         const dataAbsen = {
-            nama_kegiatan: namaKegiatan.trim(),
+            nama_kegiatan: namaKegiatan,
             id_generus: idGenerus,
             metode_input: metode,
-            waktu_absen: new Date().toISOString()
+            waktu_absen: waktuSkrgISO
         };
 
         if (navigator.onLine) {
@@ -501,7 +496,7 @@
         for (let i = 0; i < antrean.length; i++) { await _supabase.from('absensi_kegiatan').insert([antrean[i]]); }
         localStorage.removeItem('antrean_absensi');
         localStorage.removeItem('riwayat_sukses_lokal');
-        cachePresensiMenitIni.clear(); 
+        
         netIndicator.innerText = "● Online"; netIndicator.className = "net-status online";
         tampilkanToast("✓ Semua data offline berhasil digabungkan ke Supabase");
     }
@@ -513,7 +508,7 @@
     }
 
     async function dapatkanDataGabungan(namaKegiatan) {
-        let { data: logAbsen, error } = await _supabase.from('absensi_kegiatan').select('id_generus, waktu_absen, metode_input').eq('nama_kegiatan', namaKegiatan.toUpperCase());
+        let { data: logAbsen, error } = await _supabase.from('absensi_kegiatan').select('id_generus, waktu_absen, metode_input').eq('nama_kegiatan', namaKegiatan.toUpperCase().trim());
         if (error || !logAbsen || logAbsen.length === 0) return [];
         
         return logAbsen.map(absen => {
@@ -534,7 +529,7 @@
     }
 
     async function tarikDanCetakLaporan(jenis) {
-        let namaKegiatan = document.getElementById('kegiatan').value.toUpperCase();
+        let namaKegiatan = document.getElementById('kegiatan').value.toUpperCase().trim();
         if(!namaKegiatan) return alert("Harap masukkan Nama Agenda yang ingin ditarik rekapannya!");
         tampilkanToast("🔄 Menarik seluruh data dari Supabase...");
         let dataMurni = await dapatkanDataGabungan(namaKegiatan);
@@ -689,38 +684,32 @@
         window.print();
     }
 
+    // SOLUSI DOWNLOAD HP: Mengubah metode unduh menggunakan universal Data URI + tab Baru
     async function eksporKeExcel() {
-        let namaKegiatan = document.getElementById('kegiatan').value.toUpperCase();
+        let namaKegiatan = document.getElementById('kegiatan').value.toUpperCase().trim();
         if(!namaKegiatan) return alert("Harap masukkan Nama Agenda untuk diekspor!");
         
         tampilkanToast("📊 Membuat file Excel/CSV...");
         let dataMurni = await dapatkanDataGabungan(namaKegiatan);
         if(dataMurni.length === 0) return alert("Tidak ada data untuk diekspor!");
 
-        // 1. Definisikan header kolom CSV
-        let csvContent = "No,Nama Lengkap,Jenis Kelamin,Status,Usia atau Dapukan,Kelompok,Desa,Waktu Absen,Metode\n";
+        let csvContent = "No,Nama Lengkap,Jenis Kelamin,Status,Usia atau Dapukan,Kelompok,Desa,Waktu Absen,Metode\r\n";
         
-        // 2. Masukkan data murni ke dalam baris-baris CSV
         dataMurni.forEach((d, i) => { 
             let jenisKelamin = d.jk.includes('Perempuan') || d.jk === 'P' ? 'P' : 'L';
-            csvContent += `${i+1},"${d.name}","${jenisKelamin}","${d.status}","${d.detail_status}","${d.kelompok}","${d.desa}","${d.waktu}","${d.metode}"\n`;
+            csvContent += `${i+1},"${d.name}","${jenisKelamin}","${d.status}","${d.detail_status}","${d.kelompok}","${d.desa}","${d.waktu}","${d.metode}"\r\n`;
         });
         
-        // 3. Tambahkan BOM (\uFEFF) agar Microsoft Excel membaca format UTF-8 dengan benar
-        let blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
-        let url = URL.createObjectURL(blob);
-        
-        // 4. Proses unduh otomatis
+        // Menggunakan encoding URI yang kompatibel dengan browser mobile dan iOS Safari
         let link = document.createElement("a");
-        link.setAttribute("href", url);
+        link.setAttribute("href", "data:text/csv;charset=utf-8,\uFEFF" + encodeURIComponent(csvContent));
         link.setAttribute("download", `REKAP_PRESENSI_${namaKegiatan.replace(/\s+/g, '_')}.csv`);
+        link.setAttribute("target", "_blank"); // Memaksa tab baru terbuka jika unduhan langsung diblokir di mobile WebView
+        
         document.body.appendChild(link);
-        
         link.click();
-        
-        // 5. Bersihkan sisa elemen
         document.body.removeChild(link);
-        URL.revokeObjectURL(url);
+        
         tampilkanToast("✓ File CSV berhasil diunduh!");
     }
 </script>
