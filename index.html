@@ -26,7 +26,7 @@
             --warning-hover: #ca8a04;
         }
 
-        [data-theme="dark"] {
+        [data-theme=\"dark\"] {
             --bg-main: #0f172a; 
             --bg-card: #1e293b; 
             --text-dark: #f8fafc; 
@@ -531,13 +531,8 @@
         prosesAbsensi(idTerpilih, "Izin");
     }
 
-async function dapatkanDataGabungan(namaKegiatan) {
-        // Memastikan kolom waktu_absen ditarik murni dari database Supabase
-        let { data: logAbsen, error } = await _supabase
-            .from('absensi_kegiatan')
-            .select('id_generus, waktu_absen, metode_input')
-            .eq('nama_kegiatan', namaKegiatan.toUpperCase());
-            
+    async function dapatkanDataGabungan(namaKegiatan) {
+        let { data: logAbsen, error } = await _supabase.from('absensi_kegiatan').select('id_generus, waktu_absen, metode_input').eq('nama_kegiatan', namaKegiatan.toUpperCase());
         if (error || !logAbsen || logAbsen.length === 0) return [];
         
         return logAbsen.map(absen => {
@@ -551,10 +546,7 @@ async function dapatkanDataGabungan(namaKegiatan) {
                 jk: detail ? (detail.jenis_kelamin || "-") : "-",
                 status: detail ? (detail.status || "-") : "-",
                 detail_status: detail ? (detail.usia_dapukan || "-") : "-",
-                // Format jam menit untuk tampilan tabel di baris anggota
                 waktu: absen.metode_input === "Izin" ? "IZIN" : new Date(absen.waktu_absen).toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'}).replace('.', ':'),
-                // DATA UTAMA: Waktu murni ISO String disimpan di sini untuk bahan sortir
-                waktu_absen: absen.waktu_absen,
                 metode: absen.metode_input
             }
         });
@@ -564,7 +556,6 @@ async function dapatkanDataGabungan(namaKegiatan) {
         let namaKegiatan = document.getElementById('kegiatan').value.toUpperCase();
         if(!namaKegiatan) return alert("Harap masukkan Nama Agenda yang ingin ditarik rekapannya!");
         tampilkanToast("🔄 Menarik seluruh data dari Supabase...");
-        
         let dataMurni = await dapatkanDataGabungan(namaKegiatan);
         if(dataMurni.length === 0) return alert(`Tidak ditemukan data absensi/izin untuk kegiatan: "${namaKegiatan}"`);
 
@@ -572,34 +563,7 @@ async function dapatkanDataGabungan(namaKegiatan) {
         let areaCetak = document.getElementById('print-area');
         container.innerHTML = "";
         let opsiWaktu = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
-        
-        // --- PERBAIKAN LOGIKA WAKTU ACARA (DIJAMIN AKURAT) ---
-        let waktuMulaiAcara = null; 
-        
-        if (dataMurni.length > 0) {
-            // Saring data log fisik terlebih dahulu (mengabaikan Izin) agar data waktu stand presensi/acara dimulai valid
-            let logKehadiran = dataMurni.filter(d => d.metode !== "Izin" && d.waktu_absen);
-            
-            // Jika isinya izin semua, gunakan seluruh data murni yang punya catatan waktu
-            if (logKehadiran.length === 0) logKehadiran = dataMurni.filter(d => d.waktu_absen);
-
-            if (logKehadiran.length > 0) {
-                // Lakukan pengurutan paksa (Sorting) dari data waktu paling lama/paling terawal masuk
-                logKehadiran.sort((a, b) => new Date(a.waktu_absen) - new Date(b.waktu_absen));
-                
-                // Ambil data pertama hasil sortiran (indeks 0 adalah waktu terawal acara dibuat/dimulai)
-                waktuMulaiAcara = new Date(logKehadiran[0].waktu_absen);
-            }
-        }
-
-        // Jika karena suatu hal sortiran gagal/data waktu kosong, baru gunakan fallback ke waktu sekarang
-        if (!waktuMulaiAcara || isNaN(waktuMulaiAcara.getTime())) {
-            waktuMulaiAcara = new Date();
-        }
-
-        // Teks cetak diubah total secara paksa dari manipulasi DOM berdasarkan variabel hasil sortir di atas
-        document.getElementById('cetak-waktu').innerText = "Waktu Kegiatan: " + waktuMulaiAcara.toLocaleDateString('id-ID', opsiWaktu) + " WIB";
-        // -----------------------------------------------------
+        document.getElementById('cetak-waktu').innerText = "Waktu Tarik Laporan: " + new Date().toLocaleDateString('id-ID', opsiWaktu) + " WIB";
 
         let totalLakiHadir = 0;
         let totalPerempuanHadir = 0;
@@ -758,87 +722,6 @@ async function dapatkanDataGabungan(namaKegiatan) {
                 window.scrollTo({ top: areaCetak.offsetTop, behavior: 'smooth' });
             }
         } 
-        else if (jenis === 'kelompok') {
-            let rekapKelompok = {};
-            dataMurni.forEach(d => {
-                let klp = d.kelompok || "Tanpa Kelompok";
-                if (!rekapKelompok[klp]) rekapKelompok[klp] = [];
-                rekapKelompok[klp].push(d);
-            });
-
-            let html = "";
-
-            for (let klp in rekapKelompok) {
-                let anggota = rekapKelompok[klp];
-
-                let lKlp = 0, pKlp = 0, izKlp = 0;
-                anggota.forEach(a => {
-                    if (a.metode === "Izin") {
-                        izKlp++;
-                    } else {
-                        if (a.jk.includes('Perempuan') || a.jk === 'P') pKlp++;
-                        else lKlp++;
-                    }
-                });
-
-                html += `<div class="print-box-wilayah">`;
-                html += `<h4>👥 KELOMPOK: ${klp.toUpperCase()}</h4>`;
-                html += `<table class="print-table">
-                            <thead>
-                                <tr>
-                                    <th style="width:40px; text-align:center;">No</th>
-                                    <th>Nama Lengkap</th>
-                                    <th style="width:80px;">Status</th>
-                                    <th>Usia / Dapukan</th>
-                                    <th style="width:90px;">Jenis Kelamin</th>
-                                </tr>
-                            </thead>
-                            <tbody>`;
-                
-                anggota.forEach((a, idx) => {
-                    let penandaIzin = a.metode === "Izin" ? " <span style='color:#eab308; font-weight:700;'>(IZIN)</span>" : "";
-                    html += `<tr>
-                                <td style="text-align:center;">${idx+1}</td>
-                                <td style="font-weight:600;">${a.name}${penandaIzin}</td>
-                                <td>${a.status}</td>
-                                <td>${a.detail_status}</td>
-                                <td>${a.jk}</td>
-                             </tr>`;
-                });
-
-                html += `<tr style="font-weight:700; background:#f8fafc;">
-                            <td colspan="2" style="text-align:right;">Rincian Kelompok ${klp}:</td>
-                            <td colspan="3" style="text-align:center;">
-                                <span style="color:#1d4ed8;">Hadir L: ${lKlp}</span> | 
-                                <span style="color:#be185d;">Hadir P: ${pKlp}</span> | 
-                                <span style="color:#ca8a04;">Izin: ${izKlp}</span> | 
-                                <span style="color:#b45309;">Total: ${anggota.length} Orang</span>
-                            </td>
-                         </tr>`;
-                html += `</tbody></table></div>`;
-            }
-
-            html += `<table class="print-table" style="margin-top:20px; border: 2px solid #475569; background:#f1f5f9;">
-                        <tr style="font-weight:700; font-size:13px;">
-                            <td style="text-align:right; padding:10px;">TOTAL KESELURUHAN KELOMPOK:</td>
-                            <td style="width:110px; text-align:center; color:#1d4ed8;">Hadir L: ${totalLakiHadir}</td>
-                            <td style="width:110px; text-align:center; color:#be185d;">Hadir P: ${totalPerempuanHadir}</td>
-                            <td style="width:90px; text-align:center; color:#ca8a04;">Izin: ${totalIzinSemua}</td>
-                            <td style="width:130px; text-align:center; color:#b45309; font-size:14px;">Total: ${dataMurni.length} Orang</td>
-                        </tr>
-                     </table>`;
-
-            container.innerHTML = html;
-            areaCetak.style.display = "block";
-
-            if (langsungPrint) {
-                window.print();
-            } else {
-                tampilkanToast("✓ Preview rekap kelompok berhasil dimuat di bawah!");
-                window.scrollTo({ top: areaCetak.offsetTop, behavior: 'smooth' });
-            }
-        }
-    }
         else if (jenis === 'kelompok') {
             let rekapKelompok = {};
             dataMurni.forEach(d => {
