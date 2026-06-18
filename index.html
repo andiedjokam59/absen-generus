@@ -547,12 +547,13 @@
                 status: detail ? (detail.status || "-") : "-",
                 detail_status: detail ? (detail.usia_dapukan || "-") : "-",
                 waktu: absen.metode_input === "Izin" ? "IZIN" : new Date(absen.waktu_absen).toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'}).replace('.', ':'),
+                waktu_absen: absen.waktu_absen,
                 metode: absen.metode_input
             }
         });
     }
 
-async function tarikDanCetakLaporan(jenis, langsungPrint = false) {
+    async function tarikDanCetakLaporan(jenis, langsungPrint = false) {
         let namaKegiatan = document.getElementById('kegiatan').value.toUpperCase();
         if(!namaKegiatan) return alert("Harap masukkan Nama Agenda yang ingin ditarik rekapannya!");
         tampilkanToast("🔄 Menarik seluruh data dari Supabase...");
@@ -564,30 +565,30 @@ async function tarikDanCetakLaporan(jenis, langsungPrint = false) {
         container.innerHTML = "";
         let opsiWaktu = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
         
-        // --- LOGIKA MENCARI WAKTU ACARA DIMULAI ---
+        // --- LOGIKA UTAMA: MENCARI WAKTU ACARA DIMULAI (ABSENSI TERAWAL) ---
         let waktuMulaiAcara = new Date(); 
         
         if (dataMurni.length > 0) {
-            // Memfilter log kehadiran (mengabaikan log berstatus "Izin" agar data waktu lebih mencerminkan stand presensi fisik dimulai)
+            // Saring data fisik/hadir (Mengabaikan status "Izin" agar penentuan jam stand mulai jauh lebih valid)
             let logKehadiran = dataMurni.filter(d => d.metode !== "Izin");
             
-            // Fallback jika isinya izin semua, gunakan data murni yang tersedia
+            // Jika isinya izin semua, gunakan data murni apa adanya
             if (logKehadiran.length === 0) logKehadiran = dataMurni;
 
-            // Mengurutkan dari yang paling awal/terlama berdasarkan properti waktu_absen mentah
+            // Sort berdasarkan waktu terkecil ke terbesar (Ascending)
             logKehadiran.sort((a, b) => {
                 return new Date(a.waktu_absen) - new Date(b.waktu_absen);
             });
 
-            // Set waktu pembuatan/mulai berdasarkan data pertama yang masuk ke sistem
+            // Ambil waktu dari log indeks ke-0 (paling awal masuk database)
             if(logKehadiran[0] && logKehadiran[0].waktu_absen) {
                 waktuMulaiAcara = new Date(logKehadiran[0].waktu_absen);
             }
         }
 
-        // Mengubah teks cetak menjadi waktu pembuatan data/mulai kegiatan
-        document.getElementById('cetak-waktu').innerText = "Waktu Pembuatan Data / Mulai Kegiatan: " + waktuMulaiAcara.toLocaleDateString('id-ID', opsiWaktu) + " WIB";
-        // ------------------------------------------
+        // Cetak tulisan berupa waktu mulai asli dari kegiatan tersebut
+        document.getElementById('cetak-waktu').innerText = "Waktu Kegiatan: " + waktuMulaiAcara.toLocaleDateString('id-ID', opsiWaktu) + " WIB";
+        // -------------------------------------------------------------------
 
         let totalLakiHadir = 0;
         let totalPerempuanHadir = 0;
