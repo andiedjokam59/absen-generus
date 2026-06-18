@@ -8,6 +8,7 @@
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     
     <style>
         :root {
@@ -157,61 +158,102 @@
             box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3);
         }
         
-        /* Style Tambahan untuk Komponen Live Preview Layar */
-        .preview-card-container {
-            display: none;
-            background: var(--bg-card);
-            border: 2px dashed var(--primary);
-            border-radius: 16px;
-            padding: 20px 16px;
-            margin-top: 24px;
+        /* --- GAYA STRUKTUR DOKUMEN REKAPAN RELEVAN (UNTUK CANVAS & LAYAR) --- */
+        .preview-canvas-source {
+            width: 650px; /* Ukuran lebar dikunci stabil agar tabel tidak bergeser */
+            background: #ffffff !important;
+            color: #000000 !important;
+            padding: 30px;
+            box-sizing: border-box;
+            position: fixed;
+            left: -9999px; /* Disembunyikan jauh di luar layar utama */
+            top: 0;
         }
         .preview-header-box {
-            text-align: center;
-            margin-bottom: 20px;
-            border-bottom: 2px solid var(--text-dark);
-            padding-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 16px;
+            border-bottom: 3px double #000000;
+            padding-bottom: 14px;
         }
         .preview-logo-img {
-            width: 70px;
-            height: 70px;
+            width: 65px; height: 65px;
             object-fit: contain;
-            margin-bottom: 8px;
+        }
+        .preview-header-text {
+            text-align: center;
         }
         .preview-title {
-            margin: 0;
-            font-size: 16px;
-            font-weight: 700;
-            text-transform: uppercase;
-            color: var(--text-dark);
+            margin: 0; font-size: 18px; font-weight: 700;
+            text-transform: uppercase; color: #000000; letter-spacing: 0.5px;
         }
         .preview-subtitle {
-            margin: 4px 0 0 0;
-            font-size: 12px;
-            color: var(--accent);
-            font-weight: 600;
-            letter-spacing: 0.5px;
+            margin: 4px 0 0 0; font-size: 13px;
+            color: #d97706; font-weight: 600;
+            letter-spacing: 0.5px; text-transform: uppercase;
         }
         .preview-meta {
-            text-align: center;
-            font-size: 11px;
-            color: var(--text-muted);
-            margin-bottom: 15px;
+            text-align: center; font-size: 11px;
+            color: #475569; margin-bottom: 16px; font-weight: 500;
         }
-
-        #print-area { display: none; width: 100%; margin-top: 30px; }
-        .print-box-wilayah { margin-bottom: 25px; page-break-inside: avoid; }
-        .print-box-wilayah h4 { margin: 0 0 8px 0; font-size: 14px; color: #0f172a; text-transform: uppercase; border-bottom: 2px solid #0f172a; padding-bottom: 4px; }
+        .print-box-wilayah { margin-bottom: 20px; }
+        .print-box-wilayah h4 { margin: 0 0 8px 0; font-size: 13px; color: #000000; text-transform: uppercase; border-bottom: 1.5px solid #000000; padding-bottom: 2px; font-weight: 700; }
         
-        .print-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; font-size: 11px; color: #000; }
-        .print-table th, .print-table td { border: 1px solid #94a3b8; padding: 6px 8px; text-align: left; }
-        .print-table th { background: #f1f5f9; color: #0f172a; font-weight: 600; }
+        .print-table { width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 11px; color: #000000; }
+        .print-table th, .print-table td { border: 1px solid #475569; padding: 6px 8px; text-align: left; }
+        .print-table th { background: #f1f5f9 !important; color: #000000; font-weight: 600; }
+
+        /* --- STYLING BARU MODAL POP-UP PREVIEW --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px);
+            display: none; justify-content: center; align-items: center;
+            z-index: 99999; padding: 16px; box-sizing: border-box;
+        }
+        .modal-card {
+            background: var(--bg-card); width: 100%; max-width: 480px;
+            border-radius: 20px; padding: 20px; box-sizing: border-box;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.15);
+            animation: popUpEffect 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            max-height: 90vh; display: flex; flex-direction: column;
+        }
+        @keyframes popUpEffect { from { transform: scale(0.9) translateY(20px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
+        
+        .modal-header {
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 16px;
+        }
+        .modal-header h3 { margin: 0; font-size: 16px; font-weight: 700; }
+        .close-modal-btn {
+            background: transparent; border: none; font-size: 20px; color: var(--text-muted); cursor: pointer;
+        }
+        .modal-body-scroll {
+            overflow-y: auto; flex: 1; text-align: center; margin-bottom: 16px;
+            border: 1px solid var(--border-color); border-radius: 12px; background: #64748b; padding: 10px;
+        }
+        /* Hasil render PNG akhir dipasang di sini */
+        .render-output-image {
+            width: 100%; height: auto; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            border-radius: 4px; display: block;
+        }
+        .modal-footer-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .btn-modal-action {
+            padding: 12px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer;
+            border: none; text-align: center; display: flex; align-items: center; justify-content: center; gap: 6px;
+        }
+        .btn-download-png { background: var(--primary); color: #ffffff; }
+        .btn-download-png:hover { background: var(--primary-hover); }
+        .btn-close-gray { background: var(--bg-main); color: var(--text-dark); border: 1px solid var(--border-color); }
+
+        #print-area { display: none; }
 
         @media print {
             body { background: #fff!important; color: #000!important; display: block; padding: 0; margin: 0; }
-            .app-container { max-width: 100%; width: 100%; box-shadow: none!important; padding: 0; margin: 0; background: #fff!important; }
-            .top-bar, .section-title, #reader, .divider, .form-group, .btn-primary, .action-row, .search-results, .toast-notif, .preview-card-container { display: none!important; }
+            .app-container, .modal-overlay { display: none!important; }
             #print-area { display: block!important; }
+            .preview-canvas-source { position: static!important; left: 0!important; width: 100%!important; padding: 0!important; }
         }
     </style>
 </head>
@@ -231,7 +273,7 @@
     
     <div class="form-group">
         <label for="kegiatan">Nama Agenda Pertemuan</label>
-        <input type="text" id="kegiatan" placeholder="Masukkan nama kegiatan..." oninput="this.value = this.value.toUpperCase(); updateJudulCetak();">
+        <input type="text" id="kegiatan" placeholder="Masukkan nama kegiatan..." oninput="this.value = this.value.toUpperCase();">
     </div>
 
     <div class="section-title">OPSI 1: SCAN BARCODE</div>
@@ -250,19 +292,19 @@
 
     <div class="section-title">Menu Rekap & Penyimpanan</div>
     <div class="action-row">
-        <button class="btn-icon" onclick="tarikDanCetakLaporan('semua')" title="Preview Semua">
+        <button class="btn-icon" onclick="tarikDanProsesLaporan('semua')" title="Rekap Semua">
             <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
             Semua
         </button>
-        <button class="btn-icon" onclick="jalankanCetakHalaman()" title="Cetak Print">
+        <button class="btn-icon" onclick="jalankanCetakSistemLangsung()" title="Cetak Print">
             <svg viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
             Print
         </button>
-        <button class="btn-icon" onclick="tarikDanCetakLaporan('desa')" title="Rekap Desa">
+        <button class="btn-icon" onclick="tarikDanProsesLaporan('desa')" title="Rekap Desa">
             <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
             Desa
         </button>
-        <button class="btn-icon" onclick="tarikDanCetakLaporan('kelompok')" title="Rekap Kelompok">
+        <button class="btn-icon" onclick="tarikDanProsesLaporan('kelompok')" title="Rekap Kelompok">
             <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
             Klp
         </button>
@@ -275,23 +317,42 @@
             Excel
         </button>
     </div>
+</div>
 
-    <!-- KONTANER LIVE PREVIEW DI LAYAR -->
-    <div id="live-preview-section" class="preview-card-container">
-        <div class="preview-header-box">
-            <img src="logo insan qurany.jpg" alt="Logo" class="preview-logo-img">
-            <h3 class="preview-title" id="preview-judul-agenda">LAPORAN PRESENSI KEGIATAN</h3>
+<div id="rekap-modal-overlay" class="modal-overlay">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h3 id="modal-title-text">Preview Gambar Laporan</h3>
+            <button class="close-modal-btn" onclick="tutupModalRekap()">&times;</button>
+        </div>
+        <div class="modal-body-scroll">
+            <div id="modal-loading-text" style="color:#fff; padding: 20px; font-size:14px; font-weight:500;">⌛ Sedang menyusun gambar...</div>
+            <img id="modal-preview-img" class="render-output-image" alt="Hasil Gambar Laporan" style="display:none;">
+        </div>
+        <div class="modal-footer-btns">
+            <button class="btn-modal-action btn-close-gray" onclick="tutupModalRekap()">Batal</button>
+            <button class="btn-modal-action btn-download-png" onclick="unduhGambarPngHasilRender()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                Unduh PNG
+            </button>
+        </div>
+    </div>
+</div>
+
+<div id="hidden-render-source" class="preview-canvas-source">
+    <div class="preview-header-box">
+        <img src="logo insan qurany.jpg" alt="Logo" class="preview-logo-img">
+        <div class="preview-header-text">
+            <h3 class="preview-title" id="canvas-judul-agenda">LAPORAN PRESENSI KEGIATAN</h3>
             <p class="preview-subtitle">Insan Qur'any Tawangmangu</p>
         </div>
-        <div class="preview-meta" id="preview-waktu-tarik">-</div>
-        <div id="preview-table-container"></div>
     </div>
+    <div class="preview-meta" id="canvas-waktu-tarik">-</div>
+    <div id="canvas-table-container"></div>
+</div>
 
-    <div id="print-area">
-        <h3 style="text-align: center; margin: 0 0 5px 0; font-size: 18px;" id="cetak-judul-kegiatan">Laporan Presensi Kegiatan</h3>
-        <p style="text-align: center; margin: 0 0 20px 0; font-size: 13px; color: #475569;" id="cetak-waktu">-</p>
-        <div id="print-table-container"></div>
-    </div>
+<div id="print-area">
+    <div id="print-table-container"></div>
 </div>
 
 <div id="toast-box" class="toast-notif"></div>
@@ -311,6 +372,7 @@
     let pengunciScanAktif = false; 
     let globalAudioCtx = null;
     let cachePresensiMenitIni = new Set();
+    let fileNamaGlobalDownload = "laporan.png";
 
     function bukaKunciAudioKonstruktor() {
         if (!globalAudioCtx) {
@@ -346,15 +408,6 @@
             gain1.gain.setValueAtTime(0.2, ctx.currentTime);
             osc1.start(ctx.currentTime); 
             osc1.stop(ctx.currentTime + 0.18);
-
-            let osc2 = ctx.createOscillator(); 
-            let gain2 = ctx.createGain();
-            osc2.connect(gain2); gain2.connect(ctx.destination);
-            osc2.type = 'sawtooth'; 
-            osc2.frequency.value = 100; 
-            gain2.gain.setValueAtTime(0.2, ctx.currentTime + 0.2);
-            osc2.start(ctx.currentTime + 0.2); 
-            osc2.stop(ctx.currentTime + 0.5);
         } catch (e) {}
     }
 
@@ -372,11 +425,6 @@
     if (localStorage.getItem('tema_pilihan') === 'dark') {
         document.documentElement.setAttribute('data-theme', 'dark');
         themeBtn.innerText = "☀️ Light Mode";
-    }
-
-    function updateJudulCetak() {
-        let agenda = document.getElementById('kegiatan').value.toUpperCase();
-        document.getElementById('cetak-judul-kegiatan').innerText = agenda ? `Laporan Presensi: ${agenda}` : "Laporan Presensi Kegiatan";
     }
 
     function tampilkanToast(pesan) {
@@ -417,7 +465,6 @@
             hasilFilter.forEach(g => {
                 let div = document.createElement('div');
                 div.className = 'search-item';
-                
                 let infoTambahan = g.status ? ` — [${g.status}${g.usia_dapukan ? ': ' + g.usia_dapukan : ''}]` : '';
                 div.innerText = `${g.nama_lengkap}${infoTambahan} — ${g.kelompok || '-'} [${g.desa || '-'}]`;
                 
@@ -438,7 +485,6 @@
     async function onScanSuccess(decodedText) { 
         if (pengunciScanAktif) return; 
         pengunciScanAktif = true; 
-        
         await prosesAbsensi(decodedText, "Scan Barcode");
         setTimeout(() => { pengunciScanAktif = false; }, 1500); 
     }
@@ -449,10 +495,7 @@
     async function cekApakahSudahAbsen(idGenerus, namaKegiatan) {
         let sekarang = new Date();
         let batasWaktuMiliDetik = 3 * 60 * 60 * 1000;
-
-        if (cachePresensiMenitIni.has(String(idGenerus))) {
-            return true;
-        }
+        if (cachePresensiMenitIni.has(String(idGenerus))) return true;
 
         let antrean = JSON.parse(localStorage.getItem('antrean_absensi')) || [];
         let riwayatLokal = JSON.parse(localStorage.getItem('riwayat_sukses_lokal')) || [];
@@ -461,7 +504,6 @@
         let dataSamaLokal = gabunganLokal.find(absen => {
             let waktuAbsenLokal = new Date(absen.waktu_absen);
             let selisihWaktu = sekarang - waktuAbsenLokal;
-
             return String(absen.id_generus) === String(idGenerus) && 
                    String(absen.nama_kegiatan).trim().toUpperCase() === String(namaKegiatan).trim().toUpperCase() &&
                    selisihWaktu < batasWaktuMiliDetik;
@@ -498,7 +540,6 @@
         }
         
         let profil = semuaDataGenerus.find(g => g.id_generus == idGenerus) || { nama_lengkap: "ID: " + idGenerus };
-
         let sudahAbsen = await cekApakahSudahAbsen(idGenerus, namaKegiatan);
         if (sudahAbsen) {
             bunyikanSuaraGagal(); 
@@ -508,7 +549,6 @@
         }
 
         cachePresensiMenitIni.add(String(idGenerus));
-
         const dataAbsen = {
             nama_kegiatan: namaKegiatan.trim(),
             id_generus: idGenerus,
@@ -564,7 +604,6 @@
         
         return logAbsen.map(absen => {
             let detail = semuaDataGenerus.find(g => String(g.id_generus) === String(absen.id_generus));
-            
             return {
                 id: absen.id_generus,
                 name: detail ? detail.nama_lengkap : "ID Terhapus: " + absen.id_generus, 
@@ -579,20 +618,23 @@
         });
     }
 
-    async function tarikDanCetakLaporan(jenis) {
+    // --- LOGIKA UTAMA RENDER POP-UP DAN PNG ---
+    async function tarikDanProsesLaporan(jenis) {
         let namaKegiatan = document.getElementById('kegiatan').value.toUpperCase();
         if(!namaKegiatan) return alert("Harap masukkan Nama Agenda yang ingin ditarik rekapannya!");
+        
         tampilkanToast("🔄 Menarik seluruh data dari Supabase...");
         let dataMurni = await dapatkanDataGabungan(namaKegiatan);
         if(dataMurni.length === 0) return alert(`Tidak ditemukan data absensi untuk kegiatan: "${namaKegiatan}"`);
 
+        // Set nama file global untuk unduhan PNG nanti
+        fileNamaGlobalDownload = `REKAP_${jenis.toUpperCase()}_${namaKegiatan.replace(/\s+/g, '_')}.png`;
+
         let opsiWaktu = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
-        let waktuTeks = "Waktu Laporan: " + new Date().toLocaleDateString('id-ID', opsiWaktu) + " WIB";
+        let waktuTeks = "Waktu Pembuatan Laporan: " + new Date().toLocaleDateString('id-ID', opsiWaktu) + " WIB";
         
-        // Perbarui Metadata baik di Preview maupun Print asli browser
-        document.getElementById('preview-waktu-tarik').innerText = waktuTeks;
-        document.getElementById('cetak-waktu').innerText = waktuTeks;
-        document.getElementById('preview-judul-agenda').innerText = `LAPORAN PRESENSI: ${namaKegiatan}`;
+        document.getElementById('canvas-waktu-tarik').innerText = waktuTeks;
+        document.getElementById('canvas-judul-agenda').innerText = `LAPORAN PRESENSI: ${namaKegiatan}`;
 
         let htmlTabel = "";
 
@@ -600,29 +642,29 @@
             htmlTabel = `<table class="print-table">
                             <thead>
                                 <tr>
-                                    <th style="width:30px;">No</th>
+                                    <th style="width:30px; text-align:center;">No</th>
                                     <th>Nama Lengkap</th>
-                                    <th style="width:35px;">L/P</th>
+                                    <th style="width:35px; text-align:center;">L/P</th>
                                     <th>Status</th>
                                     <th>Usia / Dapukan</th>
                                     <th>Kelompok</th>
                                     <th>Desa</th>
-                                    <th style="width:50px;">Waktu</th>
-                                    <th style="width:55px;">Metode</th>
+                                    <th style="width:50px; text-align:center;">Waktu</th>
+                                    <th style="width:55px; text-align:center;">Metode</th>
                                 </tr>
                             </thead>
                             <tbody>`;
             dataMurni.forEach((d, i) => { 
                 htmlTabel += `<tr>
-                            <td>${i+1}</td>
+                            <td style="text-align:center;">${i+1}</td>
                             <td style="font-weight:600;">${d.name}</td>
-                            <td>${d.jk.includes('Perempuan') || d.jk === 'P' ? 'P' : 'L'}</td>
+                            <td style="text-align:center;">${d.jk.includes('Perempuan') || d.jk === 'P' ? 'P' : 'L'}</td>
                             <td>${d.status}</td>
                             <td>${d.detail_status}</td>
                             <td>${d.kelompok}</td>
                             <td>${d.desa}</td>
-                            <td>${d.waktu}</td>
-                            <td>${d.metode}</td>
+                            <td style="text-align:center;">${d.waktu}</td>
+                            <td style="text-align:center;">${d.metode}</td>
                          </tr>`; 
             });
             htmlTabel += `</tbody></table>`; 
@@ -631,48 +673,40 @@
             let rekapDesa = {};
             dataMurni.forEach(d => {
                 let desa = d.desa || "Tanpa Desa";
-                if (!rekapDesa[desa]) {
-                    rekapDesa[desa] = { laki: 0, perempuan: 0 };
-                }
-                if (d.jk.includes("Perempuan") || d.jk === 'P') {
-                    rekapDesa[desa].perempuan++;
-                } else {
-                    rekapDesa[desa].laki++;
-                }
+                if (!rekapDesa[desa]) rekapDesa[desa] = { laki: 0, perempuan: 0 };
+                if (d.jk.includes("Perempuan") || d.jk === 'P') rekapDesa[desa].perempuan++;
+                else rekapDesa[desa].laki++;
             });
 
-            htmlTabel = `<h4 style="margin: 10px 0 8px 0; font-size: 13px; color: #000;">📊 REKAPITULASI JUMLAH KEHADIRAN PER DESA</h4>`;
+            htmlTabel = `<h4 style="margin: 10px 0 8px 0; font-size: 13px; font-weight:700;">📊 REKAPITULASI JUMLAH KEHADIRAN PER DESA</h4>`;
             htmlTabel += `<table class="print-table">
                         <thead>
                             <tr>
                                 <th style="width:40px; text-align:center;">No</th>
                                 <th>Nama Wilayah Desa</th>
-                                <th style="width:80px; text-align:center;">Laki-Laki</th>
-                                <th style="width:80px; text-align:center;">Perempuan</th>
-                                <th style="width:100px; text-align:center;">Total Hadir</th>
+                                <th style="width:100px; text-align:center;">Laki-Laki</th>
+                                <th style="width:100px; text-align:center;">Perempuan</th>
+                                <th style="width:120px; text-align:center;">Total Hadir</th>
                             </tr>
                         </thead>
                         <tbody>`;
             
-            let no = 1;
-            let grandL = 0, grandP = 0;
+            let no = 1; let grandL = 0, grandP = 0;
             for (let desa in rekapDesa) {
-                let l = rekapDesa[desa].laki;
-                let p = rekapDesa[desa].perempuan;
-                let total = l + p;
-                grandL += l; grandP += p;
+                let l = rekapDesa[desa].laki; let p = rekapDesa[desa].perempuan;
+                let total = l + p; grandL += l; grandP += p;
 
                 htmlTabel += `<tr>
                             <td style="text-align:center;">${no++}</td>
                             <td style="font-weight:600;">${desa.toUpperCase()}</td>
-                            <td style="text-align:center; color:#1d4ed8;">${l}</td>
-                            <td style="text-align:center; color:#be185d;">${p}</td>
-                            <td style="text-align:center; font-weight:700; background:rgba(0,0,0,0.02);">${total} Jemaah</td>
+                            <td style="text-align:center; color:#1d4ed8; font-weight:600;">${l}</td>
+                            <td style="text-align:center; color:#be185d; font-weight:600;">${p}</td>
+                            <td style="text-align:center; font-weight:700; background:#f8fafc;">${total} Jemaah</td>
                          </tr>`;
             }
 
-            htmlTabel += `<tr style="font-weight:700; background:rgba(0,0,0,0.05);">
-                        <td colspan="2" style="text-align:right; padding:8px;">TOTAL AKUMULASI:</td>
+            htmlTabel += `<tr style="font-weight:700; background:#e2e8f0;">
+                        <td colspan="2" style="text-align:right; padding:8px;">TOTAL AKUMULASI JEMAAH:</td>
                         <td style="text-align:center; color:#1d4ed8;">${grandL}</td>
                         <td style="text-align:center; color:#be185d;">${grandP}</td>
                         <td style="text-align:center; font-size:12px; color:#b45309;">${grandL + grandP} Jemaah</td>
@@ -688,13 +722,12 @@
             });
 
             let grandTotalSemua = 0;
-
             for (let klp in rekapKelompok) {
                 let anggota = rekapKelompok[klp];
                 grandTotalSemua += anggota.length;
 
                 htmlTabel += `<div class="print-box-wilayah">`;
-                htmlTabel += `<h4 style="margin: 15px 0 6px 0; font-size: 12px; color: #000; border-bottom: 1px solid #000; padding-bottom: 4px;">👥 KELOMPOK: ${klp.toUpperCase()}</h4>`;
+                htmlTabel += `<h4>👥 KELOMPOK: ${klp.toUpperCase()}</h4>`;
                 htmlTabel += `<table class="print-table">
                             <thead>
                                 <tr>
@@ -702,7 +735,7 @@
                                     <th>Nama Lengkap</th>
                                     <th style="width:70px;">Status</th>
                                     <th>Usia / Dapukan</th>
-                                    <th style="width:85px;">Jenis Kelamin</th>
+                                    <th style="width:85px; text-align:center;">Jenis Kelamin</th>
                                 </tr>
                             </thead>
                             <tbody>`;
@@ -713,43 +746,86 @@
                                 <td style="font-weight:600;">${a.name}</td>
                                 <td>${a.status}</td>
                                 <td>${a.detail_status}</td>
-                                <td>${a.jk}</td>
+                                <td style="text-align:center;">${a.jk}</td>
                              </tr>`;
                 });
 
-                htmlTabel += `<tr style="font-weight:700; background:rgba(0,0,0,0.01);">
+                htmlTabel += `<tr style="font-weight:700; background:#f8fafc;">
                             <td colspan="4" style="text-align:right;">Jumlah Total Kelompok ${klp}:</td>
-                            <td style="color:#b45309;">${anggota.length} Orang</td>
+                            <td style="color:#b45309; text-align:center;">${anggota.length} Orang</td>
                          </tr>`;
                 htmlTabel += `</tbody></table></div>`;
             }
 
-            htmlTabel += `<table class="print-table" style="margin-top:15px; border: 2px solid #475569; background:rgba(0,0,0,0.02);">
+            htmlTabel += `<table class="print-table" style="margin-top:15px; border: 2px solid #475569; background:#f1f5f9;">
                         <tr style="font-weight:700; font-size:12px;">
                             <td style="text-align:right; padding:8px;">TOTAL KESELURUHAN JEMAAH HADIR:</td>
-                            <td style="width:120px; text-align:center; color:#b45309; padding:8px; font-size:13px;">${grandTotalSemua} Jemaah</td>
+                            <td style="width:140px; text-align:center; color:#b45309; padding:8px; font-size:13px;">${grandTotalSemua} Jemaah</td>
                         </tr>
                      </table>`;
         }
         
-        // Masukkan html ke Live Preview layar dan tampilkan box kontainernya
-        document.getElementById('preview-table-container').innerHTML = htmlTabel;
-        let sectionPreview = document.getElementById('live-preview-section');
-        sectionPreview.style.display = "block";
-
-        // Duplikat hasil render yang sama ke wadah asli pencetakan browser browser
+        // 1. Masukkan HTML tabel ke wadah tersembunyi
+        document.getElementById('canvas-table-container').innerHTML = htmlTabel;
+        // Salin juga ke print area cadangan browser
         document.getElementById('print-table-container').innerHTML = htmlTabel;
 
-        tampilkanToast("✓ Preview tata letak cetak berhasil dimuat!");
-        sectionPreview.scrollIntoView({ behavior: 'smooth' });
+        // 2. Tampilkan Pop-up modal dalam kondisi loading
+        document.getElementById('modal-loading-text').style.display = 'block';
+        document.getElementById('modal-preview-img').style.display = 'none';
+        document.getElementById('rekap-modal-overlay').style.display = 'flex';
+        document.getElementById('modal-title-text').innerText = `Preview Rekap ${jenis.toUpperCase()}`;
+
+        // 3. Eksekusi Render HTML menjadi PNG Gambar Murni secara asynchronous
+        setTimeout(() => {
+            let elemenSumber = document.getElementById('hidden-render-source');
+            
+            html2canvas(elemenSumber, {
+                useCORS: true,
+                scale: 2, // Menaikkan resolusi gambar (2x lipat) agar teks tabel tajam & tidak pecah di HP
+                backgroundColor: "#ffffff",
+                logging: false
+            }).then(canvas => {
+                let dataUrlPng = canvas.toDataURL("image/png");
+                
+                // Pasang hasilnya ke elemen img di dalam modal pop-up
+                let komponenGambar = document.getElementById('modal-preview-img');
+                komponenGambar.src = dataUrlPng;
+                
+                // Matikan loading, tampilkan gambar jadi
+                document.getElementById('modal-loading-text').style.display = 'none';
+                komponenGambar.style.display = 'block';
+            }).catch(err => {
+                alert("Gagal merender gambar rekap.");
+                tutupModalRekap();
+            });
+        }, 400);
+    </div>
+
+    function tutupModalRekap() {
+        document.getElementById('rekap-modal-overlay').style.display = 'none';
     }
 
-    function jalankanCetakHalaman() {
+    function unduhGambarPngHasilRender() {
+        let komponenGambar = document.getElementById('modal-preview-img');
+        if (!komponenGambar.src || komponenGambar.style.display === 'none') {
+            return alert("Gambar belum selesai diproses. Silakan tunggu sejenak!");
+        }
+
+        let linkUnduh = document.createElement('a');
+        linkUnduh.href = komponenGambar.src;
+        linkUnduh.download = fileNamaGlobalDownload;
+        document.body.appendChild(linkUnduh);
+        linkUnduh.click();
+        document.body.removeChild(linkUnduh);
+        tampilkanToast("✓ Gambar PNG berhasil diunduh ke galeri!");
+    }
+
+    function jalankanCetakSistemLangsung() {
         let container = document.getElementById('print-table-container');
         if(!container.innerHTML.trim()) {
-            return alert("Belum ada data rekap yang dimuat. Klik tombol 'Semua', 'Desa', atau 'Klp' terlebih dahulu untuk membuat preview sebelum mencetak!");
+            return alert("Belum ada data rekap yang dimuat. Klik menu 'Semua', 'Desa', atau 'Klp' terlebih dahulu!");
         }
-        document.getElementById('print-area').style.display = "block";
         window.print();
     }
 
@@ -762,7 +838,6 @@
         if(dataMurni.length === 0) return alert("Tidak ada data untuk diekspor!");
 
         let csvContent = "No,Nama Lengkap,Jenis Kelamin,Status,Usia atau Dapukan,Kelompok,Desa,Waktu Absen,Metode\n";
-        
         dataMurni.forEach((d, i) => { 
             let jenisKelamin = d.jk.includes('Perempuan') || d.jk === 'P' ? 'P' : 'L';
             csvContent += `${i+1},"${d.name}","${jenisKelamin}","${d.status}","${d.detail_status}","${d.kelompok}","${d.desa}","${d.waktu}","${d.metode}"\n`;
@@ -770,17 +845,13 @@
         
         let blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
         let url = URL.createObjectURL(blob);
-        
         let link = document.createElement("a");
         link.setAttribute("href", url);
         link.setAttribute("download", `REKAP_PRESENSI_${namaKegiatan.replace(/\s+/g, '_')}.csv`);
         document.body.appendChild(link);
-        
         link.click();
-        
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
-        tampilkanToast("✓ File CSV berhasil diunduh!");
     }
 </script>
 </body>
