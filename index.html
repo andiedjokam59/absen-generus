@@ -561,7 +561,39 @@
         });
 
         if (jenis === 'semua') {
-            let html = `<table class="print-table">
+            let html = "";
+            
+            if (langsungPrint) {
+                // Versi cetak fisik/PDF: Tampilkan data secara KOMPLIT sesuai request
+                html += `<table class="print-table">
+                            <thead>
+                                <tr>
+                                    <th style="width:30px;">No</th>
+                                    <th>Nama Lengkap</th>
+                                    <th style="width:35px;">L/P</th>
+                                    <th>Status</th>
+                                    <th>Usia/Dapukan</th>
+                                    <th>Kelompok</th>
+                                    <th>Desa</th>
+                                    <th style="width:50px;">Waktu</th>
+                                </tr>
+                            </thead>
+                            <tbody>`;
+                dataMurni.forEach((d, i) => { 
+                    html += `<tr>
+                                <td>${i+1}</td>
+                                <td style="font-weight:600;">${d.name}</td>
+                                <td>${d.jk.includes('Perempuan') || d.jk === 'P' ? 'P' : 'L'}</td>
+                                <td>${d.status}</td>
+                                <td>${d.detail_status}</td>
+                                <td>${d.kelompok}</td>
+                                <td>${d.desa}</td>
+                                <td>${d.waktu}</td>
+                             </tr>`; 
+                });
+            } else {
+                // Versi Preview Aplikasi: Tetap ringkas sesuai poin 1 sebelumnya
+                html += `<table class="print-table">
                             <thead>
                                 <tr>
                                     <th style="width:30px;">No</th>
@@ -572,15 +604,17 @@
                                 </tr>
                             </thead>
                             <tbody>`;
-            dataMurni.forEach((d, i) => { 
-                html += `<tr>
-                            <td>${i+1}</td>
-                            <td style="font-weight:600;">${d.name}</td>
-                            <td>${d.jk.includes('Perempuan') || d.jk === 'P' ? 'P' : 'L'}</td>
-                            <td>${d.kelompok}</td>
-                            <td>${d.waktu}</td>
-                         </tr>`; 
-            });
+                dataMurni.forEach((d, i) => { 
+                    html += `<tr>
+                                <td>${i+1}</td>
+                                <td style="font-weight:600;">${d.name}</td>
+                                <td>${d.jk.includes('Perempuan') || d.jk === 'P' ? 'P' : 'L'}</td>
+                                <td>${d.kelompok}</td>
+                                <td>${d.waktu}</td>
+                             </tr>`; 
+                });
+            }
+            
             html += `</tbody></table>`;
             
             html += `<table class="print-table" style="margin-top:15px; border: 2px solid #475569; background:#f1f5f9;">
