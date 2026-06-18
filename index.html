@@ -552,7 +552,7 @@
         });
     }
 
-    async function tarikDanCetakLaporan(jenis, langsungPrint = false) {
+async function tarikDanCetakLaporan(jenis, langsungPrint = false) {
         let namaKegiatan = document.getElementById('kegiatan').value.toUpperCase();
         if(!namaKegiatan) return alert("Harap masukkan Nama Agenda yang ingin ditarik rekapannya!");
         tampilkanToast("🔄 Menarik seluruh data dari Supabase...");
@@ -564,8 +564,30 @@
         container.innerHTML = "";
         let opsiWaktu = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
         
-        // PERBAIKAN DI BAGIAN INI: Mengganti teks "Waktu Tarik Laporan" menjadi format Hari, Tanggal, Bulan, Tahun Pembuatan Data Kegiatan
-        document.getElementById('cetak-waktu').innerText = "Hari, Tanggal, Bulan, Tahun Pembuatan Data Kegiatan: " + new Date().toLocaleDateString('id-ID', opsiWaktu) + " WIB";
+        // --- LOGIKA MENCARI WAKTU ACARA DIMULAI ---
+        let waktuMulaiAcara = new Date(); 
+        
+        if (dataMurni.length > 0) {
+            // Memfilter log kehadiran (mengabaikan log berstatus "Izin" agar data waktu lebih mencerminkan stand presensi fisik dimulai)
+            let logKehadiran = dataMurni.filter(d => d.metode !== "Izin");
+            
+            // Fallback jika isinya izin semua, gunakan data murni yang tersedia
+            if (logKehadiran.length === 0) logKehadiran = dataMurni;
+
+            // Mengurutkan dari yang paling awal/terlama berdasarkan properti waktu_absen mentah
+            logKehadiran.sort((a, b) => {
+                return new Date(a.waktu_absen) - new Date(b.waktu_absen);
+            });
+
+            // Set waktu pembuatan/mulai berdasarkan data pertama yang masuk ke sistem
+            if(logKehadiran[0] && logKehadiran[0].waktu_absen) {
+                waktuMulaiAcara = new Date(logKehadiran[0].waktu_absen);
+            }
+        }
+
+        // Mengubah teks cetak menjadi waktu pembuatan data/mulai kegiatan
+        document.getElementById('cetak-waktu').innerText = "Waktu Pembuatan Data / Mulai Kegiatan: " + waktuMulaiAcara.toLocaleDateString('id-ID', opsiWaktu) + " WIB";
+        // ------------------------------------------
 
         let totalLakiHadir = 0;
         let totalPerempuanHadir = 0;
@@ -575,7 +597,7 @@
             if (d.metode === "Izin") {
                 totalIzinSemua++;
             } else {
-                if (d.jk.includes('Perempuan') || d.jk === 'P' ? true : false) totalPerempuanHadir++;
+                if (d.jk.includes('Perempuan') || d.jk === 'P') totalPerempuanHadir++;
                 else totalLakiHadir++;
             }
         });
