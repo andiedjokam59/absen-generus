@@ -23,822 +23,734 @@
             --shadow: rgba(15, 23, 42, 0.04);
             --icon-color: #475569;
             --warning: #eab308;
-            --warning-hover: #ca8a04;
         }
 
-        [data-theme=\"dark\"] {
+        [data-theme="dark"] {
+            --primary: #10b981;
+            --primary-hover: #34d399;
+            --accent: #f59e0b;
             --bg-main: #0f172a; 
-            --bg-card: #1e293b; 
+            --bg-card: #1e293b;
             --text-dark: #f8fafc; 
             --text-muted: #94a3b8;
             --border-color: #334155;
+            --success: #10b981;
             --shadow: rgba(0, 0, 0, 0.2);
             --icon-color: #94a3b8;
         }
 
-        body { 
-            font-family: 'Inter', sans-serif; 
-            margin: 0; padding: 0; 
-            background-color: var(--bg-main); 
-            color: var(--text-dark);
-            display: flex; justify-content: center; align-items: center;
-            min-height: 100vh;
-            transition: all 0.3s ease;
-        }
-
-        .app-container { 
-            width: 100%; max-width: 440px; 
-            background: var(--bg-card); 
-            padding: 32px 24px; border-radius: 24px; 
-            box-shadow: 0 10px 25px -5px var(--shadow), 0 8px 10px -6px var(--shadow);
-            box-sizing: border-box; margin: 16px;
-            position: relative;
-        }
-
-        .top-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            width: 100%;
-        }
-
-        .theme-toggle-btn {
-            background: var(--bg-main); border: 1px solid var(--border-color);
-            color: var(--text-dark); padding: 8px 14px; border-radius: 20px;
-            font-size: 12px; font-weight: 600; cursor: pointer;
-            transition: all 0.2s ease;
-            width: auto;
-        }
-
-        .net-status { 
-            font-weight: 700; font-size: 11px; padding: 6px 14px; 
-            border-radius: 20px; display: inline-block;
-            text-transform: uppercase; letter-spacing: 0.5px;
-        }
-        .online { background: rgba(16, 185, 129, 0.12); color: #10b981 !important; }
-        .offline { background: rgba(239, 68, 68, 0.12); color: #ef4444 !important; }
-
-        .brand-header { text-align: center; margin: 10px 0 24px 0; }
-        .brand-logo { width: 110px; height: 110px; object-fit: contain; border-radius: 12px; margin-bottom: 14px; }
-        .brand-header h2 { font-size: 24px; font-weight: 700; margin: 0; letter-spacing: -0.5px; }
-        .brand-header p { font-size: 13px; color: var(--accent); font-weight: 600; margin: 4px 0 0 0; text-transform: uppercase; letter-spacing: 0.5px; }
-
-        .form-group { margin-bottom: 20px; position: relative; }
-        label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-dark); }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body { background-color: var(--bg-main); color: var(--text-dark); padding: 15px; transition: background 0.3s, color 0.3s; }
         
-        input, .btn-primary, .btn-warning { 
-            width: 100%; padding: 14px 16px; 
-            border: 1px solid var(--border-color); background: var(--bg-card);
-            color: var(--text-dark); border-radius: 12px; 
-            box-sizing: border-box; font-size: 15px; font-family: inherit;
-            transition: all 0.2s;
-        }
-        input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(4, 120, 87, 0.15); }
-
-        #kegiatan { text-transform: uppercase; }
-
-        .btn-primary { background: var(--primary); color: #fff; border: none; font-weight: 600; cursor: pointer; margin-top: 8px; box-shadow: 0 4px 12px rgba(4, 120, 87, 0.2); text-align: center; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: var(--bg-card); padding: 12px 20px; border-radius: 12px; box-shadow: 0 1px 3px var(--shadow); border: 1px solid var(--border-color); }
+        .header h1 { font-size: 18px; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 8px; }
+        
+        .net-status { font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 20px; }
+        .online { background: #dcfce7; color: #15803d; }
+        .offline { background: #fee2e2; color: #b91c1c; }
+        
+        .grid-container { display: grid; grid-template-columns: 1fr; gap: 15px; }
+        @media (min-width: 768px) { .grid-container { grid-template-columns: 1fr 1fr; } }
+        
+        .card { background: var(--bg-card); border-radius: 12px; padding: 15px; box-shadow: 0 1px 3px var(--shadow); border: 1px solid var(--border-color); height: fit-content; }
+        .card-title { font-size: 14px; font-weight: 700; margin-bottom: 12px; color: var(--text-dark); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid var(--border-color); padding-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+        
+        .form-group { margin-bottom: 12px; position: relative; }
+        label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 4px; color: var(--text-muted); }
+        
+        input, select { width: 100%; padding: 10px; font-size: 14px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-dark); font-weight: 500; outline: none; transition: border 0.2s; }
+        input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(4, 120, 87, 0.1); }
+        
+        #reader { width: 100%; border-radius: 8px; overflow: hidden; border: 2px dashed var(--border-color); background: #000; }
+        
+        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 10px; font-size: 14px; font-weight: 600; border-radius: 8px; border: none; cursor: pointer; transition: background 0.2s; }
+        .btn-primary { background: var(--primary); color: #fff; }
         .btn-primary:hover { background: var(--primary-hover); }
-
-        .btn-warning { background: var(--warning); color: #0f172a; border: none; font-weight: 600; cursor: pointer; margin-top: 8px; box-shadow: 0 4px 12px rgba(234, 179, 8, 0.2); text-align: center; }
-        .btn-warning:hover { background: var(--warning-hover); }
-
-        .section-title { font-size: 12px; font-weight: 700; color: var(--text-muted); text-align: center; margin: 24px 0 12px 0; letter-spacing: 0.8px; text-transform: uppercase; }
+        .btn-warning { background: var(--accent); color: #fff; }
+        .btn-warning:hover { background: #b45309; }
+        .btn-secondary { background: #64748b; color: #fff; }
+        .btn-secondary:hover { background: #475569; }
         
-        #reader { width: 100%; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: none !important; background: var(--bg-card); }
-        #reader button {
-            background-color: var(--primary) !important;
-            color: #ffffff !important;
-            border: none !important;
-            padding: 12px 20px !important;
-            font-size: 14px !important;
-            font-weight: 600 !important;
-            border-radius: 12px !important;
-            cursor: pointer !important;
-            transition: background-color 0.2s ease, transform 0.1s ease !important;
-            box-shadow: 0 4px 12px rgba(4, 120, 87, 0.15) !important;
-            margin: 10px 0 !important;
-            font-family: inherit !important;
-        }
-        #reader button:hover { background-color: var(--primary-hover) !important; }
-        #reader button:active { transform: scale(0.98) !important; }
-        #reader a { color: var(--primary) !important; font-weight: 500; text-decoration: none; font-size: 13px; }
-
-        .divider { text-align: center; margin: 24px 0; font-size: 11px; font-weight: 700; color: var(--text-muted); }
-
-        .search-results { 
-            position: absolute; width: 100%; background: var(--bg-card); border: 1px solid var(--border-color); 
-            max-height: 220px; overflow-y: auto; z-index: 999; border-radius: 12px; margin-top: 2px;
-            box-shadow: 0 10px 15px -3px var(--shadow); display: none;
-        }
-        .search-item { padding: 12px 16px; cursor: pointer; border-bottom: 1px solid var(--border-color); font-size: 14px; }
+        .search-results { position: absolute; top: 100%; left: 0; right: 0; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; max-height: 200px; overflow-y: auto; z-index: 100; box-shadow: 0 4px 6px var(--shadow); display: none; }
+        .search-item { padding: 10px; cursor: pointer; border-bottom: 1px solid var(--border-color); font-size: 13px; font-weight: 500; }
         .search-item:hover { background: var(--bg-main); color: var(--primary); }
-
-        .action-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; margin-top: 10px; position: relative; }
-        .btn-icon, .select-wrapper { 
-            background: transparent; border: 1px solid var(--border-color); 
-            color: var(--text-dark); padding: 10px 0; border-radius: 10px; 
-            cursor: pointer; display: flex; flex-direction: column; align-items: center; 
-            justify-content: center; gap: 4px; font-size: 9.5px; font-weight: 600;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); width: 100%; box-sizing: border-box;
-        }
         
-        .btn-icon svg { 
-            width: 16px; height: 16px; 
-            fill: none; stroke: var(--icon-color); 
-            stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
-            transition: all 0.2s ease;
-        }
+        .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #1e293b; color: #fff; padding: 10px 20px; border-radius: 30px; font-size: 13px; font-weight: 600; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: none; z-index: 1000; text-align: center; max-width: 90%; }
         
-        .btn-icon:hover { background: var(--bg-main); border-color: var(--text-muted); }
-        .btn-icon:hover svg { stroke: var(--primary); transform: translateY(-1px); }
-        .btn-icon:active { transform: scale(0.95); }
-
-        .select-wrapper { position: relative; padding: 0; }
-        .select-wrapper select {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            opacity: 0; cursor: pointer; font-family: inherit;
-        }
-        .select-wrapper:hover { background: var(--bg-main); border-color: var(--text-muted); }
-        .select-wrapper:hover svg { stroke: var(--primary); transform: translateY(-1px); }
-
-        .toast-notif {
-            position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
-            background: #1e293b; color: #fff; padding: 12px 24px; border-radius: 30px; 
-            font-size: 14px; font-weight: 500; display: none; z-index: 10000; text-align: center;
-            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3);
-        }
+        .rekap-box { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
         
-        #print-area { display: none; width: 100%; margin-top: 30px; }
-        .print-box-wilayah { margin-bottom: 25px; page-break-inside: avoid; }
-        .print-box-wilayah h4 { margin: 0 0 8px 0; font-size: 14px; color: #0f172a; text-transform: uppercase; border-bottom: 2px solid #0f172a; padding-bottom: 4px; }
-        
-        .print-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; font-size: 11px; }
+        #print-area { background: white; color: black; padding: 30px; border-radius: 8px; margin-top: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: none; border: 1px solid #cbd5e1; }
+        .print-header { text-align: center; margin-bottom: 20px; border-bottom: 3px double #000; padding-bottom: 10px; }
+        .print-header h2 { font-size: 20px; font-weight: 700; margin-bottom: 4px; letter-spacing: 0.5px; }
+        .print-header p { font-size: 12px; color: #475569; }
+        .print-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
         .print-table th, .print-table td { border: 1px solid #94a3b8; padding: 6px 8px; text-align: left; }
-        .print-table th { background: #f1f5f9; color: #0f172a; font-weight: 600; }
+        .print-table th { background: #f1f5f9; font-weight: 700; text-transform: uppercase; font-size: 11px; }
+        .print-table tr:nth-child(even) { background: #f8fafc; }
+        .print-box-wilayah { margin-bottom: 25px; page-break-inside: avoid; }
+        .print-box-wilayah h4 { background: #334155; color: white; padding: 6px 10px; font-size: 13px; border-radius: 4px 4px 0 0; }
+        .print-box-wilayah .print-table { margin-top: 0; }
 
         @media print {
-            body { background: #fff!important; color: #000!important; display: block; padding: 0; margin: 0; }
-            .app-container { max-width: 100%; width: 100%; box-shadow: none!important; padding: 0; margin: 0; background: #fff!important; }
-            .top-bar, .section-title, #reader, .divider, .form-group, .btn-primary, .btn-warning, .action-row, .search-results, .toast-notif { display: none!important; }
-            #print-area { display: block!important; }
+            body { background: white; color: black; padding: 0; }
+            .header, .grid-container, .toast, #theme-btn { display: none !important; }
+            #print-area { display: block !important; border: none !important; box-shadow: none !important; padding: 0 !important; margin-top: 0 !important; }
+            .print-table th { background: #e2e8f0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .print-box-wilayah h4 { background: #1e293b !important; color: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .print-table tr:nth-child(even) { background: #f8fafc !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         }
     </style>
 </head>
-<body onclick="bukaKunciAudioKonstruktor()">
+<body>
 
-<div class="app-container">
-    <div class="top-bar">
-        <button class="theme-toggle-btn" onclick="ubahTemaSistem()" id="theme-btn">🌙 Dark Mode</button>
-        <div id="network-indicator" class="net-status online">● Online</div>
-    </div>
-    
-    <div class="brand-header">
-        <img src="logo insan qurany.jpg" alt="Logo" class="brand-logo" id="app-logo">
-        <h2>Presensi Kegiatan</h2>
-        <p>Insan Qur'any Tawangmangu</p>
-    </div>
-    
-    <div class="form-group">
-        <label for="kegiatan">Nama Agenda Pertemuan</label>
-        <input type="text" id="kegiatan" placeholder="Masukkan nama kegiatan..." oninput="this.value = this.value.toUpperCase(); updateJudulCetak();">
-    </div>
-
-    <div class="section-title">OPSI 1: SCAN BARCODE</div>
-    <div id="reader"></div>
-
-    <div class="divider">— ATAU —</div>
-
-    <div class="form-group">
-        <label for="search-input">OPSI 2: INPUT MANUAL Nama Anggota</label>
-        <input type="text" id="search-input" placeholder="Ketik nama untuk mencari..." oninput="cariNamaPintar()">
-        <div id="search-results-box" class="search-results"></div>
-    </div>
-    
-    <input type="hidden" id="selected-id-generus">
-    <button class="btn-primary" onclick="inputManualKehadiran()">Konfirmasi Kehadiran</button>
-    <button class="btn-warning" onclick="inputManualIzin()">Izin</button>
-
-    <div class="section-title">Menu Rekap & Penyimpanan</div>
-    <div class="action-row">
-        <button class="btn-icon" onclick="tarikDanCetakLaporan('semua')" title="Preview Semua">
-            <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-            Semua
-        </button>
-        <button class="btn-icon" onclick="tarikDanCetakLaporan('desa')" title="Rekap Desa">
-            <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
-            Desa
-        </button>
-        <button class="btn-icon" onclick="tarikDanCetakLaporan('kelompok')" title="Rekap Kelompok">
-            <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-            Klp
-        </button>
-        <button class="btn-icon" onclick="sinkronisasiManual()" title="Simpan Cloud">
-            <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
-            Simpan
-        </button>
-        <div class="select-wrapper" title="Cetak File">
-            <svg viewBox="0 0 24 24" style="width:16px; height:16px; fill:none; stroke:var(--icon-color); stroke-width:2; stroke-linecap:round; stroke-linejoin:round; transition:all 0.2s ease;"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
-            <span style="margin-top:4px;">Print</span>
-            <select id="print-dropdown" onchange="eksekusiPrintKhusus(this.value)">
-                <option value="" disabled selected hidden>Pilih</option>
-                <option value="semua">Print Semua</option>
-                <option value="desa">Print Desa</option>
-                <option value="kelompok">Print Kelompok</option>
-            </select>
+    <div class="header">
+        <h1>🟢 PRESENSI KMM</h1>
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <button id="theme-btn" onclick="ubahTemaSistem()" style="background:transparent; border:1px solid var(--border-color); padding:5px 10px; border-radius:8px; cursor:pointer; font-size:12px; font-weight:600; color:var(--text-dark);">🌙 Dark Mode</button>
+            <div id="network-indicator" class="net-status online">● Online</div>
         </div>
-        <button class="btn-icon" onclick="eksporKeExcel()" title="Ekspor Excel">
-            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-            Excel
-        </button>
+    </div>
+
+    <div class="grid-container">
+        <div class="card">
+            <div class="card-title">📝 KONFIGURASI & KAMERA SCANNER</div>
+            <div class="form-group">
+                <label for="kegiatan">Nama Agenda Kegiatan (Gunakan Huruf Kapital)</label>
+                <input type="text" id="kegiatan" placeholder="Contoh: MUSYAWARAH KMM JUNI 2026" oninput="updateJudulCetak()" style="text-transform: uppercase;">
+            </div>
+            <div class="form-group" style="margin-top: 10px;">
+                <label>Arahkan Barcode/QR Code ke Kamera Laptop/HP</label>
+                <div id="reader"></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">🔍 INPUT MANUAL & REKAPITULASI</div>
+            
+            <div class="form-group">
+                <label for="search-input">Ketik Nama Anggota / Generus</label>
+                <input type="text" id="search-input" placeholder="Ketik minimal 2 huruf nama..." oninput="cariNamaPintar()" autocomplete="off">
+                <input type="hidden" id="selected-id-generus">
+                <div id="search-results-box" class="search-results"></div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+                <button class="btn btn-primary" onclick="inputManualKehadiran()">🟢 Input Hadir</button>
+                <button class="btn btn-warning" onclick="inputManualIzin()">🟡 Input Izin</button>
+            </div>
+
+            <div class="card-title" style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 10px;">📊 DOWNLOAD & PRINT REKAP DATA</div>
+            <div class="rekap-box">
+                <button class="btn btn-secondary" onclick="tarikDanCetakLaporan('semua')">👁️ Preview Seluruh Presensi</button>
+                <button class="btn btn-secondary" onclick="tarikDanCetakLaporan('desa')">👁️ Preview Rekap Per-Desa</button>
+                <button class="btn btn-secondary" onclick="tarikDanCetakLaporan('kelompok')">👁️ Preview Rekap Per-Kelompok</button>
+                
+                <div style="margin-top: 5px;">
+                    <label style="margin-bottom:2px;">🖨️ Langsung Cetak / Print Ke Kertas/PDF:</label>
+                    <select id="print-dropdown" onchange="eksekusiPrintKhusus(this.value)">
+                        <option value="">-- Pilih Format Cetak --</option>
+                        <option value="semua">Cetak Semua Daftar Presensi</option>
+                        <option value="desa">Cetak Rekap Jumlah Per-Desa</option>
+                        <option value="kelompok">Cetak Pembagian Per-Kelompok</option>
+                    </select>
+                </div>
+
+                <button class="btn btn-primary" onclick="eksporKeExcel()" style="background:#15803d; margin-top: 5px;">📥 Download File Excel (CSV)</button>
+            </div>
+        </div>
     </div>
 
     <div id="print-area">
-        <h3 style="text-align: center; margin: 0 0 5px 0; font-size: 18px;" id="cetak-judul-kegiatan">Laporan Presensi Kegiatan</h3>
-        <p style="text-align: center; margin: 0 0 20px 0; font-size: 13px; color: #475569;" id="cetak-waktu">-</p>
+        <div class="print-header">
+            <h2 id="cetak-judul-kegiatan">Laporan Presensi Kegiatan</h2>
+            <p id="cetak-waktu">Waktu Cetak: -</p>
+        </div>
         <div id="print-table-container"></div>
     </div>
-</div>
 
-<div id="toast-box" class="toast-notif"></div>
+    <div id="toast-box" class="toast"></div>
 
-<script>
-    const SUPABASE_URL = "https://gttavghryoadthnvwthd.supabase.co"; 
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0dGF2Z2hyeW9hZHRobnZ3dGhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA5MDI5NDQsImV4cCI6MjA5NjQ3ODk0NH0.0O7I9EqSaiQq8_LKMJS9U-XDuitY6sPfYQVtBsJAeas";
-    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    <script>
+        const SUPABASE_URL = "https://gttavghryoadthnvwthd.supabase.co"; 
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0dGF2Z2hyeW9hZHRobnZ3dGhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA5MDI5NDQsImV4cCI6MjA5NjQ3ODk0NH0.0O7I9EqSaiQq8_LKMJS9U-XDuitY6sPfYQVtBsJAeas";
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    const netIndicator = document.getElementById('network-indicator');
-    const searchInput = document.getElementById('search-input');
-    const resultsBox = document.getElementById('search-results-box');
-    const selectedIdInput = document.getElementById('selected-id-generus');
-    const themeBtn = document.getElementById('theme-btn');
-    
-    let semuaDataGenerus = [];
-    let pengunciScanAktif = false; 
-    let globalAudioCtx = null;
-    let cachePresensiMenitIni = new Set();
+        const netIndicator = document.getElementById('network-indicator');
+        const searchInput = document.getElementById('search-input');
+        const resultsBox = document.getElementById('search-results-box');
+        const selectedIdInput = document.getElementById('selected-id-generus');
+        const themeBtn = document.getElementById('theme-btn');
+        
+        let semuaDataGenerus = [];
+        let pengunciScanAktif = false; 
+        let globalAudioCtx = null;
+        let cachePresensiMenitIni = new Set();
 
-    function bukaKunciAudioKonstruktor() {
-        if (!globalAudioCtx) {
-            globalAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        }
-        if (globalAudioCtx.state === 'suspended') {
-            globalAudioCtx.resume();
-        }
-    }
-
-    function bunyikanSuaraSukses() {
-        try {
-            bukaKunciAudioKonstruktor();
-            let ctx = globalAudioCtx || new (window.AudioContext || window.webkitAudioContext)();
-            let oscillator = ctx.createOscillator();
-            let gainNode = ctx.createGain();
-            oscillator.connect(gainNode); gainNode.connect(ctx.destination);
-            oscillator.type = 'sine'; oscillator.frequency.value = 880; 
-            gainNode.gain.setValueAtTime(0.15, ctx.currentTime); 
-            oscillator.start(); oscillator.stop(ctx.currentTime + 0.12); 
-        } catch (e) {}
-    }
-
-    function bunyikanSuaraGagal() {
-        try {
-            bukaKunciAudioKonstruktor();
-            let ctx = globalAudioCtx || new (window.AudioContext || window.webkitAudioContext)();
-            let osc1 = ctx.createOscillator(); 
-            let gain1 = ctx.createGain();
-            osc1.connect(gain1); gain1.connect(ctx.destination);
-            osc1.type = 'sawtooth'; 
-            osc1.frequency.value = 140; 
-            gain1.gain.setValueAtTime(0.2, ctx.currentTime);
-            osc1.start(ctx.currentTime); 
-            osc1.stop(ctx.currentTime + 0.18);
-
-            let osc2 = ctx.createOscillator(); 
-            let gain2 = ctx.createGain();
-            osc2.connect(gain2); gain2.connect(ctx.destination);
-            osc2.type = 'sawtooth'; 
-            osc2.frequency.value = 100; 
-            gain2.gain.setValueAtTime(0.2, ctx.currentTime + 0.2);
-            osc2.start(ctx.currentTime + 0.2); 
-            osc2.stop(ctx.currentTime + 0.5);
-        } catch (e) {}
-    }
-
-    function ubahTemaSistem() {
-        if (document.documentElement.getAttribute('data-theme') === 'dark') {
-            document.documentElement.removeAttribute('data-theme');
-            themeBtn.innerText = "🌙 Dark Mode";
-            localStorage.setItem('tema_pilihan', 'light');
-        } else {
-            document.documentElement.setAttribute('data-theme', 'dark');
-            themeBtn.innerText = "☀️ Light Mode";
-            localStorage.setItem('tema_pilihan', 'dark');
-        }
-    }
-    if (localStorage.getItem('tema_pilihan') === 'dark') {
-        document.documentElement.setAttribute('data-theme', 'dark');
-        themeBtn.innerText = "☀️ Light Mode";
-    }
-
-    function updateJudulCetak() {
-        let agenda = document.getElementById('kegiatan').value.toUpperCase();
-        document.getElementById('cetak-judul-kegiatan').innerText = agenda ? `Laporan Presensi: ${agenda}` : "Laporan Presensi Kegiatan";
-    }
-
-    function tampilkanToast(pesan) {
-        let box = document.getElementById('toast-box');
-        box.innerText = pesan;
-        box.style.display = 'block';
-        setTimeout(() => { box.style.display = 'none'; }, 3000);
-    }
-
-    window.addEventListener('online', () => {
-        netIndicator.innerText = "● Online"; netIndicator.className = "net-status online";
-        sinkronisasiManual();
-    });
-    window.addEventListener('offline', () => {
-        netIndicator.innerText = "● Offline"; netIndicator.className = "net-status offline";
-    });
-
-    async function muatSemuaGenerus() {
-        try {
-            let { data: generus, error } = await _supabase.from('data_generus').select('*');
-            if (!error) { 
-                semuaDataGenerus = generus; 
-                searchInput.placeholder = `Cari di antara ${generus.length} data...`; 
+        function bukaKunciAudioKonstruktor() {
+            if (!globalAudioCtx) {
+                globalAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
             }
-        } catch (e) { searchInput.placeholder = "Gagal memuat data (Mode Offline)"; }
-    }
-    muatSemuaGenerus();
-
-    function cariNamaPintar() {
-        let keyword = searchInput.value.toLowerCase();
-        resultsBox.innerHTML = '';
-        if (keyword.length < 2) { resultsBox.style.display = 'none'; return; }
-        
-        let hasilFilter = semuaDataGenerus.filter(g => g.nama_lengkap && g.nama_lengkap.toLowerCase().includes(keyword)).slice(0, 8);
-        
-        if(hasilFilter.length > 0) {
-            resultsBox.style.display = 'block';
-            hasilFilter.forEach(g => {
-                let div = document.createElement('div');
-                div.className = 'search-item';
-                
-                let infoTambahan = g.status ? ` — [${g.status}${g.usia_dapukan ? ': ' + g.usia_dapukan : ''}]` : '';
-                div.innerText = `${g.nama_lengkap}${infoTambahan} — ${g.kelompok || '-'} [${g.desa || '-'}]`;
-                
-                div.onclick = function() {
-                    searchInput.value = g.nama_lengkap; 
-                    selectedIdInput.value = g.id_generus;
-                    resultsBox.style.display = 'none';
-                };
-                resultsBox.appendChild(div);
-            });
-        } else {
-            resultsBox.style.display = 'block';
-            resultsBox.innerHTML = '<div class="search-item" style="color:#ef4444; font-size:13px;">Nama tidak ditemukan</div>';
-        }
-    }
-    document.addEventListener('click', function(e) { if (e.target !== searchInput) { resultsBox.style.display = 'none'; } });
-
-    async function onScanSuccess(decodedText) { 
-        if (pengunciScanAktif) return; 
-        pengunciScanAktif = true; 
-        
-        await prosesAbsensi(decodedText, "Scan Barcode");
-        setTimeout(() => { pengunciScanAktif = false; }, 1500); 
-    }
-    
-    let html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 220 });
-    html5QrcodeScanner.render(onScanSuccess);
-
-    async function cekApakahSudahAbsen(idGenerus, namaKegiatan) {
-        let sekarang = new Date();
-        let batasWaktuMiliDetik = 3 * 60 * 60 * 1000;
-
-        if (cachePresensiMenitIni.has(String(idGenerus))) {
-            return true;
+            if (globalAudioCtx.state === 'suspended') {
+                globalAudioCtx.resume();
+            }
         }
 
-        let antrean = JSON.parse(localStorage.getItem('antrean_absensi')) || [];
-        let riwayatLokal = JSON.parse(localStorage.getItem('riwayat_sukses_lokal')) || [];
-        let gabunganLokal = [...antrean, ...riwayatLokal];
-        
-        let dataSamaLokal = gabunganLokal.find(absen => {
-            let waktuAbsenLokal = new Date(absen.waktu_absen);
-            let selisihWaktu = sekarang - waktuAbsenLokal;
-
-            return String(absen.id_generus) === String(idGenerus) && 
-                   String(absen.nama_kegiatan).trim().toUpperCase() === String(namaKegiatan).trim().toUpperCase() &&
-                   selisihWaktu < batasWaktuMiliDetik;
-        });
-        
-        if (dataSamaLokal) return true;
-
-        if (navigator.onLine) {
+        function bunyikanSuaraSukses() {
             try {
-                let { data, error } = await _supabase
-                    .from('absensi_kegiatan')
-                    .select('waktu_absen')
-                    .eq('id_generus', idGenerus)
-                    .eq('nama_kegiatan', namaKegiatan.trim().toUpperCase());
-                    
-                if (!error && data && data.length > 0) {
-                    let sudahAdaDataBaru = data.some(db => {
-                        let waktuDB = new Date(db.waktu_absen);
-                        return (sekarang - waktuDB) < batasWaktuMiliDetik;
-                    });
-                    if (sudahAdaDataBaru) return true;
-                }
+                bukaKunciAudioKonstruktor();
+                let ctx = globalAudioCtx || new (window.AudioContext || window.webkitAudioContext)();
+                let oscillator = ctx.createOscillator();
+                let gainNode = ctx.createGain();
+                oscillator.connect(gainNode); gainNode.connect(ctx.destination);
+                oscillator.type = 'sine'; oscillator.frequency.value = 880; 
+                gainNode.gain.setValueAtTime(0.15, ctx.currentTime); 
+                oscillator.start(); oscillator.stop(ctx.currentTime + 0.12); 
             } catch (e) {}
         }
-        return false;
-    }
 
-    async function prosesAbsensi(idGenerus, metode) {
-        let namaKegiatan = document.getElementById('kegiatan').value.toUpperCase();
-        if(!namaKegiatan) {
-            bunyikanSuaraGagal();
-            alert("Harap isi Nama Agenda terlebih dahulu!");
-            return;
+        function bunyikanSuaraGagal() {
+            try {
+                bukaKunciAudioKonstruktor();
+                let ctx = globalAudioCtx || new (window.AudioContext || window.webkitAudioContext)();
+                let osc1 = ctx.createOscillator(); 
+                let gain1 = ctx.createGain();
+                osc1.connect(gain1); gain1.connect(ctx.destination);
+                osc1.type = 'sawtooth'; 
+                osc1.frequency.value = 140; 
+                gain1.gain.setValueAtTime(0.2, ctx.currentTime);
+                osc1.start(ctx.currentTime); 
+                osc1.stop(ctx.currentTime + 0.18);
+
+                let osc2 = ctx.createOscillator(); 
+                let gain2 = ctx.createGain();
+                osc2.connect(gain2); gain2.connect(ctx.destination);
+                osc2.type = 'sawtooth'; 
+                osc2.frequency.value = 100; 
+                gain2.gain.setValueAtTime(0.2, ctx.currentTime + 0.2);
+                osc2.start(ctx.currentTime + 0.2); 
+                osc2.stop(ctx.currentTime + 0.5);
+            } catch (e) {}
+        }
+
+        function ubahTemaSistem() {
+            if (document.documentElement.getAttribute('data-theme') === 'dark') {
+                document.documentElement.removeAttribute('data-theme');
+                themeBtn.innerText = "🌙 Dark Mode";
+                localStorage.setItem('tema_pilihan', 'light');
+            } else {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                themeBtn.innerText = "☀️ Light Mode";
+                localStorage.setItem('tema_pilihan', 'dark');
+            }
+        }
+        if (localStorage.getItem('tema_pilihan') === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            themeBtn.innerText = "☀️ Light Mode";
+        }
+
+        function updateJudulCetak() {
+            let agenda = document.getElementById('kegiatan').value.toUpperCase();
+            document.getElementById('cetak-judul-kegiatan').innerText = agenda ? `Laporan Presensi: ${agenda}` : "Laporan Presensi Kegiatan";
+        }
+
+        function tampilkanToast(pesan) {
+            let box = document.getElementById('toast-box');
+            box.innerText = pesan;
+            box.style.display = 'block';
+            setTimeout(() => { box.style.display = 'none'; }, 3000);
+        }
+
+        window.addEventListener('online', () => {
+            netIndicator.innerText = "● Online"; netIndicator.className = "net-status online";
+            sinkronisasiManual();
+        });
+        window.addEventListener('offline', () => {
+            netIndicator.innerText = "● Offline"; netIndicator.className = "net-status offline";
+        });
+
+        async function muatSemuaGenerus() {
+            try {
+                let { data: generus, error } = await _supabase.from('data_generus').select('*');
+                if (!error) { 
+                    semuaDataGenerus = generus; 
+                    searchInput.placeholder = `Cari di antara ${generus.length} data...`; 
+                }
+            } catch (e) { searchInput.placeholder = "Gagal memuat data (Mode Offline)"; }
+        }
+        muatSemuaGenerus();
+
+        function cariNamaPintar() {
+            let keyword = searchInput.value.toLowerCase();
+            resultsBox.innerHTML = '';
+            if (keyword.length < 2) { resultsBox.style.display = 'none'; return; }
+            
+            let hasilFilter = semuaDataGenerus.filter(g => g.nama_lengkap && g.nama_lengkap.toLowerCase().includes(keyword)).slice(0, 8);
+            
+            if(hasilFilter.length > 0) {
+                resultsBox.style.display = 'block';
+                hasilFilter.forEach(g => {
+                    let div = document.createElement('div');
+                    div.className = 'search-item';
+                    
+                    let infoTambahan = g.status ? ` — [${g.status}${g.usia_dapukan ? ': ' + g.usia_dapukan : ''}]` : '';
+                    div.innerText = `${g.nama_lengkap}${infoTambahan} — ${g.kelompok || '-'} [${g.desa || '-'}]`;
+                    
+                    div.onclick = function() {
+                        searchInput.value = g.nama_lengkap; 
+                        selectedIdInput.value = g.nama_lengkap; // Menggunakan nama lengkap
+                        resultsBox.style.display = 'none';
+                    };
+                    resultsBox.appendChild(div);
+                });
+            } else {
+                resultsBox.style.display = 'block';
+                resultsBox.innerHTML = '<div class="search-item" style="color:#ef4444; font-size:13px;">Nama tidak ditemukan</div>';
+            }
+        }
+        document.addEventListener('click', function(e) { if (e.target !== searchInput) { resultsBox.style.display = 'none'; } });
+
+        async function onScanSuccess(decodedText) { 
+            if (pengunciScanAktif) return; 
+            pengunciScanAktif = true; 
+            
+            // Konversi ID Barcode ke Nama Lengkap dari master data_generus
+            let profil = semuaDataGenerus.find(g => String(g.id_generus) === String(decodedText).trim() || String(g.nama_lengkap).toUpperCase() === String(decodedText).trim().toUpperCase());
+            
+            let inputKehadiran = profil ? profil.nama_lengkap : decodedText;
+
+            await prosesAbsensi(inputKehadiran, "Scan Barcode");
+            setTimeout(() => { pengunciScanAktif = false; }, 1500); 
         }
         
-        let profil = semuaDataGenerus.find(g => g.id_generus == idGenerus) || { nama_lengkap: "ID: " + idGenerus };
+        let html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 220 });
+        html5QrcodeScanner.render(onScanSuccess);
 
-        let sudahAbsen = await cekApakahSudahAbsen(idGenerus, namaKegiatan);
-        if (sudahAbsen) {
-            bunyikanSuaraGagal(); 
-            tampilkanToast(`❌ DATA DOUBLE: ${profil.nama_lengkap} SUDAH INPUT!`);
-            if(metode === "Manual" || metode === "Izin") { searchInput.value = ''; selectedIdInput.value = ''; }
-            return; 
+        async function cekApakahSudahAbsen(namaLengkap, namaKegiatan) {
+            let sekarang = new Date();
+            let batasWaktuMiliDetik = 3 * 60 * 60 * 1000;
+
+            if (cachePresensiMenitIni.has(String(namaLengkap))) {
+                return true;
+            }
+
+            let antrean = JSON.parse(localStorage.getItem('antrean_absensi')) || [];
+            let riwayatLokal = JSON.parse(localStorage.getItem('riwayat_sukses_lokal')) || [];
+            let gabunganLokal = [...antrean, ...riwayatLokal];
+            
+            let dataSamaLokal = gabunganLokal.find(absen => {
+                let waktuAbsenLokal = new Date(absen.waktu_absen);
+                let selisihWaktu = sekarang - waktuAbsenLokal;
+
+                return String(absen.id_generus).trim().toUpperCase() === String(namaLengkap).trim().toUpperCase() && 
+                       String(absen.nama_kegiatan).trim().toUpperCase() === String(namaKegiatan).trim().toUpperCase() &&
+                       selisihWaktu < batasWaktuMiliDetik;
+            });
+            
+            if (dataSamaLokal) return true;
+
+            if (navigator.onLine) {
+                try {
+                    let { data, error } = await _supabase
+                        .from('absensi_kegiatan')
+                        .select('waktu_absen')
+                        .eq('id_generus', namaLengkap)
+                        .eq('nama_kegiatan', namaKegiatan.trim().toUpperCase());
+                        
+                    if (!error && data && data.length > 0) {
+                        let sudahAdaDataBaru = data.some(db => {
+                            let waktuDB = new Date(db.waktu_absen);
+                            return (sekarang - waktuDB) < batasWaktuMiliDetik;
+                        });
+                        if (sudahAdaDataBaru) return true;
+                    }
+                } catch (e) {}
+            }
+            return false;
         }
 
-        cachePresensiMenitIni.add(String(idGenerus));
+        async function prosesAbsensi(namaLengkap, metode) {
+            let namaKegiatan = document.getElementById('kegiatan').value.toUpperCase();
+            if(!namaKegiatan) {
+                bunyikanSuaraGagal();
+                alert("Harap isi Nama Agenda terlebih dahulu!");
+                return;
+            }
+            
+            let profil = semuaDataGenerus.find(g => String(g.nama_lengkap).toUpperCase() === String(namaLengkap).toUpperCase()) || { nama_lengkap: namaLengkap };
 
-        const dataAbsen = {
-            nama_kegiatan: namaKegiatan.trim(),
-            id_generus: idGenerus,
-            metode_input: metode,
-            waktu_absen: new Date().toISOString()
-        };
-
-        if (navigator.onLine) {
-            let { error } = await _supabase.from('absensi_kegiatan').insert([dataAbsen]);
-            if (!error) {
-                bunyikanSuaraSukses(); 
-                tampilkanToast(`✓ Status ${metode === 'Izin' ? 'Izin' : 'Kehadiran'} ${profil.nama_lengkap} sukses disimpan!`);
+            let sudahAbsen = await cekApakahSudahAbsen(profil.nama_lengkap, namaKegiatan);
+            if (sudahAbsen) {
+                bunyikanSuaraGagal(); 
+                tampilkanToast(`❌ DATA DOUBLE: ${profil.nama_lengkap} SUDAH INPUT!`);
                 if(metode === "Manual" || metode === "Izin") { searchInput.value = ''; selectedIdInput.value = ''; }
+                return; 
+            }
+
+            cachePresensiMenitIni.add(String(profil.nama_lengkap));
+
+            const dataAbsen = {
+                nama_kegiatan: namaKegiatan.trim(),
+                id_generus: profil.nama_lengkap, // Mengirim teks Nama Lengkap ke Supabase
+                metode_input: metode,
+                waktu_absen: new Date().toISOString()
+            };
+
+            if (navigator.onLine) {
+                let { error } = await _supabase.from('absensi_kegiatan').insert([dataAbsen]);
+                if (!error) {
+                    bunyikanSuaraSukses(); 
+                    tampilkanToast(`✓ Status ${metode === 'Izin' ? 'Izin' : 'Kehadiran'} ${profil.nama_lengkap} sukses disimpan!`);
+                    if(metode === "Manual" || metode === "Izin") { searchInput.value = ''; selectedIdInput.value = ''; }
+                } else { simpanLokal(dataAbsen, profil.nama_lengkap); }
             } else { simpanLokal(dataAbsen, profil.nama_lengkap); }
-        } else { simpanLokal(dataAbsen, profil.nama_lengkap); }
-    }
+        }
 
-    function simpanLokal(data, namaOrang) {
-        let antrean = JSON.parse(localStorage.getItem('antrean_absensi')) || [];
-        antrean.push(data);
-        localStorage.setItem('antrean_absensi', JSON.stringify(antrean));
-        
-        let riwayatLokal = JSON.parse(localStorage.getItem('riwayat_sukses_lokal')) || [];
-        riwayatLokal.push(data);
-        localStorage.setItem('riwayat_sukses_lokal', JSON.stringify(riwayatLokal));
-
-        bunyikanSuaraSukses(); 
-        tampilkanToast(`💾 Tersimpan lokal (${data.metode_input}): ${namaOrang}`);
-        if(data.metode_input === "Manual" || data.metode_input === "Izin") { searchInput.value = ''; selectedIdInput.value = ''; }
-    }
-
-    async function sinkronisasiManual() {
-        let antrean = JSON.parse(localStorage.getItem('antrean_absensi')) || [];
-        if (antrean.length === 0) return;
-        netIndicator.innerText = "🔄 Menyinkronkan...";
-        for (let i = 0; i < antrean.length; i++) { await _supabase.from('absensi_kegiatan').insert([antrean[i]]); }
-        localStorage.removeItem('antrean_absensi');
-        localStorage.removeItem('riwayat_sukses_lokal');
-        cachePresensiMenitIni.clear(); 
-        netIndicator.innerText = "● Online"; netIndicator.className = "net-status online";
-        tampilkanToast("✓ Semua data offline berhasil digabungkan ke Supabase");
-    }
-
-    function inputManualKehadiran() {
-        let idTerpilih = selectedIdInput.value;
-        if(!idTerpilih) return alert("Cari dan pilih nama terlebih dahulu!");
-        prosesAbsensi(idTerpilih, "Manual");
-    }
-
-    function inputManualIzin() {
-        let idTerpilih = selectedIdInput.value;
-        if(!idTerpilih) return alert("Cari dan pilih nama terlebih dahulu!");
-        prosesAbsensi(idTerpilih, "Izin");
-    }
-
-    async function dapatkanDataGabungan(namaKegiatan) {
-        let { data: logAbsen, error } = await _supabase.from('absensi_kegiatan').select('id_generus, waktu_absen, metode_input').eq('nama_kegiatan', namaKegiatan.toUpperCase());
-        if (error || !logAbsen || logAbsen.length === 0) return [];
-        
-        return logAbsen.map(absen => {
-            let detail = semuaDataGenerus.find(g => String(g.id_generus) === String(absen.id_generus));
+        function simpanLokal(data, namaOrang) {
+            let antrean = JSON.parse(localStorage.getItem('antrean_absensi')) || [];
+            antrean.push(data);
+            localStorage.setItem('antrean_absensi', JSON.stringify(antrean));
             
-            return {
-                id: absen.id_generus,
-                name: detail ? detail.nama_lengkap : "ID Terhapus: " + absen.id_generus, 
-                kelompok: detail ? (detail.kelompok || "-") : "-", 
-                desa: detail ? (detail.desa || "-") : "-",
-                jk: detail ? (detail.jenis_kelamin || "-") : "-",
-                status: detail ? (detail.status || "-") : "-",
-                detail_status: detail ? (detail.usia_dapukan || "-") : "-",
-                waktu: absen.metode_input === "Izin" ? "IZIN" : new Date(absen.waktu_absen).toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'}).replace('.', ':'),
-                metode: absen.metode_input
-            }
-        });
-    }
+            let riwayatLokal = JSON.parse(localStorage.getItem('riwayat_sukses_lokal')) || [];
+            riwayatLokal.push(data);
+            localStorage.setItem('riwayat_sukses_lokal', JSON.stringify(riwayatLokal));
 
-    async function tarikDanCetakLaporan(jenis, langsungPrint = false) {
-        let namaKegiatan = document.getElementById('kegiatan').value.toUpperCase();
-        if(!namaKegiatan) return alert("Harap masukkan Nama Agenda yang ingin ditarik rekapannya!");
-        tampilkanToast("🔄 Menarik seluruh data dari Supabase...");
-        let dataMurni = await dapatkanDataGabungan(namaKegiatan);
-        if(dataMurni.length === 0) return alert(`Tidak ditemukan data absensi/izin untuk kegiatan: "${namaKegiatan}"`);
+            bunyikanSuaraSukses(); 
+            tampilkanToast(`💾 Tersimpan lokal (${data.metode_input}): ${namaOrang}`);
+            if(data.metode_input === "Manual" || data.metode_input === "Izin") { searchInput.value = ''; selectedIdInput.value = ''; }
+        }
 
-        let container = document.getElementById('print-table-container');
-        let areaCetak = document.getElementById('print-area');
-        container.innerHTML = "";
-        let opsiWaktu = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
-        document.getElementById('cetak-waktu').innerText = "Waktu Tarik Laporan: " + new Date().toLocaleDateString('id-ID', opsiWaktu) + " WIB";
+        async function sinkronisasiManual() {
+            let antrean = JSON.parse(localStorage.getItem('antrean_absensi')) || [];
+            if (antrean.length === 0) return;
+            netIndicator.innerText = "🔄 Menyinkronkan...";
+            for (let i = 0; i < antrean.length; i++) { await _supabase.from('absensi_kegiatan').insert([antrean[i]]); }
+            localStorage.removeItem('antrean_absensi');
+            localStorage.removeItem('riwayat_sukses_lokal');
+            cachePresensiMenitIni.clear(); 
+            netIndicator.innerText = "● Online"; netIndicator.className = "net-status online";
+            tampilkanToast("✓ Semua data offline berhasil digabungkan ke Supabase");
+        }
 
-        let totalLakiHadir = 0;
-        let totalPerempuanHadir = 0;
-        let totalIzinSemua = 0;
+        function inputManualKehadiran() {
+            let namaTerpilih = selectedIdInput.value;
+            if(!namaTerpilih) return alert("Cari dan pilih nama terlebih dahulu!");
+            prosesAbsensi(namaTerpilih, "Manual");
+        }
 
-        dataMurni.forEach(d => {
-            if (d.metode === "Izin") {
-                totalIzinSemua++;
-            } else {
-                if (d.jk.includes('Perempuan') || d.jk === 'P') totalPerempuanHadir++;
-                else totalLakiHadir++;
-            }
-        });
+        function inputManualIzin() {
+            let namaTerpilih = selectedIdInput.value;
+            if(!namaTerpilih) return alert("Cari dan pilih nama terlebih dahulu!");
+            prosesAbsensi(namaTerpilih, "Izin");
+        }
 
-        if (jenis === 'semua') {
-            let html = "";
+        async function dapatkanDataGabungan(namaKegiatan) {
+            let { data: logAbsen, error } = await _supabase.from('absensi_kegiatan').select('id_generus, waktu_absen, metode_input').eq('nama_kegiatan', namaKegiatan.toUpperCase());
+            if (error || !logAbsen || logAbsen.length === 0) return [];
             
-            if (langsungPrint) {
-                html += `<table class="print-table">
-                            <thead>
-                                <tr>
-                                    <th style="width:30px;">No</th>
-                                    <th>Nama Lengkap</th>
-                                    <th style="width:35px;">L/P</th>
-                                    <th>Status</th>
-                                    <th>Usia/Dapukan</th>
-                                    <th>Kelompok</th>
-                                    <th>Desa</th>
-                                    <th style="width:50px;">Waktu</th>
-                                </tr>
-                            </thead>
-                            <tbody>`;
-                dataMurni.forEach((d, i) => { 
-                    let penandaIzin = d.metode === "Izin" ? " <span style='color:#eab308; font-weight:700;'>(IZIN)</span>" : "";
-                    html += `<tr>
-                                <td>${i+1}</td>
-                                <td style="font-weight:600;">${d.name}${penandaIzin}</td>
-                                <td>${d.jk.includes('Perempuan') || d.jk === 'P' ? 'P' : 'L'}</td>
-                                <td>${d.status}</td>
-                                <td>${d.detail_status}</td>
-                                <td>${d.kelompok}</td>
-                                <td>${d.desa}</td>
-                                <td style="font-weight:${d.metode === 'Izin' ? '700' : '500'}; color:${d.metode === 'Izin' ? '#b45309' : 'inherit'};">${d.waktu}</td>
-                             </tr>`; 
-                });
-            } else {
-                html += `<table class="print-table">
-                            <thead>
-                                <tr>
-                                    <th style="width:30px;">No</th>
-                                    <th>Nama Lengkap</th>
-                                    <th style="width:35px;">L/P</th>
-                                    <th>Kelompok</th>
-                                    <th style="width:50px;">Waktu</th>
-                                </tr>
-                            </thead>
-                            <tbody>`;
-                dataMurni.forEach((d, i) => { 
-                    let penandaIzin = d.metode === "Izin" ? " <span style='color:#eab308; font-weight:700;'>(IZIN)</span>" : "";
-                    html += `<tr>
-                                <td>${i+1}</td>
-                                <td style="font-weight:600;">${d.name}${penandaIzin}</td>
-                                <td>${d.jk.includes('Perempuan') || d.jk === 'P' ? 'P' : 'L'}</td>
-                                <td>${d.kelompok}</td>
-                                <td style="font-weight:${d.metode === 'Izin' ? '700' : '500'}; color:${d.metode === 'Izin' ? '#b45309' : 'inherit'};">${d.waktu}</td>
-                             </tr>`; 
-                });
-            }
-            
-            html += `</tbody></table>`;
-            
-            html += `<table class="print-table" style="margin-top:15px; border: 2px solid #475569; background:#f1f5f9;">
-                        <tr style="font-weight:700; font-size:12px;">
-                            <td style="text-align:right; padding:8px;">TOTAL REKAP SEMUA:</td>
-                            <td style="width:100px; text-align:center; color:#1d4ed8;">Hadir L: ${totalLakiHadir}</td>
-                            <td style="width:100px; text-align:center; color:#be185d;">Hadir P: ${totalPerempuanHadir}</td>
-                            <td style="width:90px; text-align:center; color:#b45309;">Izin: ${totalIzinSemua}</td>
-                            <td style="width:130px; text-align:center; color:#0f172a;">Total Data: ${dataMurni.length} Orang</td>
-                        </tr>
-                     </table>`;
-            
-            container.innerHTML = html;
-            areaCetak.style.display = "block";
-            
-            if (langsungPrint) {
-                window.print();
-            } else {
-                tampilkanToast("✓ Preview rekap data berhasil dimuat di bawah!");
-                window.scrollTo({ top: areaCetak.offsetTop, behavior: 'smooth' });
-            }
-            return;
-        } 
-        else if (jenis === 'desa') {
-            let rekapDesa = {};
-            dataMurni.forEach(d => {
-                let desa = d.desa || "Tanpa Desa";
-                if (!rekapDesa[desa]) {
-                    rekapDesa[desa] = { laki: 0, perempuan: 0, izin: 0 };
+            return logAbsen.map(absen => {
+                let detail = semuaDataGenerus.find(g => String(g.nama_lengkap).toUpperCase() === String(absen.id_generus).toUpperCase());
+                
+                return {
+                    id: absen.id_generus,
+                    name: absen.id_generus, 
+                    kelompok: detail ? (detail.kelompok || "-") : "-", 
+                    desa: detail ? (detail.desa || "-") : "-",
+                    jk: detail ? (detail.jenis_kelamin || "-") : "-",
+                    status: detail ? (detail.status || "-") : "-",
+                    detail_status: detail ? (detail.usia_dapukan || "-") : "-",
+                    waktu: absen.metode_input === "Izin" ? "IZIN" : new Date(absen.waktu_absen).toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'}).replace('.', ':'),
+                    metode: absen.metode_input
                 }
+            });
+        }
+
+        async function tarikDanCetakLaporan(jenis, langsungPrint = false) {
+            let namaKegiatan = document.getElementById('kegiatan').value.toUpperCase();
+            if(!namaKegiatan) return alert("Harap masukkan Nama Agenda yang ingin ditarik rekapannya!");
+            tampilkanToast("🔄 Menarik seluruh data dari Supabase...");
+            let dataMurni = await dapatkanDataGabungan(namaKegiatan);
+            if(dataMurni.length === 0) return alert(`Tidak ditemukan data absensi/izin untuk kegiatan: "${namaKegiatan}"`);
+
+            let container = document.getElementById('print-table-container');
+            let areaCetak = document.getElementById('print-area');
+            container.innerHTML = "";
+            let opsiWaktu = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+            document.getElementById('cetak-waktu').innerText = "Waktu Tarik Laporan: " + new Date().toLocaleDateString('id-ID', opsiWaktu) + " WIB";
+
+            let totalLakiHadir = 0;
+            let totalPerempuanHadir = 0;
+            let totalIzinSemua = 0;
+
+            dataMurni.forEach(d => {
                 if (d.metode === "Izin") {
-                    rekapDesa[desa].izin++;
+                    totalIzinSemua++;
                 } else {
-                    if (d.jk.includes("Perempuan") || d.jk === 'P') rekapDesa[desa].perempuan++;
-                    else rekapDesa[desa].laki++;
+                    if (d.jk.includes('Perempuan') || d.jk === 'P' ) totalPerempuanHadir++;
+                    else totalLakiHadir++;
                 }
             });
 
-            let html = `<h4>📊 REKAPITULASI JUMLAH KEHADIRAN PER DESA</h4>`;
-            html += `<table class="print-table">
-                        <thead>
-                            <tr>
-                                <th style="width:40px; text-align:center;">No</th>
-                                <th>Nama Wilayah Desa</th>
-                                <th style="width:90px; text-align:center;">Laki-Laki</th>
-                                <th style="width:90px; text-align:center;">Perempuan</th>
-                                <th style="width:80px; text-align:center;">Izin</th>
-                                <th style="width:110px; text-align:center;">Total Masuk</th>
+            if (jenis === 'semua') {
+                let html = "";
+                
+                if (langsungPrint) {
+                    html += `<table class="print-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width:30px;">No</th>
+                                        <th>Nama Lengkap</th>
+                                        <th style="width:35px;">L/P</th>
+                                        <th>Status</th>
+                                        <th>Usia/Dapukan</th>
+                                        <th>Kelompok</th>
+                                        <th>Desa</th>
+                                        <th style="width:50px;">Waktu</th>
+                                    </tr>
+                                </thead>
+                                <tbody>`;
+                    dataMurni.forEach((d, i) => { 
+                        let penandaIzin = d.metode === "Izin" ? " <span style='color:#eab308; font-weight:700;'>(IZIN)</span>" : "";
+                        html += `<tr>
+                                    <td>${i+1}</td>
+                                    <td style="font-weight:600;">${d.name}${penandaIzin}</td>
+                                    <td>${d.jk.includes('Perempuan') || d.jk === 'P' ? 'P' : 'L'}</td>
+                                    <td>${d.status}</td>
+                                    <td>${d.detail_status}</td>
+                                    <td>${d.kelompok}</td>
+                                    <td>${d.desa}</td>
+                                    <td style="font-weight:${d.metode === 'Izin' ? '700' : '500'}; color:${d.metode === 'Izin' ? '#b45309' : 'inherit'};">${d.waktu}</td>
+                                 </tr>`; 
+                    });
+                } else {
+                    html += `<table class="print-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width:30px;">No</th>
+                                        <th>Nama Lengkap</th>
+                                        <th style="width:35px;">L/P</th>
+                                        <th>Kelompok</th>
+                                        <th style="width:50px;">Waktu</th>
+                                    </tr>
+                                </thead>
+                                <tbody>`;
+                    dataMurni.forEach((d, i) => { 
+                        let penandaIzin = d.metode === "Izin" ? " <span style='color:#eab308; font-weight:700;'>(IZIN)</span>" : "";
+                        html += `<tr>
+                                    <td>${i+1}</td>
+                                    <td style="font-weight:600;">${d.name}${penandaIzin}</td>
+                                    <td>${d.jk.includes('Perempuan') || d.jk === 'P' ? 'P' : 'L'}</td>
+                                    <td>${d.kelompok}</td>
+                                    <td style="font-weight:${d.metode === 'Izin' ? '700' : '500'}; color:${d.metode === 'Izin' ? '#b45309' : 'inherit'};">${d.waktu}</td>
+                                 </tr>`; 
+                    });
+                }
+                
+                html += `</tbody></table>`;
+                
+                html += `<table class="print-table" style="margin-top:15px; border: 2px solid #475569; background:#f1f5f9;">
+                            <tr style="font-weight:700; font-size:12px;">
+                                <td style="text-align:right; padding:8px;">TOTAL REKAP SEMUA:</td>
+                                <td style="width:100px; text-align:center; color:#1d4ed8;">Hadir L: ${totalLakiHadir}</td>
+                                <td style="width:100px; text-align:center; color:#be185d;">Hadir P: ${totalPerempuanHadir}</td>
+                                <td style="width:90px; text-align:center; color:#b45309;">Izin: ${totalIzinSemua}</td>
+                                <td style="width:130px; text-align:center; color:#0f172a;">Total Data: ${dataMurni.length} Orang</td>
                             </tr>
-                        </thead>
-                        <tbody>`;
-            
-            let no = 1;
-            let grandL = 0, grandP = 0, grandIzin = 0;
-            for (let desa in rekapDesa) {
-                let l = rekapDesa[desa].laki;
-                let p = rekapDesa[desa].perempuan;
-                let iz = rekapDesa[desa].izin;
-                let totalRow = l + p + iz;
-                grandL += l; grandP += p; grandIzin += iz;
-
-                html += `<tr>
-                            <td style="text-align:center;">${no++}</td>
-                            <td style="font-weight:600;">${desa.toUpperCase()}</td>
-                            <td style="text-align:center; color:#1d4ed8;">${l}</td>
-                            <td style="text-align:center; color:#be185d;">${p}</td>
-                            <td style="text-align:center; color:#ca8a04;">${iz}</td>
-                            <td style="text-align:center; font-weight:700; background:#f8fafc;">${totalRow} Orang</td>
-                         </tr>`;
-            }
-
-            html += `<tr style="font-weight:700; background:#e2e8f0;">
-                        <td colspan="2" style="text-align:right; padding:8px;">TOTAL AKUMULASI DESA:</td>
-                        <td style="text-align:center; color:#1d4ed8;">L: ${grandL}</td>
-                        <td style="text-align:center; color:#be185d;">P: ${grandP}</td>
-                        <td style="text-align:center; color:#ca8a04;">Izin: ${grandIzin}</td>
-                        <td style="text-align:center; font-size:12px; color:#b45309;">${grandL + grandP + grandIzin} Orang</td>
-                     </tr>`;
-            html += `</tbody></table>`;
-            container.innerHTML = html;
-            areaCetak.style.display = "block";
-
-            if (langsungPrint) {
-                window.print();
-            } else {
-                tampilkanToast("✓ Preview rekap desa berhasil dimuat di bawah!");
-                window.scrollTo({ top: areaCetak.offsetTop, behavior: 'smooth' });
-            }
-        } 
-        else if (jenis === 'kelompok') {
-            let rekapKelompok = {};
-            dataMurni.forEach(d => {
-                let klp = d.kelompok || "Tanpa Kelompok";
-                if (!rekapKelompok[klp]) rekapKelompok[klp] = [];
-                rekapKelompok[klp].push(d);
-            });
-
-            let html = "";
-
-            for (let klp in rekapKelompok) {
-                let anggota = rekapKelompok[klp];
-
-                let lKlp = 0, pKlp = 0, izKlp = 0;
-                anggota.forEach(a => {
-                    if (a.metode === "Izin") {
-                        izKlp++;
+                         </table>`;
+                
+                container.innerHTML = html;
+                areaCetak.style.display = "block";
+                
+                if (langsungPrint) {
+                    window.print();
+                } else {
+                    tampilkanToast("✓ Preview rekap data berhasil dimuat di bawah!");
+                    window.scrollTo({ top: areaCetak.offsetTop, behavior: 'smooth' });
+                }
+                return;
+            } 
+            else if (jenis === 'desa') {
+                let rekapDesa = {};
+                dataMurni.forEach(d => {
+                    let desa = d.desa || "Tanpa Desa";
+                    if (!rekapDesa[desa]) {
+                        rekapDesa[desa] = { laki: 0, perempuan: 0, izin: 0 };
+                    }
+                    if (d.metode === "Izin") {
+                        rekapDesa[desa].izin++;
                     } else {
-                        if (a.jk.includes('Perempuan') || a.jk === 'P') pKlp++;
-                        else lKlp++;
+                        if (d.jk.includes("Perempuan") || d.jk === 'P') rekapDesa[desa].perempuan++;
+                        else rekapDesa[desa].laki++;
                     }
                 });
 
-                html += `<div class="print-box-wilayah">`;
-                html += `<h4>👥 KELOMPOK: ${klp.toUpperCase()}</h4>`;
+                let html = `<h4>📊 REKAPITULASI JUMLAH KEHADIRAN PER DESA</h4>`;
                 html += `<table class="print-table">
                             <thead>
                                 <tr>
                                     <th style="width:40px; text-align:center;">No</th>
-                                    <th>Nama Lengkap</th>
-                                    <th style="width:80px;">Status</th>
-                                    <th>Usia / Dapukan</th>
-                                    <th style="width:90px;">Jenis Kelamin</th>
+                                    <th>Nama Wilayah Desa</th>
+                                    <th style="width:90px; text-align:center;">Laki-Laki</th>
+                                    <th style="width:90px; text-align:center;">Perempuan</th>
+                                    <th style="width:80px; text-align:center;">Izin</th>
+                                    <th style="width:110px; text-align:center;">Total Masuk</th>
                                 </tr>
                             </thead>
                             <tbody>`;
                 
-                anggota.forEach((a, idx) => {
-                    let penandaIzin = a.metode === "Izin" ? " <span style='color:#eab308; font-weight:700;'>(IZIN)</span>" : "";
+                let no = 1;
+                let grandL = 0, grandP = 0, grandIzin = 0;
+                for (let desa in rekapDesa) {
+                    let l = rekapDesa[desa].laki;
+                    let p = rekapDesa[desa].perempuan;
+                    let iz = rekapDesa[desa].izin;
+                    let totalRow = l + p + iz;
+                    grandL += l; grandP += p; grandIzin += iz;
+
                     html += `<tr>
-                                <td style="text-align:center;">${idx+1}</td>
-                                <td style="font-weight:600;">${a.name}${penandaIzin}</td>
-                                <td>${a.status}</td>
-                                <td>${a.detail_status}</td>
-                                <td>${a.jk}</td>
+                                <td style="text-align:center;">${no++}</td>
+                                <td style="font-weight:600;">${desa.toUpperCase()}</td>
+                                <td style="text-align:center; color:#1d4ed8;">${l}</td>
+                                <td style="text-align:center; color:#be185d;">${p}</td>
+                                <td style="text-align:center; color:#ca8a04;">${iz}</td>
+                                <td style="text-align:center; font-weight:700; background:#f8fafc;">${totalRow} Orang</td>
                              </tr>`;
+                }
+
+                html += `<tr style="font-weight:700; background:#e2e8f0;">
+                            <td colspan="2" style="text-align:right; padding:8px;">TOTAL AKUMULASI DESA:</td>
+                            <td style="text-align:center; color:#1d4ed8;">L: ${grandL}</td>
+                            <td style="text-align:center; color:#be185d;">P: ${grandP}</td>
+                            <td style="text-align:center; color:#ca8a04;">Izin: ${grandIzin}</td>
+                            <td style="text-align:center; font-size:12px; color:#b45309;">${grandL + grandP + grandIzin} Orang</td>
+                         </tr>`;
+                html += `</tbody></table>`;
+                container.innerHTML = html;
+                areaCetak.style.display = "block";
+
+                if (langsungPrint) {
+                    window.print();
+                } else {
+                    tampilkanToast("✓ Preview rekap desa berhasil dimuat di bawah!");
+                    window.scrollTo({ top: areaCetak.offsetTop, behavior: 'smooth' });
+                }
+            } 
+            else if (jenis === 'kelompok') {
+                let rekapKelompok = {};
+                dataMurni.forEach(d => {
+                    let klp = d.kelompok || "Tanpa Kelompok";
+                    if (!rekapKelompok[klp]) rekapKelompok[klp] = [];
+                    rekapKelompok[klp].push(d);
                 });
 
-                html += `<tr style="font-weight:700; background:#f8fafc;">
-                            <td colspan="2" style="text-align:right;">Rincian Kelompok ${klp}:</td>
-                            <td colspan="3" style="text-align:center;">
-                                <span style="color:#1d4ed8;">Hadir L: ${lKlp}</span> | 
-                                <span style="color:#be185d;">Hadir P: ${pKlp}</span> | 
-                                <span style="color:#ca8a04;">Izin: ${izKlp}</span> | 
-                                <span style="color:#b45309;">Total: ${anggota.length} Orang</span>
-                            </td>
-                         </tr>`;
-                html += `</tbody></table></div>`;
-            }
+                let html = "";
 
-            html += `<table class="print-table" style="margin-top:20px; border: 2px solid #475569; background:#f1f5f9;">
-                        <tr style="font-weight:700; font-size:13px;">
-                            <td style="text-align:right; padding:10px;">TOTAL KESELURUHAN KELOMPOK:</td>
-                            <td style="width:110px; text-align:center; color:#1d4ed8;">Hadir L: ${totalLakiHadir}</td>
-                            <td style="width:110px; text-align:center; color:#be185d;">Hadir P: ${totalPerempuanHadir}</td>
-                            <td style="width:90px; text-align:center; color:#ca8a04;">Izin: ${totalIzinSemua}</td>
-                            <td style="width:130px; text-align:center; color:#b45309; font-size:14px;">Total: ${dataMurni.length} Orang</td>
-                        </tr>
-                     </table>`;
+                for (let klp in rekapKelompok) {
+                    let anggota = rekapKelompok[klp];
 
-            container.innerHTML = html;
-            areaCetak.style.display = "block";
+                    let lKlp = 0, pKlp = 0, izKlp = 0;
+                    anggota.forEach(a => {
+                        if (a.metode === "Izin") {
+                            izKlp++;
+                        } else {
+                            if (a.jk.includes('Perempuan') || a.jk === 'P') pKlp++;
+                            else lKlp++;
+                        }
+                    });
 
-            if (langsungPrint) {
-                window.print();
-            } else {
-                tampilkanToast("✓ Preview rekap kelompok berhasil dimuat di bawah!");
-                window.scrollTo({ top: areaCetak.offsetTop, behavior: 'smooth' });
+                    html += `<div class="print-box-wilayah">`;
+                    html += `<h4>👥 KELOMPOK: ${klp.toUpperCase()}</h4>`;
+                    html += `<table class="print-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width:40px; text-align:center;">No</th>
+                                        <th>Nama Lengkap</th>
+                                        <th style="width:80px;">Status</th>
+                                        <th>Usia / Dapukan</th>
+                                        <th style="width:90px;">Jenis Kelamin</th>
+                                    </tr>
+                                </thead>
+                                <tbody>`;
+                    
+                    anggota.forEach((a, idx) => {
+                        let penandaIzin = a.metode === "Izin" ? " <span style='color:#eab308; font-weight:700;'>(IZIN)</span>" : "";
+                        html += `<tr>
+                                    <td style="text-align:center;">${idx+1}</td>
+                                    <td style="font-weight:600;">${a.name}${penandaIzin}</td>
+                                    <td>${a.status}</td>
+                                    <td>${a.detail_status}</td>
+                                    <td>${a.jk}</td>
+                                 </tr>`;
+                    });
+
+                    html += `<tr style="font-weight:700; background:#f8fafc;">
+                                <td colspan="2" style="text-align:right;">Rincian Kelompok ${klp}:</td>
+                                <td colspan="3" style="text-align:center;">
+                                    <span style="color:#1d4ed8;">Hadir L: ${lKlp}</span> | 
+                                    <span style="color:#be185d;">Hadir P: ${pKlp}</span> | 
+                                    <span style="color:#ca8a04;">Izin: ${izKlp}</span> | 
+                                    <span style="color:#b45309;">Total: ${anggota.length} Orang</span>
+                                </td>
+                             </tr>`;
+                    html += `</tbody></table></div>`;
+                }
+
+                html += `<table class="print-table" style="margin-top:20px; border: 2px solid #475569; background:#f1f5f9;">
+                            <tr style="font-weight:700; font-size:13px;">
+                                <td style="text-align:right; padding:10px;">TOTAL KESELURUHAN KELOMPOK:</td>
+                                <td style="width:110px; text-align:center; color:#1d4ed8;">Hadir L: ${totalLakiHadir}</td>
+                                <td style="width:110px; text-align:center; color:#be185d;">Hadir P: ${totalPerempuanHadir}</td>
+                                <td style="width:90px; text-align:center; color:#ca8a04;">Izin: ${totalIzinSemua}</td>
+                                <td style="width:130px; text-align:center; color:#b45309; font-size:14px;">Total: ${dataMurni.length} Orang</td>
+                            </tr>
+                         </table>`;
+
+                container.innerHTML = html;
+                areaCetak.style.display = "block";
+
+                if (langsungPrint) {
+                    window.print();
+                } else {
+                    tampilkanToast("✓ Preview rekap kelompok berhasil dimuat di bawah!");
+                    window.scrollTo({ top: areaCetak.offsetTop, behavior: 'smooth' });
+                }
             }
         }
-    }
 
-    function eksekusiPrintKhusus(pilihan) {
-        if (!pilihan) return;
-        tarikDanCetakLaporan(pilihan, true);
-        document.getElementById('print-dropdown').value = ""; 
-    }
+        function eksekusiPrintKhusus(pilihan) {
+            if (!pilihan) return;
+            tarikDanCetakLaporan(pilihan, true);
+            document.getElementById('print-dropdown').value = ""; 
+        }
 
-    async function eksporKeExcel() {
-        let namaKegiatan = document.getElementById('kegiatan').value.toUpperCase();
-        if(!namaKegiatan) return alert("Harap masukkan Nama Agenda untuk diekspor!");
-        
-        tampilkanToast("📊 Membuat file Excel/CSV...");
-        let dataMurni = await dapatkanDataGabungan(namaKegiatan);
-        if(dataMurni.length === 0) return alert("Tidak ada data untuk diekspor!");
+        async function eksporKeExcel() {
+            let namaKegiatan = document.getElementById('kegiatan').value.toUpperCase();
+            if(!namaKegiatan) return alert("Harap masukkan Nama Agenda untuk diekspor!");
+            
+            tampilkanToast("📊 Membuat file Excel/CSV...");
+            let dataMurni = await dapatkanDataGabungan(namaKegiatan);
+            if(dataMurni.length === 0) return alert("Tidak ada data untuk diekspor!");
 
-        let csvContent = "No,Nama Lengkap,Jenis Kelamin,Status,Usia atau Dapukan,Kelompok,Desa,Waktu Absen/Status,Metode\n";
-        
-        dataMurni.forEach((d, i) => { 
-            let jenisKelamin = d.jk.includes('Perempuan') || d.jk === 'P' ? 'P' : 'L';
-            csvContent += `${i+1},"${d.name}","${jenisKelamin}","${d.status}","${d.detail_status}","${d.kelompok}","${d.desa}","${d.waktu}","${d.metode}"\n`;
-        });
-        
-        let blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
-        let url = URL.createObjectURL(blob);
-        
-        let link = document.createElement("a");
-        link.setAttribute("href", url);
-        link.setAttribute("download", `REKAP_PRESENSI_${namaKegiatan.replace(/\s+/g, '_')}.csv`);
-        document.body.appendChild(link);
-        
-        link.click();
-        
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-        tampilkanToast("✓ File CSV berhasil diunduh!");
-    }
-</script>
+            let csvContent = "No,Nama Lengkap,Jenis Kelamin,Status,Usia atau Dapukan,Kelompok,Desa,Waktu Absen/Status,Metode\n";
+            
+            dataMurni.forEach((d, i) => { 
+                let jenisKelamin = d.jk.includes('Perempuan') || d.jk === 'P' ? 'P' : 'L';
+                csvContent += `${i+1},"${d.name}","${jenisKelamin}","${d.status}","${d.detail_status}","${d.kelompok}","${d.desa}","${d.waktu}","${d.metode}"\n`;
+            });
+            
+            let blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+            let url = URL.createObjectURL(blob);
+            
+            let link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", `REKAP_PRESENSI_${namaKegiatan.replace(/\s+/g, '_')}.csv`);
+            document.body.appendChild(link);
+            
+            link.click();
+            
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            tampilkanToast("✓ File CSV berhasil diunduh!");
+        }
+    </script>
 </body>
 </html>
