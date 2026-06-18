@@ -79,7 +79,7 @@
         .offline { background: rgba(239, 68, 68, 0.12); color: #ef4444 !important; }
 
         .brand-header { text-align: center; margin: 10px 0 24px 0; }
-        .brand-logo { width: 110px; height: 110px; object-fit: contain; border-radius: 12px; margin-bottom: 14px; }
+        .brand-logo-placeholder { width: 85px; height: 85px; background: var(--primary); color: #fff; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 32px; font-weight: 700; margin-bottom: 14px; box-shadow: 0 4px 10px rgba(4, 120, 87, 0.2); }
         .brand-header h2 { font-size: 24px; font-weight: 700; margin: 0; letter-spacing: -0.5px; }
         .brand-header p { font-size: 13px; color: var(--accent); font-weight: 600; margin: 4px 0 0 0; text-transform: uppercase; letter-spacing: 0.5px; }
 
@@ -104,21 +104,12 @@
         
         #reader { width: 100%; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: none !important; background: var(--bg-card); }
         #reader button {
-            background-color: var(--primary) !important;
-            color: #ffffff !important;
-            border: none !important;
-            padding: 12px 20px !important;
-            font-size: 14px !important;
-            font-weight: 600 !important;
-            border-radius: 12px !important;
-            cursor: pointer !important;
-            transition: background-color 0.2s ease, transform 0.1s ease !important;
-            box-shadow: 0 4px 12px rgba(4, 120, 87, 0.15) !important;
-            margin: 10px 0 !important;
-            font-family: inherit !important;
+            background-color: var(--primary) !important; color: #ffffff !important; border: none !important;
+            padding: 12px 20px !important; font-size: 14px !important; font-weight: 600 !important;
+            border-radius: 12px !important; cursor: pointer !important; transition: all 0.2s ease !important;
+            box-shadow: 0 4px 12px rgba(4, 120, 87, 0.15) !important; margin: 10px 0 !important; font-family: inherit !important;
         }
         #reader button:hover { background-color: var(--primary-hover) !important; }
-        #reader button:active { transform: scale(0.98) !important; }
         #reader a { color: var(--primary) !important; font-weight: 500; text-decoration: none; font-size: 13px; }
 
         .divider { text-align: center; margin: 24px 0; font-size: 11px; font-weight: 700; color: var(--text-muted); }
@@ -139,17 +130,12 @@
             justify-content: center; gap: 4px; font-size: 9.5px; font-weight: 600;
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); width: 100%; box-sizing: border-box;
         }
-        
         .btn-icon svg { 
-            width: 16px; height: 16px; 
-            fill: none; stroke: var(--icon-color); 
-            stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
-            transition: all 0.2s ease;
+            width: 16px; height: 16px; fill: none; stroke: var(--icon-color); 
+            stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: all 0.2s ease;
         }
-        
         .btn-icon:hover { background: var(--bg-main); border-color: var(--text-muted); }
         .btn-icon:hover svg { stroke: var(--primary); transform: translateY(-1px); }
-        .btn-icon:active { transform: scale(0.95); }
 
         .toast-notif {
             position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
@@ -158,54 +144,33 @@
             box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3);
         }
         
-        /* --- GAYA STRUKTUR DOKUMEN REKAPAN RELEVAN (UNTUK CANVAS & LAYAR) --- */
+        /* --- GAYA STRUKTUR REKAPAN (UNTUK CANVAS & LAYAR) --- */
         .preview-canvas-source {
-            width: 650px; /* Ukuran lebar dikunci stabil agar tabel tidak bergeser */
-            background: #ffffff !important;
-            color: #000000 !important;
-            padding: 30px;
-            box-sizing: border-box;
-            position: fixed;
-            left: -9999px; /* Disembunyikan jauh di luar layar utama */
-            top: 0;
+            width: 650px; background: #ffffff !important; color: #000000 !important;
+            padding: 30px; box-sizing: border-box; position: fixed; left: -9999px; top: 0;
         }
         .preview-header-box {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 16px;
-            margin-bottom: 16px;
-            border-bottom: 3px double #000000;
-            padding-bottom: 14px;
+            display: flex; align-items: center; justify-content: center; gap: 14px;
+            margin-bottom: 16px; border-bottom: 3px double #000000; padding-bottom: 14px;
         }
-        .preview-logo-img {
-            width: 65px; height: 65px;
-            object-fit: contain;
+        .preview-canvas-logo {
+            width: 50px; height: 50px; background: #047857; color: #fff;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 50%; font-size: 22px; font-weight: 700;
         }
-        .preview-header-text {
-            text-align: center;
-        }
-        .preview-title {
-            margin: 0; font-size: 18px; font-weight: 700;
-            text-transform: uppercase; color: #000000; letter-spacing: 0.5px;
-        }
-        .preview-subtitle {
-            margin: 4px 0 0 0; font-size: 13px;
-            color: #d97706; font-weight: 600;
-            letter-spacing: 0.5px; text-transform: uppercase;
-        }
-        .preview-meta {
-            text-align: center; font-size: 11px;
-            color: #475569; margin-bottom: 16px; font-weight: 500;
-        }
-        .print-box-wilayah { margin-bottom: 20px; }
+        .preview-header-text { text-align: center; }
+        .preview-title { margin: 0; font-size: 18px; font-weight: 700; text-transform: uppercase; color: #000000; letter-spacing: 0.5px; }
+        .preview-subtitle { margin: 2px 0 0 0; font-size: 12px; color: #d97706; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; }
+        .preview-meta { text-align: center; font-size: 11px; color: #475569; margin-bottom: 16px; font-weight: 500; }
+        
+        .print-box-wilayah { margin-bottom: 20px; page-break-inside: avoid; }
         .print-box-wilayah h4 { margin: 0 0 8px 0; font-size: 13px; color: #000000; text-transform: uppercase; border-bottom: 1.5px solid #000000; padding-bottom: 2px; font-weight: 700; }
         
         .print-table { width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 11px; color: #000000; }
         .print-table th, .print-table td { border: 1px solid #475569; padding: 6px 8px; text-align: left; }
         .print-table th { background: #f1f5f9 !important; color: #000000; font-weight: 600; }
 
-        /* --- STYLING BARU MODAL POP-UP PREVIEW --- */
+        /* --- STYLING MODAL POP-UP PREVIEW IMAGE --- */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px);
@@ -216,45 +181,22 @@
             background: var(--bg-card); width: 100%; max-width: 480px;
             border-radius: 20px; padding: 20px; box-sizing: border-box;
             box-shadow: 0 20px 25px -5px rgba(0,0,0,0.15);
-            animation: popUpEffect 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
             max-height: 90vh; display: flex; flex-direction: column;
         }
-        @keyframes popUpEffect { from { transform: scale(0.9) translateY(20px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
-        
-        .modal-header {
-            display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 16px;
-        }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 16px; }
         .modal-header h3 { margin: 0; font-size: 16px; font-weight: 700; }
-        .close-modal-btn {
-            background: transparent; border: none; font-size: 20px; color: var(--text-muted); cursor: pointer;
-        }
-        .modal-body-scroll {
-            overflow-y: auto; flex: 1; text-align: center; margin-bottom: 16px;
-            border: 1px solid var(--border-color); border-radius: 12px; background: #64748b; padding: 10px;
-        }
-        /* Hasil render PNG akhir dipasang di sini */
-        .render-output-image {
-            width: 100%; height: auto; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-            border-radius: 4px; display: block;
-        }
+        .close-modal-btn { background: transparent; border: none; font-size: 22px; color: var(--text-muted); cursor: pointer; }
+        
+        .modal-body-scroll { overflow-y: auto; flex: 1; text-align: center; margin-bottom: 16px; border: 1px solid var(--border-color); border-radius: 12px; background: #64748b; padding: 10px; }
+        .render-output-image { width: 100%; height: auto; box-shadow: 0 4px 10px rgba(0,0,0,0.2); border-radius: 4px; display: block; margin: 0 auto; }
+        
         .modal-footer-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .btn-modal-action {
-            padding: 12px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer;
-            border: none; text-align: center; display: flex; align-items: center; justify-content: center; gap: 6px;
-        }
+        .btn-modal-action { padding: 12px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; text-align: center; display: flex; align-items: center; justify-content: center; gap: 6px; }
         .btn-download-png { background: var(--primary); color: #ffffff; }
         .btn-download-png:hover { background: var(--primary-hover); }
         .btn-close-gray { background: var(--bg-main); color: var(--text-dark); border: 1px solid var(--border-color); }
 
         #print-area { display: none; }
-
-        @media print {
-            body { background: #fff!important; color: #000!important; display: block; padding: 0; margin: 0; }
-            .app-container, .modal-overlay { display: none!important; }
-            #print-area { display: block!important; }
-            .preview-canvas-source { position: static!important; left: 0!important; width: 100%!important; padding: 0!important; }
-        }
     </style>
 </head>
 <body onclick="bukaKunciAudioKonstruktor()">
@@ -266,7 +208,7 @@
     </div>
     
     <div class="brand-header">
-        <img src="logo insan qurany.jpg" alt="Logo" class="brand-logo" id="app-logo">
+        <div class="brand-logo-placeholder">IQ</div>
         <h2>Presensi Kegiatan</h2>
         <p>Insan Qur'any Tawangmangu</p>
     </div>
@@ -341,7 +283,7 @@
 
 <div id="hidden-render-source" class="preview-canvas-source">
     <div class="preview-header-box">
-        <img src="logo insan qurany.jpg" alt="Logo" class="preview-logo-img">
+        <div class="preview-canvas-logo">IQ</div>
         <div class="preview-header-text">
             <h3 class="preview-title" id="canvas-judul-agenda">LAPORAN PRESENSI KEGIATAN</h3>
             <p class="preview-subtitle">Insan Qur'any Tawangmangu</p>
@@ -400,14 +342,11 @@
         try {
             bukaKunciAudioKonstruktor();
             let ctx = globalAudioCtx || new (window.AudioContext || window.webkitAudioContext)();
-            let osc1 = ctx.createOscillator(); 
-            let gain1 = ctx.createGain();
+            let osc1 = ctx.createOscillator(); let gain1 = ctx.createGain();
             osc1.connect(gain1); gain1.connect(ctx.destination);
-            osc1.type = 'sawtooth'; 
-            osc1.frequency.value = 140; 
+            osc1.type = 'sawtooth'; osc1.frequency.value = 140; 
             gain1.gain.setValueAtTime(0.2, ctx.currentTime);
-            osc1.start(ctx.currentTime); 
-            osc1.stop(ctx.currentTime + 0.18);
+            osc1.start(ctx.currentTime); osc1.stop(ctx.currentTime + 0.18);
         } catch (e) {}
     }
 
@@ -429,8 +368,7 @@
 
     function tampilkanToast(pesan) {
         let box = document.getElementById('toast-box');
-        box.innerText = pesan;
-        box.style.display = 'block';
+        box.innerText = pesan; box.style.display = 'block';
         setTimeout(() => { box.style.display = 'none'; }, 3000);
     }
 
@@ -459,7 +397,6 @@
         if (keyword.length < 2) { resultsBox.style.display = 'none'; return; }
         
         let hasilFilter = semuaDataGenerus.filter(g => g.nama_lengkap && g.nama_lengkap.toLowerCase().includes(keyword)).slice(0, 8);
-        
         if(hasilFilter.length > 0) {
             resultsBox.style.display = 'block';
             hasilFilter.forEach(g => {
@@ -488,7 +425,6 @@
         await prosesAbsensi(decodedText, "Scan Barcode");
         setTimeout(() => { pengunciScanAktif = false; }, 1500); 
     }
-    
     let html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 220 });
     html5QrcodeScanner.render(onScanSuccess);
 
@@ -508,7 +444,6 @@
                    String(absen.nama_kegiatan).trim().toUpperCase() === String(namaKegiatan).trim().toUpperCase() &&
                    selisihWaktu < batasWaktuMiliDetik;
         });
-        
         if (dataSamaLokal) return true;
 
         if (navigator.onLine) {
@@ -618,7 +553,7 @@
         });
     }
 
-    // --- LOGIKA UTAMA RENDER POP-UP DAN PNG ---
+    // --- PROSES RENDER PNG ANTI CORS DAN ERROR ---
     async function tarikDanProsesLaporan(jenis) {
         let namaKegiatan = document.getElementById('kegiatan').value.toUpperCase();
         if(!namaKegiatan) return alert("Harap masukkan Nama Agenda yang ingin ditarik rekapannya!");
@@ -627,7 +562,6 @@
         let dataMurni = await dapatkanDataGabungan(namaKegiatan);
         if(dataMurni.length === 0) return alert(`Tidak ditemukan data absensi untuk kegiatan: "${namaKegiatan}"`);
 
-        // Set nama file global untuk unduhan PNG nanti
         fileNamaGlobalDownload = `REKAP_${jenis.toUpperCase()}_${namaKegiatan.replace(/\s+/g, '_')}.png`;
 
         let opsiWaktu = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
@@ -765,41 +699,35 @@
                      </table>`;
         }
         
-        // 1. Masukkan HTML tabel ke wadah tersembunyi
         document.getElementById('canvas-table-container').innerHTML = htmlTabel;
-        // Salin juga ke print area cadangan browser
         document.getElementById('print-table-container').innerHTML = htmlTabel;
 
-        // 2. Tampilkan Pop-up modal dalam kondisi loading
         document.getElementById('modal-loading-text').style.display = 'block';
         document.getElementById('modal-preview-img').style.display = 'none';
         document.getElementById('rekap-modal-overlay').style.display = 'flex';
         document.getElementById('modal-title-text').innerText = `Preview Rekap ${jenis.toUpperCase()}`;
 
-        // 3. Eksekusi Render HTML menjadi PNG Gambar Murni secara asynchronous
         setTimeout(() => {
             let elemenSumber = document.getElementById('hidden-render-source');
             
             html2canvas(elemenSumber, {
-                useCORS: true,
-                scale: 2, // Menaikkan resolusi gambar (2x lipat) agar teks tabel tajam & tidak pecah di HP
+                scale: 2,
                 backgroundColor: "#ffffff",
-                logging: false
+                logging: false,
+                allowTaint: true,
+                useCORS: false
             }).then(canvas => {
                 let dataUrlPng = canvas.toDataURL("image/png");
-                
-                // Pasang hasilnya ke elemen img di dalam modal pop-up
                 let komponenGambar = document.getElementById('modal-preview-img');
                 komponenGambar.src = dataUrlPng;
                 
-                // Matikan loading, tampilkan gambar jadi
                 document.getElementById('modal-loading-text').style.display = 'none';
                 komponenGambar.style.display = 'block';
             }).catch(err => {
-                alert("Gagal merender gambar rekap.");
+                alert("Gagal memuat rekap gambar.");
                 tutupModalRekap();
             });
-        }, 400);
+        }, 500);
     </div>
 
     function tutupModalRekap() {
@@ -809,7 +737,7 @@
     function unduhGambarPngHasilRender() {
         let komponenGambar = document.getElementById('modal-preview-img');
         if (!komponenGambar.src || komponenGambar.style.display === 'none') {
-            return alert("Gambar belum selesai diproses. Silakan tunggu sejenak!");
+            return alert("Gambar belum selesai diproses.");
         }
 
         let linkUnduh = document.createElement('a');
@@ -818,13 +746,13 @@
         document.body.appendChild(linkUnduh);
         linkUnduh.click();
         document.body.removeChild(linkUnduh);
-        tampilkanToast("✓ Gambar PNG berhasil diunduh ke galeri!");
+        tampilkanToast("✓ Gambar PNG berhasil diunduh!");
     }
 
     function jalankanCetakSistemLangsung() {
         let container = document.getElementById('print-table-container');
         if(!container.innerHTML.trim()) {
-            return alert("Belum ada data rekap yang dimuat. Klik menu 'Semua', 'Desa', atau 'Klp' terlebih dahulu!");
+            return alert("Belum ada data rekap yang dimuat.");
         }
         window.print();
     }
