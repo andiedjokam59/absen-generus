@@ -44,7 +44,6 @@
             display: flex; justify-content: center; align-items: center;
             min-height: 100vh;
             transition: all 0.3s ease;
-            /* Cegah pull-to-refresh bawaan android jika tidak diinginkan, namun scroll tetap lancar */
             overscroll-behavior-y: auto; 
         }
 
@@ -95,6 +94,10 @@
             color: var(--text-dark); border-radius: 12px; 
             box-sizing: border-box; font-size: 15px; font-family: inherit;
             transition: all 0.2s;
+            /* PERBAIKAN ANDROID: Memastikan input teks merespons ketukan dengan instan */
+            -webkit-user-select: text !important;
+            user-select: text !important;
+            -webkit-tap-highlight-color: transparent;
         }
         input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(4, 120, 87, 0.15); }
 
@@ -133,8 +136,10 @@
             position: absolute; width: 100%; background: var(--bg-card); border: 1px solid var(--border-color); 
             max-height: 220px; overflow-y: auto; z-index: 999; border-radius: 12px; margin-top: 2px;
             box-shadow: 0 10px 15px -3px var(--shadow); display: none;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;
         }
-        .search-item { padding: 12px 16px; cursor: pointer; border-bottom: 1px solid var(--border-color); font-size: 14px; }
+        .search-item { padding: 12px 16px; cursor: pointer; border-bottom: 1px solid var(--border-color); font-size: 14px; min-height: 44px; box-sizing: border-box; }
         .search-item:hover { background: var(--bg-main); color: var(--primary); }
 
         .action-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; margin-top: 10px; position: relative; }
@@ -180,7 +185,6 @@
         .print-table th, .print-table td { border: 1px solid #94a3b8; padding: 6px 8px; text-align: left; }
         .print-table th { background: #f1f5f9; color: #0f172a; font-weight: 600; position: relative; }
 
-        /* Excel Filter Styles */
         .th-filter-container {
             display: flex;
             align-items: center;
@@ -199,22 +203,11 @@
             min-width: 20px;
             min-height: 20px;
         }
-        .excel-filter-btn:hover {
-            background: rgba(0,0,0,0.1);
-        }
-        [data-theme="dark"] .excel-filter-btn:hover {
-            background: rgba(255,255,255,0.1);
-        }
-        .excel-filter-btn svg {
-            width: 12px;
-            height: 12px;
-            fill: var(--icon-color);
-        }
-        .excel-filter-btn.active svg {
-            fill: var(--primary);
-        }
+        .excel-filter-btn:hover { background: rgba(0,0,0,0.1); }
+        [data-theme="dark"] .excel-filter-btn:hover { background: rgba(255,255,255,0.1); }
+        .excel-filter-btn svg { width: 12px; height: 12px; fill: var(--icon-color); }
+        .excel-filter-btn.active svg { fill: var(--primary); }
 
-        /* BARU: Backdrop Transparan Pengunci Klik Luar Dropdown */
         .filter-backdrop-overlay {
             display: none;
             position: fixed;
@@ -223,12 +216,10 @@
             z-index: 1999;
         }
         
-        /* Dropdown Menu UI */
         .filter-dropdown-menu {
             display: none;
             position: absolute;
-            top: 100%;
-            left: 0;
+            top: 100%; left: 0;
             background: var(--bg-card);
             border: 1px solid var(--border-color);
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
@@ -241,8 +232,6 @@
             box-sizing: border-box;
             font-weight: normal;
             text-transform: none;
-            
-            /* Kunci scroll bodi luar HANYA ketika jari men-scroll isi dropdown ini */
             overscroll-behavior: contain !important;
         }
         
@@ -264,7 +253,6 @@
             gap: 4px;
             max-height: 140px;
             overflow-y: auto;
-            /* Aktifkan momentum scroll asli bawaan iOS/Android */
             -webkit-overflow-scrolling: touch;
             padding-right: 4px;
             overscroll-behavior: contain !important;
@@ -281,16 +269,8 @@
             min-height: 32px;
             box-sizing: border-box;
         }
-        .filter-option-item:hover {
-            background: var(--bg-main);
-        }
-        .filter-option-item input {
-            width: 18px !important;
-            height: 18px !important;
-            margin: 0;
-            padding: 0;
-            cursor: pointer;
-        }
+        .filter-option-item:hover { background: var(--bg-main); }
+        .filter-option-item input { width: 18px !important; height: 18px !important; margin: 0; padding: 0; cursor: pointer; }
         
         .filter-action-buttons {
             display: flex;
@@ -300,14 +280,7 @@
             border-top: 1px solid var(--border-color);
             padding-top: 10px;
         }
-        .filter-btn-sub {
-            padding: 8px 12px;
-            font-size: 12px;
-            font-weight: 600;
-            border-radius: 6px;
-            border: none;
-            cursor: pointer;
-        }
+        .filter-btn-sub { padding: 8px 12px; font-size: 12px; font-weight: 600; border-radius: 6px; border: none; cursor: pointer; }
         .filter-btn-ok { background: var(--primary); color: white; }
         .filter-btn-clear { background: var(--border-color); color: var(--text-dark); }
 
@@ -322,7 +295,6 @@
 </head>
 <body onclick="bukaKunciAudioKonstruktor()">
 
-<!-- Elemen Overlay Transparan Global -->
 <div id="global-filter-overlay" class="filter-backdrop-overlay" onclick="tutupSemuaDropdownAman()"></div>
 
 <div class="app-container">
@@ -349,7 +321,8 @@
 
     <div class="form-group">
         <label for="search-input">OPSI 2: INPUT MANUAL Nama Anggota</label>
-        <input type="text" id="search-input" placeholder="Ketik nama untuk mencari..." oninput="cariNamaPintar()">
+        <!-- PERBAIKAN UTAMA: Penambahan onfocus dan onclick khusus respons cepat Android -->
+        <input type="text" id="search-input" autocomplete="off" placeholder="Ketik nama untuk mencari..." oninput="cariNamaPintar()" onfocus="cariNamaPintar()" onclick="cariNamaPintar()">
         <div id="search-results-box" class="search-results"></div>
     </div>
     
@@ -427,20 +400,15 @@
     };
 
     function bukaKunciAudioKonstruktor() {
-        if (!globalAudioCtx) {
-            globalAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        }
-        if (globalAudioCtx.state === 'suspended') {
-            globalAudioCtx.resume();
-        }
+        if (!globalAudioCtx) { globalAudioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+        if (globalAudioCtx.state === 'suspended') { globalAudioCtx.resume(); }
     }
 
     function bunyikanSuaraSukses() {
         try {
             bukaKunciAudioKonstruktor();
             let ctx = globalAudioCtx || new (window.AudioContext || window.webkitAudioContext)();
-            let oscillator = ctx.createOscillator();
-            let gainNode = ctx.createGain();
+            let oscillator = ctx.createOscillator(); let gainNode = ctx.createGain();
             oscillator.connect(gainNode); gainNode.connect(ctx.destination);
             oscillator.type = 'sine'; oscillator.frequency.value = 880; 
             gainNode.gain.setValueAtTime(0.15, ctx.currentTime); 
@@ -452,23 +420,17 @@
         try {
             bukaKunciAudioKonstruktor();
             let ctx = globalAudioCtx || new (window.AudioContext || window.webkitAudioContext)();
-            let osc1 = ctx.createOscillator(); 
-            let gain1 = ctx.createGain();
+            let osc1 = ctx.createOscillator(); let gain1 = ctx.createGain();
             osc1.connect(gain1); gain1.connect(ctx.destination);
-            osc1.type = 'sawtooth'; 
-            osc1.frequency.value = 140; 
+            osc1.type = 'sawtooth'; osc1.frequency.value = 140; 
             gain1.gain.setValueAtTime(0.2, ctx.currentTime);
-            osc1.start(ctx.currentTime); 
-            osc1.stop(ctx.currentTime + 0.18);
+            osc1.start(ctx.currentTime); osc1.stop(ctx.currentTime + 0.18);
 
-            let osc2 = ctx.createOscillator(); 
-            let gain2 = ctx.createGain();
+            let osc2 = ctx.createOscillator(); let gain2 = ctx.createGain();
             osc2.connect(gain2); gain2.connect(ctx.destination);
-            osc2.type = 'sawtooth'; 
-            osc2.frequency.value = 100; 
+            osc2.type = 'sawtooth'; osc2.frequency.value = 100; 
             gain2.gain.setValueAtTime(0.2, ctx.currentTime + 0.2);
-            osc2.start(ctx.currentTime + 0.2); 
-            osc2.stop(ctx.currentTime + 0.5);
+            osc2.start(ctx.currentTime + 0.2); osc2.stop(ctx.currentTime + 0.5);
         } catch (e) {}
     }
 
@@ -495,8 +457,7 @@
 
     function tampilkanToast(pesan) {
         let box = document.getElementById('toast-box');
-        box.innerText = pesan;
-        box.style.display = 'block';
+        box.innerText = pesan; box.style.display = 'block';
         setTimeout(() => { box.style.display = 'none'; }, 3000);
     }
 
@@ -511,23 +472,24 @@
     async function muatSemuaGenerus() {
         try {
             let { data: generus, error } = await _supabase.from('data_generus').select('*');
-            if (!error) { 
-                semuaDataGenerus = generus; 
-                searchInput.placeholder = `Cari di antara ${generus.length} data...`; 
-            }
+            if (!error) { semuaDataGenerus = generus; searchInput.placeholder = `Cari di antara ${generus.length} data...`; }
         } catch (e) { searchInput.placeholder = "Gagal memuat data (Mode Offline)"; }
     }
     muatSemuaGenerus();
 
+    // OPTIMASI BARU: Berjalan super responsif di Android tanpa Hold
     function cariNamaPintar() {
         let keyword = searchInput.value.toLowerCase();
         resultsBox.innerHTML = '';
+        
         if (keyword.length < 2) { resultsBox.style.display = 'none'; return; }
         
         let hasilFilter = semuaDataGenerus.filter(g => g.nama_lengkap && g.nama_lengkap.toLowerCase().includes(keyword)).slice(0, 8);
         
         if(hasilFilter.length > 0) {
             resultsBox.style.display = 'block';
+            resultsBox.style.webkitOverflowScrolling = 'touch'; 
+            
             hasilFilter.forEach(g => {
                 let div = document.createElement('div');
                 div.className = 'search-item';
@@ -536,11 +498,17 @@
                 let namaDesaBersih = g.desa ? g.desa.toUpperCase().replace("DESA ", "") : '-';
                 div.innerText = `${g.nama_lengkap}${infoTambahan} — ${g.kelompok || '-'} [${namaDesaBersih}]`;
                 
-                div.onclick = function() {
+                // Mencegah delay sentuhan 300ms mobile browser
+                const eksekusiPilihan = function(e) {
+                    e.preventDefault(); 
                     searchInput.value = g.nama_lengkap; 
                     selectedIdInput.value = g.id_generus;
                     resultsBox.style.display = 'none';
                 };
+                
+                div.addEventListener('touchend', eksekusiPilihan);
+                div.addEventListener('click', eksekusiPilihan);
+                
                 resultsBox.appendChild(div);
             });
         } else {
@@ -551,9 +519,7 @@
     document.addEventListener('click', function(e) { if (e.target !== searchInput) { resultsBox.style.display = 'none'; } });
 
     async function onScanSuccess(decodedText) { 
-        if (pengunciScanAktif) return; 
-        pengunciScanAktif = true; 
-        
+        if (pengunciScanAktif) return; pengunciScanAktif = true; 
         await prosesAbsensi(decodedText, "Scan Barcode");
         setTimeout(() => { pengunciScanAktif = false; }, 1500); 
     }
@@ -564,10 +530,7 @@
     async function cekApakahSudahAbsen(idGenerus, namaKegiatan) {
         let sekarang = new Date();
         let batasWaktuMiliDetik = 3 * 60 * 60 * 1000;
-
-        if (cachePresensiMenitIni.has(String(idGenerus))) {
-            return true;
-        }
+        if (cachePresensiMenitIni.has(String(idGenerus))) return true;
 
         let antrean = JSON.parse(localStorage.getItem('antrean_absensi')) || [];
         let riwayatLokal = JSON.parse(localStorage.getItem('riwayat_sukses_lokal')) || [];
@@ -576,12 +539,10 @@
         let dataSamaLokal = gabunganLokal.find(absen => {
             let waktuAbsenLokal = new Date(absen.waktu_absen);
             let selisihWaktu = sekarang - waktuAbsenLokal;
-
             return String(absen.id_generus) === String(idGenerus) && 
                    String(absen.nama_kegiatan).trim().toUpperCase() === String(namaKegiatan).trim().toUpperCase() &&
                    selisihWaktu < batasWaktuMiliDetik;
         });
-        
         if (dataSamaLokal) return true;
 
         if (navigator.onLine) {
@@ -606,36 +567,24 @@
 
     async function prosesAbsensi(idGenerus, metode) {
         let namaKegiatan = document.getElementById('kegiatan').value.toUpperCase();
-        if(!namaKegiatan) {
-            bunyikanSuaraGagal();
-            alert("Harap isi Nama Agenda terlebih dahulu!");
-            return;
-        }
+        if(!namaKegiatan) { bunyikanSuaraGagal(); alert("Harap isi Nama Agenda terlebih dahulu!"); return; }
         
         let profil = semuaDataGenerus.find(g => g.id_generus == idGenerus) || { nama_lengkap: "ID: " + idGenerus };
-
         let sudahAbsen = await cekApakahSudahAbsen(idGenerus, namaKegiatan);
+        
         if (sudahAbsen) {
-            bunyikanSuaraGagal(); 
-            tampilkanToast(`❌ DATA DOUBLE: ${profil.nama_lengkap} SUDAH INPUT!`);
+            bunyikanSuaraGagal(); tampilkanToast(`❌ DATA DOUBLE: ${profil.nama_lengkap} SUDAH INPUT!`);
             if(metode === "Manual" || metode === "Izin") { searchInput.value = ''; selectedIdInput.value = ''; }
             return; 
         }
 
         cachePresensiMenitIni.add(String(idGenerus));
-
-        const dataAbsen = {
-            nama_kegiatan: namaKegiatan.trim(),
-            id_generus: idGenerus,
-            metode_input: metode,
-            waktu_absen: new Date().toISOString()
-        };
+        const dataAbsen = { nama_kegiatan: namaKegiatan.trim(), id_generus: idGenerus, metode_input: metode, waktu_absen: new Date().toISOString() };
 
         if (navigator.onLine) {
             let { error } = await _supabase.from('absensi_kegiatan').insert([dataAbsen]);
             if (!error) {
-                bunyikanSuaraSukses(); 
-                tampilkanToast(`✓ Status ${metode === 'Izin' ? 'Izin' : 'Kehadiran'} ${profil.nama_lengkap} sukses disimpan!`);
+                bunyikanSuaraSukses(); tampilkanToast(`✓ Status ${metode === 'Izin' ? 'Izin' : 'Kehadiran'} ${profil.nama_lengkap} sukses disimpan!`);
                 if(metode === "Manual" || metode === "Izin") { searchInput.value = ''; selectedIdInput.value = ''; }
             } else { simpanLokal(dataAbsen, profil.nama_lengkap); }
         } else { simpanLokal(dataAbsen, profil.nama_lengkap); }
@@ -643,15 +592,12 @@
 
     function simpanLokal(data, namaOrang) {
         let antrean = JSON.parse(localStorage.getItem('antrean_absensi')) || [];
-        antrean.push(data);
-        localStorage.setItem('antrean_absensi', JSON.stringify(antrean));
+        antrean.push(data); localStorage.setItem('antrean_absensi', JSON.stringify(antrean));
         
         let riwayatLokal = JSON.parse(localStorage.getItem('riwayat_sukses_lokal')) || [];
-        riwayatLokal.push(data);
-        localStorage.setItem('riwayat_sukses_lokal', JSON.stringify(riwayatLokal));
+        riwayatLokal.push(data); localStorage.setItem('riwayat_sukses_lokal', JSON.stringify(riwayatLokal));
 
-        bunyikanSuaraSukses(); 
-        tampilkanToast(`💾 Tersimpan lokal (${data.metode_input}): ${namaOrang}`);
+        bunyikanSuaraSukses(); tampilkanToast(`💾 Tersimpan lokal (${data.metode_input}): ${namaOrang}`);
         if(data.metode_input === "Manual" || data.metode_input === "Izin") { searchInput.value = ''; selectedIdInput.value = ''; }
     }
 
@@ -660,8 +606,7 @@
         if (antrean.length === 0) return;
         netIndicator.innerText = "🔄 Menyinkronkan...";
         for (let i = 0; i < antrean.length; i++) { await _supabase.from('absensi_kegiatan').insert([antrean[i]]); }
-        localStorage.removeItem('antrean_absensi');
-        localStorage.removeItem('riwayat_sukses_lokal');
+        localStorage.removeItem('antrean_absensi'); localStorage.removeItem('riwayat_sukses_lokal');
         cachePresensiMenitIni.clear(); 
         netIndicator.innerText = "● Online"; netIndicator.className = "net-status online";
         tampilkanToast("✓ Semua data offline berhasil digabungkan ke Supabase");
@@ -686,7 +631,6 @@
         return logAbsen.map(absen => {
             let detail = semuaDataGenerus.find(g => String(g.id_generus) === String(absen.id_generus));
             let desaClean = detail && detail.desa ? detail.desa.toUpperCase().replace("DESA ", "") : "-";
-            
             return {
                 id: absen.id_generus,
                 name: detail ? detail.nama_lengkap : "ID Terhapus: " + absen.id_generus, 
@@ -701,7 +645,7 @@
         });
     }
 
-    // --- FUNGSI EXCEL FILTERING ENGINE ---
+    // --- ENGINE EXCEL FILTERING ---
     function buatElemenHeaderFilter(label, namaKolom) {
         return `
             <div class="th-filter-container">
@@ -727,13 +671,11 @@
         let targetDd = document.getElementById(`dropdown-filter-${namaKolom}`);
         let kondisiAwalTerbuka = (targetDd.style.display === 'block');
 
-        // Reset semua dropdown
         seluruhDropdown.forEach(d => d.style.display = 'none');
 
         if (!kondisiAwalTerbuka) {
             targetDd.style.display = 'block';
             isiOpsiDropdownFilter(namaKolom);
-            // Aktifkan backdrop transparan pembungkus untuk menangkap click/touch di luar
             globalOverlay.style.display = 'block';
         } else {
             tutupSemuaDropdownAman();
@@ -743,34 +685,25 @@
     function tutupSemuaDropdownAman() {
         const seluruhDropdown = document.querySelectorAll('.filter-dropdown-menu');
         seluruhDropdown.forEach(d => d.style.display = 'none');
-        // Sembunyikan backdrop overlay pengunci
         globalOverlay.style.display = 'none';
     }
 
     function isiOpsiDropdownFilter(namaKolom) {
         const listContainer = document.getElementById(`list-opsi-filter-${namaKolom}`);
-        if (!listContainer) return;
-        listContainer.innerHTML = '';
-
+        if (!listContainer) return; listContainer.innerHTML = '';
         let kumpulanOpsi = [];
         
-        if (namaKolom === 'status') {
-            kumpulanOpsi = ["GENERUS", "PENGURUS", "MT"];
-        } else if (namaKolom === 'desa') {
-            kumpulanOpsi = Object.keys(STRUKTUR_DESA);
-        } else if (namaKolom === 'kelompok') {
+        if (namaKolom === 'status') { kumpulanOpsi = ["GENERUS", "PENGURUS", "MT"]; } 
+        else if (namaKolom === 'desa') { kumpulanOpsi = Object.keys(STRUKTUR_DESA); } 
+        else if (namaKolom === 'kelompok') {
             if (filterTerpilih['desa'] && filterTerpilih['desa'].length > 0) {
-                filterTerpilih['desa'].forEach(d => {
-                    if (STRUKTUR_DESA[d]) kumpulanOpsi = kumpulanOpsi.concat(STRUKTUR_DESA[d]);
-                });
+                filterTerpilih['desa'].forEach(d => { if (STRUKTUR_DESA[d]) kumpulanOpsi = kumpulanOpsi.concat(STRUKTUR_DESA[d]); });
             } else {
                 let semuaSub = [];
                 Object.values(STRUKTUR_DESA).forEach(sub => { semuaSub = semuaSub.concat(sub); });
                 kumpulanOpsi = [...new Set(dataAktifRekap.map(item => String(item[namaKolom]).toUpperCase()).concat(semuaSub))];
             }
-        } else {
-            kumpulanOpsi = [...new Set(dataAktifRekap.map(item => String(item[namaKolom]).toUpperCase()))];
-        }
+        } else { kumpulanOpsi = [...new Set(dataAktifRekap.map(item => String(item[namaKolom]).toUpperCase()))]; }
 
         kumpulanOpsi = kumpulanOpsi.filter(val => val.trim() !== "").sort();
 
@@ -791,29 +724,20 @@
         const items = document.querySelectorAll(`#list-opsi-filter-${namaKolom} .filter-option-item`);
         items.forEach(item => {
             const text = item.textContent.toLowerCase();
-            if(text.includes(keyword.toLowerCase())) {
-                item.style.display = 'flex';
-            } else {
-                item.style.display = 'none';
-            }
+            item.style.display = text.includes(keyword.toLowerCase()) ? 'flex' : 'none';
         });
     }
 
     function bersihkanFilterKolom(namaKolom) {
         delete filterTerpilih[namaKolom];
         if (namaKolom === 'desa') delete filterTerpilih['kelompok']; 
-        
         document.getElementById(`btn-filter-${namaKolom}`).classList.remove('active');
-        tutupSemuaDropdownAman();
-        prosesKalkulasiDanRenderTabel();
+        tutupSemuaDropdownAman(); prosesKalkulasiDanRenderTabel();
     }
 
     function terapkanExcelFilter(namaKolom) {
         const checkboxes = document.querySelectorAll(`#list-opsi-filter-${namaKolom} input[type="checkbox"]`);
-        const terpilih = [];
-        checkboxes.forEach(cb => {
-            if(cb.checked) terpilih.push(cb.value);
-        });
+        const terpilih = []; checkboxes.forEach(cb => { if(cb.checked) terpilih.push(cb.value); });
 
         if(terpilih.length > 0) {
             filterTerpilih[namaKolom] = terpilih;
@@ -825,51 +749,37 @@
 
         if (namaKolom === 'desa') {
             delete filterTerpilih['kelompok'];
-            const btnKlp = document.getElementById('btn-filter-kelompok');
-            if(btnKlp) btnKlp.classList.remove('active');
+            const btnKlp = document.getElementById('btn-filter-kelompok'); if(btnKlp) btnKlp.classList.remove('active');
         }
-
-        tutupSemuaDropdownAman();
-        prosesKalkulasiDanRenderTabel();
+        tutupSemuaDropdownAman(); prosesKalkulasiDanRenderTabel();
     }
 
     function prosesKalkulasiDanRenderTabel() {
         let dataHasilFilter = [...dataAktifRekap];
-
         Object.keys(filterTerpilih).forEach(kolom => {
             const nilaiFilter = filterTerpilih[kolom];
-            dataHasilFilter = dataHasilFilter.filter(item => {
-                let valueItem = String(item[kolom]).toUpperCase();
-                return nilaiFilter.includes(valueItem);
-            });
+            dataHasilFilter = dataHasilFilter.filter(item => nilaiFilter.includes(String(item[kolom]).toUpperCase()));
         });
 
-        let totalLakiHadir = 0;
-        let totalPerempuanHadir = 0;
-        let totalIzinSemua = 0;
-
+        let totalLakiHadir = 0, totalPerempuanHadir = 0, totalIzinSemua = 0;
         dataHasilFilter.forEach(d => {
-            if (d.metode === "Izin") {
-                totalIzinSemua++;
-            } else {
+            if (d.metode === "Izin") { totalIzinSemua++; } 
+            else {
                 if (d.jk.includes('Perempuan') || d.jk === 'P') totalPerempuanHadir++;
                 else totalLakiHadir++;
             }
         });
 
-        const tbody = document.getElementById('excel-tbody-target');
-        if(!tbody) return;
+        const tbody = document.getElementById('excel-tbody-target'); if(!tbody) return;
         tbody.innerHTML = '';
 
         dataHasilFilter.forEach((d, i) => {
             let penandaIzin = d.metode === "Izin" ? " <span style='color:#eab308; font-weight:700;'>(IZIN)</span>" : "";
-            let jkShort = d.jk.includes('Perempuan') || d.jk === 'P' ? 'P' : 'L';
-            
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td>${i+1}</td>
                 <td style="font-weight:600;">${d.name}${penandaIzin}</td>
-                <td>${jkShort}</td>
+                <td>${d.jk.includes('Perempuan') || d.jk === 'P' ? 'P' : 'L'}</td>
                 <td>${d.kelompok}</td>
                 <td>${d.desa}</td>
                 <td>${d.status}</td>
@@ -884,41 +794,32 @@
         document.getElementById('lbl-total-izin').innerText = `Izin: ${totalIzinSemua}`;
         document.getElementById('lbl-total-semua').innerText = `Total Data: ${dataHasilFilter.length} Orang`;
     }
-    // --- END OF EXCEL FILTERING ENGINE ---
 
     async function tarikDanCetakLaporan(jenis, langsungPrint = false) {
         let namaKegiatan = document.getElementById('kegiatan').value.toUpperCase();
         if(!namaKegiatan) return alert("Harap masukkan Nama Agenda yang ingin ditarik rekapannya!");
         tampilkanToast("🔄 Menarik seluruh data dari Supabase...");
+        
         let dataMurni = await dapatkanDataGabungan(namaKegiatan);
         if(dataMurni.length === 0) return alert(`Tidak ditemukan data absensi/izin untuk kegiatan: "${namaKegiatan}"`);
 
-        dataAktifRekap = dataMurni; 
-        filterTerpilih = {}; 
-
+        dataAktifRekap = dataMurni; filterTerpilih = {}; 
         let container = document.getElementById('print-table-container');
-        let areaCetak = document.getElementById('print-area');
-        container.innerHTML = "";
+        let areaCetak = document.getElementById('print-area'); container.innerHTML = "";
+        
         let opsiWaktu = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
         document.getElementById('cetak-waktu').innerText = "Waktu Tarik Laporan: " + new Date().toLocaleDateString('id-ID', opsiWaktu) + " WIB";
 
-        let totalLakiHadir = 0;
-        let totalPerempuanHadir = 0;
-        let totalIzinSemua = 0;
-
+        let totalLakiHadir = 0, totalPerempuanHadir = 0, totalIzinSemua = 0;
         dataMurni.forEach(d => {
-            if (d.metode === "Izin") {
-                totalIzinSemua++;
-            } else {
-                if (d.jk.includes('Perempuan') || d.jk === 'P') totalPerempuanHadir++;
-                else totalLakiHadir++;
+            if (d.metode === "Izin") { totalIzinSemua++; } 
+            else {
+                if (d.jk.includes('Perempuan') || d.jk === 'P') totalPerempuanHadir++; else totalLakiHadir++;
             }
         });
 
         if (jenis === 'semua') {
-            let html = "";
-            
-            html += `<table class="print-table">
+            let html = `<table class="print-table">
                         <thead>
                             <tr>
                                 <th style="width:30px;">No</th>
@@ -946,9 +847,7 @@
                             <td style="font-weight:${d.metode === 'Izin' ? '700' : '500'}; color:${d.metode === 'Izin' ? '#b45309' : 'inherit'};">${d.waktu}</td>
                          </tr>`; 
             });
-            
             html += `</tbody></table>`;
-            
             html += `<table class="print-table" style="margin-top:15px; border: 2px solid #475569; background:#f1f5f9;">
                         <tr style="font-weight:700; font-size:12px;">
                             <td style="text-align:right; padding:8px;">TOTAL REKAP SEMUA:</td>
@@ -959,30 +858,17 @@
                         </tr>
                      </table>`;
             
-            container.innerHTML = html;
-            areaCetak.style.display = "block";
-            
-            if (langsungPrint) {
-                window.print();
-            } else {
-                tampilkanToast("✓ Preview rekap data berhasil dimuat di bawah!");
-                window.scrollTo({ top: areaCetak.offsetTop, behavior: 'smooth' });
-            }
-            return;
+            container.innerHTML = html; areaCetak.style.display = "block";
+            if (langsungPrint) { window.print(); } 
+            else { tampilkanToast("✓ Preview rekap data berhasil dimuat di bawah!"); window.scrollTo({ top: areaCetak.offsetTop, behavior: 'smooth' }); }
         } 
         else if (jenis === 'desa') {
             let rekapDesa = {};
             dataMurni.forEach(d => {
                 let desa = d.desa || "TANPA DESA";
-                if (!rekapDesa[desa]) {
-                    rekapDesa[desa] = { laki: 0, perempuan: 0, izin: 0 };
-                }
-                if (d.metode === "Izin") {
-                    rekapDesa[desa].izin++;
-                } else {
-                    if (d.jk.includes("Perempuan") || d.jk === 'P') rekapDesa[desa].perempuan++;
-                    else rekapDesa[desa].laki++;
-                }
+                if (!rekapDesa[desa]) rekapDesa[desa] = { laki: 0, perempuan: 0, izin: 0 };
+                if (d.metode === "Izin") { rekapDesa[desa].izin++; } 
+                else { if (d.jk.includes("Perempuan") || d.jk === 'P') rekapDesa[desa].perempuan++; else rekapDesa[desa].laki++; }
             });
 
             let html = `<h4>📊 REKAPITULASI JUMLAH KEHADIRAN PER DESA</h4>`;
@@ -999,14 +885,10 @@
                         </thead>
                         <tbody>`;
             
-            let no = 1;
-            let grandL = 0, grandP = 0, grandIzin = 0;
+            let no = 1; let grandL = 0, grandP = 0, grandIzin = 0;
             for (let desa in rekapDesa) {
-                let l = rekapDesa[desa].laki;
-                let p = rekapDesa[desa].perempuan;
-                let iz = rekapDesa[desa].izin;
-                let totalRow = l + p + iz;
-                grandL += l; grandP += p; grandIzin += iz;
+                let l = rekapDesa[desa].laki; let p = rekapDesa[desa].perempuan; let iz = rekapDesa[desa].izin;
+                let totalRow = l + p + iz; grandL += l; grandP += p; grandIzin += iz;
 
                 html += `<tr>
                             <td style="text-align:center;">${no++}</td>
@@ -1026,37 +908,24 @@
                         <td style="text-align:center; font-size:12px; color:#b45309;">${grandL + grandP + grandIzin} Orang</td>
                      </tr>`;
             html += `</tbody></table>`;
-            container.innerHTML = html;
-            areaCetak.style.display = "block";
+            container.innerHTML = html; areaCetak.style.display = "block";
 
-            if (langsungPrint) {
-                window.print();
-            } else {
-                tampilkanToast("✓ Preview rekap desa berhasil dimuat di bawah!");
-                window.scrollTo({ top: areaCetak.offsetTop, behavior: 'smooth' });
-            }
+            if (langsungPrint) { window.print(); } 
+            else { tampilkanToast("✓ Preview rekap desa berhasil dimuat di bawah!"); window.scrollTo({ top: areaCetak.offsetTop, behavior: 'smooth' }); }
         } 
         else if (jenis === 'kelompok') {
             let rekapKelompok = {};
             dataMurni.forEach(d => {
                 let klp = d.kelompok || "TANPA KELOMPOK";
-                if (!rekapKelompok[klp]) rekapKelompok[klp] = [];
-                rekapKelompok[klp].push(d);
+                if (!rekapKelompok[klp]) rekapKelompok[klp] = []; rekapKelompok[klp].push(d);
             });
 
             let html = "";
-
             for (let klp in rekapKelompok) {
-                let anggota = rekapKelompok[klp];
-
-                let lKlp = 0, pKlp = 0, izKlp = 0;
+                let anggota = rekapKelompok[klp]; let lKlp = 0, pKlp = 0, izKlp = 0;
                 anggota.forEach(a => {
-                    if (a.metode === "Izin") {
-                        izKlp++;
-                    } else {
-                        if (a.jk.includes('Perempuan') || a.jk === 'P') pKlp++;
-                        else lKlp++;
-                    }
+                    if (a.metode === "Izin") { izKlp++; } 
+                    else { if (a.jk.includes('Perempuan') || a.jk === 'P') pKlp++; else lKlp++; }
                 });
 
                 html += `<div class="print-box-wilayah">`;
@@ -1075,13 +944,11 @@
                 
                 anggota.forEach((a, idx) => {
                     let penandaIzin = a.metode === "Izin" ? " <span style='color:#eab308; font-weight:700;'>(IZIN)</span>" : "";
-                    let jkShort = a.jk.includes('Perempuan') || a.jk === 'P' ? 'P' : 'L';
                     html += `<tr>
                                 <td style="text-align:center;">${idx+1}</td>
                                 <td style="font-weight:600;">${a.name}${penandaIzin}</td>
-                                <td>${a.status}</td>
-                                <td>${a.detail_status}</td>
-                                <td style="text-align:center;">${jkShort}</td>
+                                <td>${a.status}</td> <td>${a.detail_status}</td>
+                                <td style="text-align:center;">${a.jk.includes('Perempuan') || a.jk === 'P' ? 'P' : 'L'}</td>
                              </tr>`;
                 });
 
@@ -1107,15 +974,9 @@
                         </tr>
                      </table>`;
 
-            container.innerHTML = html;
-            areaCetak.style.display = "block";
-
-            if (langsungPrint) {
-                window.print();
-            } else {
-                tampilkanToast("✓ Preview rekap kelompok berhasil dimuat di bawah!");
-                window.scrollTo({ top: areaCetak.offsetTop, behavior: 'smooth' });
-            }
+            container.innerHTML = html; areaCetak.style.display = "block";
+            if (langsungPrint) { window.print(); } 
+            else { tampilkanToast("✓ Preview rekap kelompok berhasil dimuat di bawah!"); window.scrollTo({ top: areaCetak.offsetTop, behavior: 'smooth' }); }
         }
     }
 
@@ -1134,7 +995,6 @@
         if(dataMurni.length === 0) return alert("Tidak ada data untuk diekspor!");
 
         let csvContent = "No,Nama Lengkap,Jenis Kelamin,Kelompok,Desa,Status,Usia atau Dapukan,Waktu Absen/Status,Metode\n";
-        
         dataMurni.forEach((d, i) => { 
             let jenisKelamin = d.jk.includes('Perempuan') || d.jk === 'P' ? 'P' : 'L';
             csvContent += `${i+1},"${d.name}","${jenisKelamin}","${d.kelompok}","${d.desa}","${d.status}","${d.detail_status}","${d.waktu}","${d.metode}"\n`;
@@ -1142,16 +1002,9 @@
         
         let blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
         let url = URL.createObjectURL(blob);
-        
         let link = document.createElement("a");
-        link.setAttribute("href", url);
-        link.setAttribute("download", `REKAP_PRESENSI_${namaKegiatan.replace(/\s+/g, '_')}.csv`);
-        document.body.appendChild(link);
-        
-        link.click();
-        
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
+        link.setAttribute("href", url); link.setAttribute("download", `REKAP_PRESENSI_${namaKegiatan.replace(/\s+/g, '_')}.csv`);
+        document.body.appendChild(link); link.click(); document.body.removeChild(link); URL.revokeObjectURL(url);
         tampilkanToast("✓ File CSV berhasil diunduh!");
     }
 </script>
