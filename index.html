@@ -141,7 +141,6 @@
         .search-item { padding: 12px 16px; cursor: pointer; border-bottom: 1px solid var(--border-color); font-size: 14px; min-height: 44px; box-sizing: border-box; }
         .search-item:hover { background: var(--bg-main); color: var(--primary); }
 
-        /* PERBAIKAN: Tombol Rekap Utama Menjadi 1 Baris (6 Kolom) */
         .action-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; margin-top: 10px; position: relative; }
         .btn-icon, .select-wrapper { 
             background: transparent; border: 1px solid var(--border-color); 
@@ -185,7 +184,6 @@
         .print-table th, .print-table td { border: 1px solid #94a3b8; padding: 6px 8px; text-align: left; }
         .print-table th { background: #f1f5f9; color: #0f172a; font-weight: 600; position: relative; }
 
-        /* FILTER DROPDOWN CORONG STYLE */
         .th-filter-container {
             display: flex;
             align-items: center;
@@ -288,14 +286,19 @@
         .resume-kehadiran-box {
             background: var(--bg-main);
             border: 1px solid var(--border-color);
-            padding: 10px 14px;
+            padding: 12px 16px;
             border-radius: 12px;
             margin-bottom: 15px;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 600;
             display: flex;
-            gap: 16px;
+            flex-direction: column;
+            gap: 6px;
             color: var(--text-dark);
+        }
+        .resume-row {
+            display: flex;
+            gap: 16px;
         }
 
         @media print {
@@ -377,7 +380,6 @@
             Excel
         </button>
 
-        <!-- PERBAIKAN: Perubahan nama menjadi Proses Rekap Kegiatan Tahunan -->
         <div class="select-wrapper" title="Rekap Tahunan" style="grid-column: span 6; border-color: var(--accent); margin-top: 8px; padding: 6px 0;">
             <div style="display:flex; align-items:center; gap:8px; justify-content:center;">
                 <svg viewBox="0 0 24 24" style="stroke: var(--accent); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; width:18px; height:18px;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
@@ -556,14 +558,22 @@
         resumeContainer.innerHTML = "";
         document.getElementById('cetak-waktu').innerText = "Waktu Rekap: " + new Date().toLocaleString('id-ID');
 
-        // Penghitungan Jumlah Kehadiran & Izin
+        // PERBAIKAN 1: Penghitungan Jumlah Kehadiran, Izin, serta Total Laki-laki & Perempuan
         let totalHadir = dataAktifRekap.filter(d => d.metode !== 'Izin').length;
         let totalIzin = dataAktifRekap.filter(d => d.metode === 'Izin').length;
+        let totalLaki = dataAktifRekap.filter(d => !d.jk.includes('P') && d.jk !== '-').length;
+        let totalPerempuan = dataAktifRekap.filter(d => d.jk.includes('P')).length;
         
         resumeContainer.innerHTML = `
             <div class="resume-kehadiran-box">
-                <span style="color: var(--primary);">🟢 Total Hadir: ${totalHadir} Orang</span>
-                <span style="color: var(--accent);">🟡 Total Izin: ${totalIzin} Orang</span>
+                <div class="resume-row">
+                    <span style="color: var(--primary);">🟢 Total Hadir: ${totalHadir} Orang</span>
+                    <span style="color: var(--accent);">🟡 Total Izin: ${totalIzin} Orang</span>
+                </div>
+                <div class="resume-row" style="border-top: 1px dashed var(--border-color); padding-top: 6px; font-weight: normal; color: var(--text-muted);">
+                    <span>♂️ Laki-laki: <b>${totalLaki}</b></span>
+                    <span>♀️ Perempuan: <b>${totalPerempuan}</b></span>
+                </div>
             </div>`;
 
         if(jenis === 'semua') {
@@ -620,7 +630,6 @@
         if(langsungPrint) window.print();
     }
 
-    /* PERBAIKAN & PENAMBAHAN: ENGINE FILTER DINAMIS UNTUK REKAP SEMUA */
     function renderTabelRekapSemuaSistem() {
         let container = document.getElementById('print-table-container');
         let areaCetak = document.getElementById('print-area');
@@ -637,7 +646,6 @@
                         <tr>
                             <th style="width:30px; text-align:center;">No</th>
                             <th>Nama Lengkap</th>
-                            <!-- FILTER JK -->
                             <th style="width:70px;">
                                 <div class="th-filter-container">
                                     <span>L/P</span>
@@ -653,7 +661,6 @@
                                     </div>
                                 </div>
                             </th>
-                            <!-- FILTER KELOMPOK -->
                             <th>
                                 <div class="th-filter-container">
                                     <span>Kelompok</span>
@@ -670,7 +677,6 @@
                                     </div>
                                 </div>
                             </th>
-                            <!-- FILTER DESA -->
                             <th>
                                 <div class="th-filter-container">
                                     <span>Desa</span>
@@ -687,7 +693,6 @@
                                     </div>
                                 </div>
                             </th>
-                            <!-- FILTER STATUS -->
                             <th>
                                 <div class="th-filter-container">
                                     <span>Status</span>
@@ -769,7 +774,7 @@
         tutupSemuaDropdownAman(); renderTabelRekapSemuaSistem();
     }
 
-    /* ENGINE REKAP MATRIKS TAHUNAN */
+    /* PERBAIKAN 2: ENGINE REKAP MATRIKS TAHUNAN DENGAN AKUMULASI TOTAL HADIR & TOTAL IZIN */
     async function tarikRekapTahunanMatriks(statusPilihan) {
         let namaKegiatan = document.getElementById('kegiatan').value.toUpperCase();
         if(!namaKegiatan) { document.getElementById('tahunan-dropdown').value = ""; return alert("Harap isi Nama Agenda terlebih dahulu!"); }
@@ -825,14 +830,18 @@
                             <th style="text-align:center; width:20px;">Jul</th><th style="text-align:center; width:20px;">Agu</th>
                             <th style="text-align:center; width:20px;">Sep</th><th style="text-align:center; width:20px;">Okt</th>
                             <th style="text-align:center; width:20px;">Nov</th><th style="text-align:center; width:20px;">Des</th>
-                            <th style="text-align:center; width:45px; background:#f1f5f9; font-weight:700;">Total</th>
+                            <th style="text-align:center; width:45px; background:#f1f5f9; font-weight:700;">Hadir</th>
+                            <th style="text-align:center; width:45px; background:#ffe4e6; font-weight:700;">Izin</th>
                         </tr>
                     </thead>
                     <tbody>`;
 
         if(dataOrangTerfilter.length === 0) {
-            html += `<tr><td colspan="16" style="text-align:center; color:#ef4444; font-weight:600; padding:20px;">Tidak ada data yang cocok dengan filter kelompok terpilih.</td></tr>`;
+            html += `<tr><td colspan="17" style="text-align:center; color:#ef4444; font-weight:600; padding:20px;">Tidak ada data yang cocok dengan filter kelompok terpilih.</td></tr>`;
         } else {
+            let akumulasiHadirSemua = 0;
+            let akumulasiIzinSemua = 0;
+
             dataOrangTerfilter.sort((a,b) => (a.nama_lengkap || '').localeCompare(b.nama_lengkap)).forEach((orang, idx) => {
                 let logOrang = dataMentahTahunanLog.filter(l => String(l.id_generus) === String(orang.id_generus));
                 html += `<tr>
@@ -841,16 +850,32 @@
                             <td>${(orang.kelompok || "-").toUpperCase()}</td>`;
                 
                 let totalHadir = 0;
+                let totalIzin = 0;
                 for (let m = 0; m < 12; m++) {
                     let hadir = logOrang.some(l => new Date(l.waktu_absen).getMonth() === m && l.metode_input !== 'Izin');
                     let izin = logOrang.some(l => new Date(l.waktu_absen).getMonth() === m && l.metode_input === 'Izin');
                     
                     if (hadir) { html += `<td style="text-align:center; color:#10b981; font-weight:700;">✔</td>`; totalHadir++; }
-                    else if (izin) { html += `<td style="text-align:center; color:#eab308; font-weight:700; font-size:9px;">IZN</td>`; }
+                    else if (izin) { html += `<td style="text-align:center; color:#eab308; font-weight:700; font-size:9px;">IZN</td>`; totalIzin++; }
                     else { html += `<td style="text-align:center; color:#cbd5e1;">-</td>`; }
                 }
-                html += `<td style="text-align:center; font-weight:700; background:#f8fafc; color:#047857;">${totalHadir}x</td></tr>`;
+                
+                akumulasiHadirSemua += totalHadir;
+                akumulasiIzinSemua += totalIzin;
+
+                html += `
+                    <td style="text-align:center; font-weight:700; background:#f8fafc; color:#047857;">${totalHadir}x</td>
+                    <td style="text-align:center; font-weight:700; background:#fff5f5; color:#b91c1c;">${totalIzin}x</td>
+                </tr>`;
             });
+
+            // Menambahkan baris akumulasi ringkasan di paling bawah tabel tahunan
+            html += `
+                <tr style="background: #f1f5f9; font-weight: 700;">
+                    <td colspan="15" style="text-align: right; padding: 8px;">TOTAL AKUMULASI KESELURUHAN:</td>
+                    <td style="text-align: center; color: #047857; background: #e6f4ea;">${akumulasiHadirSemua}x</td>
+                    <td style="text-align: center; color: #b91c1c; background: #fce8e6;">${akumulasiIzinSemua}x</td>
+                </tr>`;
         }
 
         html += `</tbody></table>`;
