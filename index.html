@@ -513,13 +513,64 @@
     let html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 220 });
     html5QrcodeScanner.render(onScanSuccess);
 
+    // ==========================================
+    // PERBAIKAN: PROTEKSI ABSEN GANDA (3 JAM)
+    // ==========================================
     async function prosesAbsensi(idGenerus, metode) {
         let namaKegiatan = document.getElementById('kegiatan').value.toUpperCase();
         if(!namaKegiatan) { bunyikanSuaraGagal(); alert("Harap isi Nama Agenda terlebih dahulu!"); return; }
+        
         let profil = semuaDataGenerus.find(g => g.id_generus == idGenerus) || { nama_lengkap: "ID: " + idGenerus };
-        const dataAbsen = { nama_kegiatan: namaKegiatan.trim(), id_generus: idGenerus, metode_input: metode, waktu_absen: new Date().toISOString() };
-        let { error } = await _supabase.from('absensi_kegiatan').insert([dataAbsen]);
-        if (!error) { bunyikanSuaraSukses(); tampilkanToast(`✓ Sukses mencatat data ${profil.nama_lengkap}`); }
+        
+        try {
+            // 1. Ambil data log absensi terakhir untuk orang ini di kegiatan yang sama
+            let { data: logTerakhir, error: errorCek } = await _supabase
+                .from('absensi_kegiatan')
+                .select('waktu_absen')
+                .eq('nama_kegiatan', namaKegiatan.trim())
+                .eq('id_generus', idGenerus)
+                .order('waktu_absen', { ascending: false })
+                .limit(1);
+
+            if (errorCek) throw errorCek;
+
+            // 2. Jika ada riwayat absen sebelumnya, periksa selisih waktunya
+            if (logTerakhir && logTerakhir.length > 0) {
+                let waktuAbsenTerakhir = new Date(logTerakhir[0].waktu_absen);
+                let waktuSekarang = new Date();
+                
+                // Hitung selisih waktu dalam satuan jam
+                let selisihJam = (waktuSekarang - waktuAbsenTerakhir) / (1000 * 60 * 60);
+
+                if (selisihJam < 3) {
+                    bunyikanSuaraGagal(); // Bunyi tetot (gagal)
+                    let sisaMenit = Math.ceil((3 - selisihJam) * 60);
+                    alert(`Gagal! ${profil.nama_lengkap} sudah melakukan presensi pada agenda ini.\nHarap tunggu ${sisaMenit} menit lagi untuk dapat melakukan scan ulang.`);
+                    return; // Menghentikan proses penyimpanan data baru
+                }
+            }
+
+            // 3. Jika aman (belum pernah absen / sudah melewati 3 jam), simpan ke database
+            const dataAbsen = { 
+                nama_kegiatan: namaKegiatan.trim(), 
+                id_generus: idGenerus, 
+                metode_input: metode, 
+                waktu_absen: new Date().toISOString() 
+            };
+            
+            let { error: errorInsert } = await _supabase.from('absensi_kegiatan').insert([dataAbsen]);
+            if (!errorInsert) { 
+                bunyikanSuaraSukses(); 
+                tampilkanToast(`✓ Sukses mencatat data ${profil.nama_lengkap}`); 
+            } else {
+                throw errorInsert;
+            }
+
+        } catch (err) {
+            bunyikanSuaraGagal();
+            console.error(err);
+            alert("Terjadi kesalahan sistem saat memproses absensi.");
+        }
     }
 
     function inputManualKehadiran() { if(!selectedIdInput.value) return alert("Pilih nama!"); prosesAbsensi(selectedIdInput.value, "Manual"); searchInput.value=''; selectedIdInput.value=''; }
@@ -609,7 +660,6 @@
                 let hKlp = rekapKlp[k].filter(d => d.metode !== 'Izin').length;
                 let iKlp = rekapKlp[k].filter(d => d.metode === 'Izin').length;
                 
-                // SENTUHAN BARU: Menambahkan kolom th 'L/P' pada layout tabel rekap kelompok
                 html += `<div class="print-box-wilayah">
                             <h4 style="display:flex; justify-content:space-between; font-size:12px;">
                                 <span>KELOMPOK: ${k}</span>
