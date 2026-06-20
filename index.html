@@ -210,7 +210,6 @@
             fill: var(--primary);
         }
         
-        /* Modifikasi Dropdown Filter: Optimalisasi scroll & sentuhan di HP */
         .filter-dropdown-menu {
             display: none;
             position: absolute;
@@ -228,8 +227,7 @@
             box-sizing: border-box;
             font-weight: normal;
             text-transform: none;
-            -webkit-overflow-scrolling: touch; /* Momentum scrolling iOS */
-            touch-action: auto; /* Mencegah bentrok gesture sistem HP */
+            -webkit-overflow-scrolling: touch;
         }
         .filter-search-box {
             width: 100%;
@@ -259,7 +257,7 @@
             cursor: pointer;
             padding: 4px;
             border-radius: 4px;
-            min-height: 24px; /* Area sentuh jari lebih nyaman */
+            min-height: 24px;
         }
         .filter-option-item:hover {
             background: var(--bg-main);
@@ -709,7 +707,7 @@
         } else {
             dd.style.display = 'block';
             isiOpsiDropdownFilter(namaKolom);
-            setTimeout(() => { dd.focus(); }, 50);
+            setTimeout(() => { dd.querySelector('.filter-search-box').focus(); }, 50);
         }
     }
 
@@ -743,7 +741,7 @@
             kumpulanOpsi = [...new Set(dataAktifRekap.map(item => String(item[namaKolom]).toUpperCase()))];
         }
 
-        kumpulanOpsi = kumpulanOpsi.filter(val => val.trim() !== "").sort();
+        kumpulanOpsi = kumpulanOpsi.filter(val => val && val.trim() !== "").sort();
 
         kumpulanOpsi.forEach(opsi => {
             const tercentang = filterTerpilih[namaKolom] && filterTerpilih[namaKolom].includes(opsi) ? 'checked' : '';
@@ -774,8 +772,12 @@
         delete filterTerpilih[namaKolom];
         if (namaKolom === 'desa') delete filterTerpilih['kelompok']; 
         
-        document.getElementById(`btn-filter-${namaKolom}`).classList.remove('active');
-        document.getElementById(`dropdown-filter-${namaKolom}`).style.display = 'none';
+        const btnFilter = document.getElementById(`btn-filter-${namaKolom}`);
+        if(btnFilter) btnFilter.classList.remove('active');
+        
+        const dd = document.getElementById(`dropdown-filter-${namaKolom}`);
+        if(dd) dd.style.display = 'none';
+        
         prosesKalkulasiDanRenderTabel();
     }
 
@@ -788,10 +790,12 @@
 
         if(terpilih.length > 0) {
             filterTerpilih[namaKolom] = terpilih;
-            document.getElementById(`btn-filter-${namaKolom}`).classList.add('active');
+            const btnFilter = document.getElementById(`btn-filter-${namaKolom}`);
+            if(btnFilter) btnFilter.classList.add('active');
         } else {
             delete filterTerpilih[namaKolom];
-            document.getElementById(`btn-filter-${namaKolom}`).classList.remove('active');
+            const btnFilter = document.getElementById(`btn-filter-${namaKolom}`);
+            if(btnFilter) btnFilter.classList.remove('active');
         }
 
         if (namaKolom === 'desa') {
@@ -800,7 +804,9 @@
             if(btnKlp) btnKlp.classList.remove('active');
         }
 
-        document.getElementById(`dropdown-filter-${namaKolom}`).style.display = 'none';
+        const dd = document.getElementById(`dropdown-filter-${namaKolom}`);
+        if(dd) dd.style.display = 'none';
+        
         prosesKalkulasiDanRenderTabel();
     }
 
@@ -810,7 +816,7 @@
         Object.keys(filterTerpilih).forEach(kolom => {
             const nilaiFilter = filterTerpilih[kolom];
             dataHasilFilter = dataHasilFilter.filter(item => {
-                let valueItem = String(item[kolom]).toUpperCase();
+                let valueItem = String(item[kolom === 'name' ? 'name' : kolom]).toUpperCase();
                 return nilaiFilter.includes(valueItem);
             });
         });
@@ -850,10 +856,15 @@
             tbody.appendChild(tr);
         });
 
-        document.getElementById('lbl-total-l').innerText = `Hadir L: ${totalLakiHadir}`;
-        document.getElementById('lbl-total-p').innerText = `Hadir P: ${totalPerempuanHadir}`;
-        document.getElementById('lbl-total-izin').innerText = `Izin: ${totalIzinSemua}`;
-        document.getElementById('lbl-total-semua').innerText = `Total Data: ${dataHasilFilter.length} Orang`;
+        const lblL = document.getElementById('lbl-total-l');
+        const lblP = document.getElementById('lbl-total-p');
+        const lblIzin = document.getElementById('lbl-total-izin');
+        const lblSemua = document.getElementById('lbl-total-semua');
+
+        if(lblL) lblL.innerText = `Hadir L: ${totalLakiHadir}`;
+        if(lblP) lblP.innerText = `Hadir P: ${totalPerempuanHadir}`;
+        if(lblIzin) lblIzin.innerText = `Izin: ${totalIzinSemua}`;
+        if(lblSemua) lblSemua.innerText = `Total Data: ${dataHasilFilter.length} Orang`;
     }
     // --- END OF EXCEL FILTERING ENGINE ---
 
