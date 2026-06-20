@@ -475,7 +475,6 @@
     }
     muatSemuaGenerus();
 
-    // PERBAIKAN UTAMA: Mengatasi masalah Dropdown Mati saat Keyboard Aktif di Mobile Android
     function cariNamaPintar() {
         let keyword = searchInput.value.toLowerCase();
         resultsBox.innerHTML = '';
@@ -486,6 +485,7 @@
         
         if(hasilFilter.length > 0) {
             resultsBox.style.display = 'block';
+            resultsBox.style.webkitOverflowScrolling = 'touch'; 
             
             hasilFilter.forEach(g => {
                 let div = document.createElement('div');
@@ -495,19 +495,32 @@
                 let namaDesaBersih = g.desa ? g.desa.toUpperCase().replace("DESA ", "") : '-';
                 div.innerText = `${g.nama_lengkap}${infoTambahan} — ${g.kelompok || '-'} [${namaDesaBersih}]`;
                 
-                // Menggunakan mousedown & touchstart dengan preventDefault agar berjalan SEBELUM blur dipicu sistem android
-                const pilihItem = function(e) {
-                    e.preventDefault(); 
-                    e.stopPropagation();
+                let isScrolling = false;
+                let startY = 0;
+
+                div.addEventListener('touchstart', function(e) {
+                    isScrolling = false;
+                    startY = e.touches[0].pageY; 
+                }, { passive: true });
+
+                div.addEventListener('touchmove', function(e) {
+                    let moveY = e.touches[0].pageY;
+                    if (Math.abs(moveY - startY) > 5) {
+                        isScrolling = true;
+                    }
+                }, { passive: true });
+                
+                const eksekusiPilihan = function(e) {
+                    if (isScrolling) return; 
                     
+                    e.preventDefault(); 
                     searchInput.value = g.nama_lengkap; 
                     selectedIdInput.value = g.id_generus;
                     resultsBox.style.display = 'none';
                 };
                 
-                div.addEventListener('mousedown', pilihItem);
-                div.addEventListener('touchstart', pilihItem, { passive: false });
-                div.addEventListener('click', pilihItem);
+                div.addEventListener('touchend', eksekusiPilihan);
+                div.addEventListener('click', eksekusiPilihan);
                 
                 resultsBox.appendChild(div);
             });
@@ -517,18 +530,12 @@
         }
     }
 
-    // Hanya sembunyikan dropdown jika benar-benar menyentuh area luar form pencarian sepenuhnya
-    document.addEventListener('mousedown', function(e) { 
+    // PERBAIKAN: Mengizinkan klik/scroll di dalam dropdown tanpa menutupnya saat keyboard aktif
+    document.addEventListener('click', function(e) { 
         if (e.target !== searchInput && !resultsBox.contains(e.target)) { 
             resultsBox.style.display = 'none'; 
         } 
     });
-
-    document.addEventListener('touchstart', function(e) { 
-        if (e.target !== searchInput && !resultsBox.contains(e.target)) { 
-            resultsBox.style.display = 'none'; 
-        } 
-    }, { passive: true });
 
     async function onScanSuccess(decodedText) { 
         if (pengunciScanAktif) return; pengunciScanAktif = true; 
