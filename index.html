@@ -258,7 +258,7 @@
         <h3 style="text-align: center; margin: 0 0 5px 0; font-size: 18px;" id="cetak-judul-kegiatan">Laporan Presensi Kegiatan</h3>
         <p style="text-align: center; margin: 0 0 20px 0; font-size: 13px; color: #475569;" id="cetak-waktu">-</p>
         
-        <!-- FITUR PANEL FILTER LENGKAP & DINAMIS -->
+        <!-- PANEL FILTER UTK REKAP DATA -->
         <div id="filter-container" style="background: var(--bg-main); padding: 16px; border-radius: 12px; margin-bottom: 20px; border: 1px solid var(--border-color); display: none;">
             <div style="font-size: 12px; font-weight: 700; margin-bottom: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">⚡ Filter Data Rekap</div>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px;">
@@ -324,7 +324,6 @@
     let globalAudioCtx = null;
     let cachePresensiMenitIni = new Set();
     
-    // Variabel pendukung filter rekap data
     let dataLaporanAktif = []; 
     let jenisRekapAktif = "semua";
 
@@ -581,10 +580,31 @@
     }
 
     async function dapatkanDataGabungan(namaKegiatan) {
-        let { data: logAbsen, error } = await _supabase.from('absensi_kegiatan').select('id_generus, waktu_absen, metode_input').eq('nama_kegiatan', namaKegiatan.toUpperCase());
-        if (error || !logAbsen || logAbsen.length === 0) return [];
+        let logAbsen = [];
         
-        return logAbsen.map(absen => {
+        // 1. Ambil data dari Supabase jika online
+        if (navigator.onLine) {
+            try {
+                let { data, error } = await _supabase.from('absensi_kegiatan').select('id_generus, waktu_absen, metode_input').eq('nama_kegiatan', namaKegiatan.toUpperCase());
+                if (!error && data) {
+                    logAbsen = data;
+                }
+            } catch (e) {}
+        }
+        
+        // 2. Gabungkan dengan data antrean lokal (yg belum masuk/tersinkron ke supabase) agar tidak hilang saat direkap
+        let antreanLokal = JSON.parse(localStorage.getItem('antrean_absensi')) || [];
+        let dataLokalKondisional = antreanLokal.filter(absen => absen.nama_kegiatan.toUpperCase() === namaKegiatan.toUpperCase());
+        
+        // Gunakan Map untuk menyeleksi agar ID unik dan tidak ganda antara Cloud & Lokal
+        let mapGabungan = new Map();
+        logAbsen.forEach(item => mapGabungan.set(String(item.id_generus), item));
+        dataLokalKondisional.forEach(item => mapGabungan.set(String(item.id_generus), item));
+        
+        let hasilAkhirLog = Array.from(mapGabungan.values());
+        if (hasilAkhirLog.length === 0) return [];
+        
+        return hasilAkhirLog.map(absen => {
             let detail = semuaDataGenerus.find(g => String(g.id_generus) === String(absen.id_generus));
             
             return {
@@ -604,7 +624,7 @@
     async function tarikDanCetakLaporan(jenis, langsungPrint = false) {
         let namaKegiatan = document.getElementById('kegiatan').value.toUpperCase();
         if(!namaKegiatan) return alert("Harap masukkan Nama Agenda yang ingin ditarik rekapannya!");
-        tampilkanToast("🔄 Menarik seluruh data dari Supabase...");
+        tampilkanToast("🔄 Memuat rekapitulasi data gabungan...");
         
         let dataMurni = await dapatkanDataGabungan(namaKegiatan);
         if(dataMurni.length === 0) return alert(`Tidak ditemukan data absensi/izin untuk kegiatan: "${namaKegiatan}"`);
@@ -702,7 +722,7 @@
             if (d.metode === "Izin") {
                 totalIzinSemua++;
             } else {
-                if (d.jk.includes('Perempuan') || d.jk === 'P') totalPerempuanHadir++;
+                if (d.jk.includes('Perempuan') || d.jk === 'P' ? true : false) totalPerempuanHadir++;
                 else totalLakiHadir++;
             }
         });
