@@ -405,8 +405,9 @@
 <div id="toast-box" class="toast-notif"></div>
 
 <script>
-    const SUPABASE_URL = "https://gttavghryoadthnvwthd.supabase.co"; 
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0dGF2Z2hyeW9hZHRobnZ3dGhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA5MDI5NDQsImV4cCI6MjA5NjQ3ODk0NH0.0O7I9EqSaiQq8_LKMJS9U-XDuitY6sPfYQVtBsJAeas";
+    // MASUKKAN KREDENSIAL SUPABASE ANDA DI SINI
+    const SUPABASE_URL = ""; 
+    const SUPABASE_KEY = "";
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     const netIndicator = document.getElementById('network-indicator');
@@ -479,6 +480,7 @@
     window.addEventListener('offline', () => { netIndicator.innerText = "● Offline"; netIndicator.className = "net-status offline"; });
 
     async function muatSemuaGenerus() {
+        if(!SUPABASE_URL || !SUPABASE_KEY) { searchInput.placeholder = "Kredensial Supabase belum diisi."; return; }
         try {
             let { data: generus, error } = await _supabase.from('data_generus').select('*');
             if (!error) { semuaDataGenerus = generus; searchInput.placeholder = `Cari di antara ${generus.length} data...`; }
@@ -513,17 +515,13 @@
     let html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 220 });
     html5QrcodeScanner.render(onScanSuccess);
 
-    // ==========================================
-    // PERBAIKAN: PROTEKSI ABSEN GANDA (3 JAM)
-    // ==========================================
     async function prosesAbsensi(idGenerus, metode) {
         let namaKegiatan = document.getElementById('kegiatan').value.toUpperCase();
-        if(!namaKegiatan) { bunyikanSuaraGagal(); alert("Harap isi Nama Agenda terlebih dahulu!"); return; }
+        if(!namaKegiatan) { bunyikanSuaraGagal(); alert("⚠️ Isi Nama Agenda Terlebih Dahulu!"); return; }
         
         let profil = semuaDataGenerus.find(g => g.id_generus == idGenerus) || { nama_lengkap: "ID: " + idGenerus };
         
         try {
-            // 1. Ambil data log absensi terakhir untuk orang ini di kegiatan yang sama
             let { data: logTerakhir, error: errorCek } = await _supabase
                 .from('absensi_kegiatan')
                 .select('waktu_absen')
@@ -534,23 +532,20 @@
 
             if (errorCek) throw errorCek;
 
-            // 2. Jika ada riwayat absen sebelumnya, periksa selisih waktunya
             if (logTerakhir && logTerakhir.length > 0) {
                 let waktuAbsenTerakhir = new Date(logTerakhir[0].waktu_absen);
                 let waktuSekarang = new Date();
-                
-                // Hitung selisih waktu dalam satuan jam
                 let selisihJam = (waktuSekarang - waktuAbsenTerakhir) / (1000 * 60 * 60);
 
                 if (selisihJam < 3) {
-                    bunyikanSuaraGagal(); // Bunyi tetot (gagal)
                     let sisaMenit = Math.ceil((3 - selisihJam) * 60);
-                    alert(`Gagal! ${profil.nama_lengkap} sudah melakukan presensi pada agenda ini.\nHarap tunggu ${sisaMenit} menit lagi untuk dapat melakukan scan ulang.`);
-                    return; // Menghentikan proses penyimpanan data baru
+                    // MODIFIKASI: Suara keluar berbarengan sebelum jendela alert mematikan alur eksekusi browser
+                    bunyikanSuaraGagal(); 
+                    alert(`❌ ABSENSI GANDA\n\n${profil.nama_lengkap} sudah terdata.\nTunggu ${sisaMenit} menit lagi.`);
+                    return; 
                 }
             }
 
-            // 3. Jika aman (belum pernah absen / sudah melewati 3 jam), simpan ke database
             const dataAbsen = { 
                 nama_kegiatan: namaKegiatan.trim(), 
                 id_generus: idGenerus, 
@@ -569,7 +564,7 @@
         } catch (err) {
             bunyikanSuaraGagal();
             console.error(err);
-            alert("Terjadi kesalahan sistem saat memproses absensi.");
+            alert("⚠️ Terjadi kesalahan sistem saat memproses absensi.");
         }
     }
 
