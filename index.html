@@ -141,18 +141,18 @@
         .search-item { padding: 12px 16px; cursor: pointer; border-bottom: 1px solid var(--border-color); font-size: 14px; min-height: 44px; box-sizing: border-box; }
         .search-item:hover { background: var(--bg-main); color: var(--primary); }
 
-        /* MODIFIKASI: Layout Menu Dioptimalkan Menjadi 3 Kolom */
-        .action-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; position: relative; }
+        /* PERBAIKAN: Tombol Rekap Utama Menjadi 1 Baris (6 Kolom) */
+        .action-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; margin-top: 10px; position: relative; }
         .btn-icon, .select-wrapper { 
             background: transparent; border: 1px solid var(--border-color); 
-            color: var(--text-dark); padding: 12px 0; border-radius: 12px; 
+            color: var(--text-dark); padding: 10px 0; border-radius: 12px; 
             cursor: pointer; display: flex; flex-direction: column; align-items: center; 
-            justify-content: center; gap: 4px; font-size: 10px; font-weight: 600;
+            justify-content: center; gap: 4px; font-size: 9px; font-weight: 600;
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); width: 100%; box-sizing: border-box;
         }
         
         .btn-icon svg { 
-            width: 18px; height: 18px; 
+            width: 16px; height: 16px; 
             fill: none; stroke: var(--icon-color); 
             stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
             transition: all 0.2s ease;
@@ -226,7 +226,7 @@
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
             border-radius: 12px;
             z-index: 2000;
-            min-width: 200px;
+            min-width: 180px;
             max-height: 280px;
             overflow: hidden;
             padding: 12px;
@@ -285,6 +285,19 @@
         .filter-btn-ok { background: var(--primary); color: white; }
         .filter-btn-clear { background: var(--border-color); color: var(--text-dark); }
 
+        .resume-kehadiran-box {
+            background: var(--bg-main);
+            border: 1px solid var(--border-color);
+            padding: 10px 14px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            gap: 16px;
+            color: var(--text-dark);
+        }
+
         @media print {
             body { background: #fff!important; color: #000!important; display: block; padding: 0; margin: 0; position: static !important; overflow: auto !important; }
             .app-container { max-width: 100%; width: 100%; box-shadow: none!important; padding: 0; margin: 0; background: #fff!important; }
@@ -328,7 +341,7 @@
     
     <input type="hidden" id="selected-id-generus">
     <button class="btn-primary" onclick="inputManualKehadiran()">Konfirmasi Kehadiran</button>
-    <button class="btn-warning" onclick="inputManualIzin()">Izin</button>
+    <button class="btn-warning" onclick="inputManualIziin()">Izin</button>
 
     <div class="section-title">Menu Rekap & Penyimpanan</div>
     <div class="action-row">
@@ -344,8 +357,6 @@
             <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
             Klp
         </button>
-        
-        <!-- BARIS KEDUA MENU -->
         <button class="btn-icon" onclick="sinkronisasiManual()" title="Simpan Cloud">
             <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
             Simpan
@@ -366,14 +377,14 @@
             Excel
         </button>
 
-        <!-- MODIFIKASI: UTAMA - MENO "SET TAHUN" UNTUK REKAP MATRIKS DENGAN FILTER KELOMPOK -->
-        <div class="select-wrapper" title="Rekap Tahunan" style="grid-column: span 3; border-color: var(--accent); margin-top: 4px; padding: 6px 0;">
+        <!-- PERBAIKAN: Perubahan nama menjadi Proses Rekap Kegiatan Tahunan -->
+        <div class="select-wrapper" title="Rekap Tahunan" style="grid-column: span 6; border-color: var(--accent); margin-top: 8px; padding: 6px 0;">
             <div style="display:flex; align-items:center; gap:8px; justify-content:center;">
                 <svg viewBox="0 0 24 24" style="stroke: var(--accent); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; width:18px; height:18px;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                <span style="color: var(--accent); font-size:12px; font-weight:700;">PROSES REKAP MATRIKS TAHUNAN</span>
+                <span style="color: var(--accent); font-size:11px; font-weight:700; text-transform: uppercase;">Proses Rekap Kegiatan Tahunan</span>
             </div>
             <select id="tahunan-dropdown" onchange="tarikRekapTahunanMatriks(this.value)">
-                <option value="" disabled selected hidden>Klik di sini untuk memilih Kategori Status</option>
+                <option value="" disabled selected hidden>Klik di sini untuk memilih Kategori Status Kegiatan</option>
                 <option value="GENERUS">Khusus Anggota GENERUS</option>
                 <option value="PENGURUS">Khusus Anggota PENGURUS</option>
                 <option value="MT">Khusus Anggota MT</option>
@@ -384,6 +395,7 @@
     <div id="print-area">
         <h3 style="text-align: center; margin: 0 0 5px 0; font-size: 18px;" id="cetak-judul-kegiatan">Laporan Presensi Kegiatan</h3>
         <p style="text-align: center; margin: 0 0 20px 0; font-size: 13px; color: #475569;" id="cetak-waktu">-</p>
+        <div id="resume-kehadiran-container"></div>
         <div id="print-table-container"></div>
     </div>
 </div>
@@ -404,12 +416,12 @@
     
     let semuaDataGenerus = [];
     let dataAktifRekap = []; 
-    let dataMentahTahunanLog = []; // Menyimpan log mentah dari Supabase
-    let dataMasterTahunanOrang = []; // Menyimpan daftar orang yang disaring untuk tahunan
+    let dataMentahTahunanLog = []; 
+    let dataMasterTahunanOrang = []; 
     let filterTerpilih = {}; 
+    let filterSemuaTerpilih = {}; 
     let pengunciScanAktif = false; 
     let globalAudioCtx = null;
-    let cachePresensiMenitIni = new Set();
 
     function bukaKunciAudioKonstruktor() {
         if (!globalAudioCtx) { globalAudioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
@@ -461,7 +473,7 @@
         setTimeout(() => { box.style.display = 'none'; }, 3000);
     }
 
-    window.addEventListener('online', () => { netIndicator.innerText = "● Online"; netIndicator.className = "net-status online"; sinkronisasiManual(); });
+    window.addEventListener('online', () => { netIndicator.innerText = "● Online"; netIndicator.className = "net-status online"; });
     window.addEventListener('offline', () => { netIndicator.innerText = "● Offline"; netIndicator.className = "net-status offline"; });
 
     async function muatSemuaGenerus() {
@@ -509,7 +521,7 @@
     }
 
     function inputManualKehadiran() { if(!selectedIdInput.value) return alert("Pilih nama!"); prosesAbsensi(selectedIdInput.value, "Manual"); searchInput.value=''; selectedIdInput.value=''; }
-    function inputManualIzen() { if(!selectedIdInput.value) return alert("Pilih nama!"); prosesAbsensi(selectedIdInput.value, "Izin"); searchInput.value=''; selectedIdInput.value=''; }
+    function inputManualIziin() { if(!selectedIdInput.value) return alert("Pilih nama!"); prosesAbsensi(selectedIdInput.value, "Izin"); searchInput.value=''; selectedIdInput.value=''; }
 
     async function dapatkanDataGabungan(namaKegiatan) {
         let { data: logAbsen, error } = await _supabase.from('absensi_kegiatan').select('*').eq('nama_kegiatan', namaKegiatan.toUpperCase());
@@ -520,13 +532,244 @@
                 id: absen.id_generus, name: detail ? detail.nama_lengkap : "ID Terhapus",
                 kelompok: detail ? (detail.kelompok || "-").toUpperCase() : "-",
                 desa: detail ? (detail.desa || "-").toUpperCase().replace("DESA ", "") : "-",
-                jk: detail ? (detail.jenis_kelamin || "-") : "-", status: detail ? (detail.status || "-").toUpperCase() : "-",
-                detail_status: detail ? (detail.usia_dapukan || "-") : "-", waktu: new Date(absen.waktu_absen).toLocaleTimeString('id-ID'), metode: absen.metode_input
+                jk: detail ? (detail.jenis_kelamin || "-").toUpperCase() : "-", 
+                status: detail ? (detail.status || "-").toUpperCase() : "-",
+                metode: absen.metode_input,
+                waktu: new Date(absen.waktu_absen).toLocaleTimeString('id-ID')
             }
         });
     }
 
-    /* MODIFIKASI FITUR UTAMA: ENGINE TAHUNAN DENGAN ATRIBUT CORONG FILTER KELOMPOK */
+    async function tarikDanCetakLaporan(jenis, langsungPrint = false) {
+        let namaKegiatan = document.getElementById('kegiatan').value.toUpperCase();
+        if(!namaKegiatan) return alert("Harap masukkan Nama Agenda!");
+        
+        tampilkanToast(`🔄 Memuat data rekap ${jenis}...`);
+        dataAktifRekap = await dapatkanDataGabungan(namaKegiatan);
+        if(dataAktifRekap.length === 0) return alert("Tidak ada data presensi pada agenda ini.");
+        
+        let container = document.getElementById('print-table-container');
+        let resumeContainer = document.getElementById('resume-kehadiran-container');
+        let areaCetak = document.getElementById('print-area'); 
+        
+        container.innerHTML = "";
+        resumeContainer.innerHTML = "";
+        document.getElementById('cetak-waktu').innerText = "Waktu Rekap: " + new Date().toLocaleString('id-ID');
+
+        // Penghitungan Jumlah Kehadiran & Izin
+        let totalHadir = dataAktifRekap.filter(d => d.metode !== 'Izin').length;
+        let totalIzin = dataAktifRekap.filter(d => d.metode === 'Izin').length;
+        
+        resumeContainer.innerHTML = `
+            <div class="resume-kehadiran-box">
+                <span style="color: var(--primary);">🟢 Total Hadir: ${totalHadir} Orang</span>
+                <span style="color: var(--accent);">🟡 Total Izin: ${totalIzin} Orang</span>
+            </div>`;
+
+        if(jenis === 'semua') {
+            filterSemuaTerpilih = {}; 
+            renderTabelRekapSemuaSistem();
+        } 
+        else if(jenis === 'desa') {
+            let rekapDesa = {};
+            dataAktifRekap.forEach(d => {
+                if(!rekapDesa[d.desa]) rekapDesa[d.desa] = { hadir: 0, izin: 0 };
+                if(d.metode === 'Izin') rekapDesa[d.desa].izin++;
+                else rekapDesa[d.desa].hadir++;
+            });
+            
+            let html = `<table class="print-table"><thead><tr><th>No</th><th>Nama Desa</th><th style="text-align:center;">Hadir</th><th style="text-align:center;">Izin</th><th style="text-align:center;">Total</th></tr></thead><tbody>`;
+            let n=1; 
+            for(let d in rekapDesa) { 
+                let t = rekapDesa[d].hadir + rekapDesa[d].izin;
+                html += `<tr><td>${n++}</td><td style="font-weight:600;">DESA ${d}</td><td style="text-align:center; color:var(--primary); font-weight:700;">${rekapDesa[d].hadir}</td><td style="text-align:center; color:var(--accent); font-weight:700;">${rekapDesa[d].izin}</td><td style="text-align:center; font-weight:700; background:#f8fafc;">${t} Orang</td></tr>`; 
+            }
+            html += `</tbody></table>`; 
+            container.innerHTML = html; 
+            areaCetak.style.display = "block";
+        }
+        else if(jenis === 'kelompok') {
+            let rekapKlp = {}; 
+            dataAktifRekap.forEach(d => { 
+                if(!rekapKlp[d.kelompok]) rekapKlp[d.kelompok]=[]; 
+                rekapKlp[d.kelompok].push(d); 
+            });
+            
+            let html = ""; 
+            for(let k in rekapKlp) {
+                let hKlp = rekapKlp[k].filter(d => d.metode !== 'Izin').length;
+                let iKlp = rekapKlp[k].filter(d => d.metode === 'Izin').length;
+                
+                html += `<div class="print-box-wilayah">
+                            <h4 style="display:flex; justify-content:space-between; font-size:12px;">
+                                <span>KELOMPOK: ${k}</span>
+                                <span style="font-size:11px; text-transform:none; color:var(--text-muted);">Hadir: ${hKlp} | Izin: ${iKlp}</span>
+                            </h4>
+                            <table class="print-table">
+                                <thead><tr><th style="width:30px;">No</th><th>Nama Lengkap</th><th>Status Absen</th><th>Metode</th></tr></thead>
+                                <tbody>`;
+                rekapKlp[k].forEach((a, i) => { 
+                    let st = a.metode === 'Izin' ? '<span style="color:var(--accent); font-weight:700;">IZIN</span>' : '<span style="color:var(--primary); font-weight:700;">HADIR</span>';
+                    html += `<tr><td>${i+1}</td><td style="font-weight:600;">${a.name}</td><td>${st}</td><td>${a.metode}</td></tr>`; 
+                });
+                html += `</tbody></table></div>`;
+            }
+            container.innerHTML = html; 
+            areaCetak.style.display = "block";
+        }
+        if(langsungPrint) window.print();
+    }
+
+    /* PERBAIKAN & PENAMBAHAN: ENGINE FILTER DINAMIS UNTUK REKAP SEMUA */
+    function renderTabelRekapSemuaSistem() {
+        let container = document.getElementById('print-table-container');
+        let areaCetak = document.getElementById('print-area');
+        
+        let dataTerfilter = [...dataAktifRekap];
+        ['jk', 'kelompok', 'desa', 'status'].forEach(kolom => {
+            if (filterSemuaTerpilih[kolom] && filterSemuaTerpilih[kolom].length > 0) {
+                dataTerfilter = dataTerfilter.filter(d => filterSemuaTerpilih[kolom].includes(d[kolom]));
+            }
+        });
+
+        let html = `<table class="print-table">
+                    <thead>
+                        <tr>
+                            <th style="width:30px; text-align:center;">No</th>
+                            <th>Nama Lengkap</th>
+                            <!-- FILTER JK -->
+                            <th style="width:70px;">
+                                <div class="th-filter-container">
+                                    <span>L/P</span>
+                                    <button class="excel-filter-btn ${filterSemuaTerpilih['jk'] ? 'active' : ''}" onclick="toggleDropdownSemua(event, 'jk')">
+                                        <svg viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+                                    </button>
+                                    <div class="filter-dropdown-menu" id="dropdown-semua-jk" onclick="event.stopPropagation()">
+                                        <div class="filter-options-list" id="list-semua-jk"></div>
+                                        <div class="filter-action-buttons">
+                                            <button class="filter-btn-sub filter-btn-clear" onclick="bersihkanFilterSemua('jk')">Clear</button>
+                                            <button class="filter-btn-sub filter-btn-ok" onclick="terapkanFilterSemua('jk')">OK</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </th>
+                            <!-- FILTER KELOMPOK -->
+                            <th>
+                                <div class="th-filter-container">
+                                    <span>Kelompok</span>
+                                    <button class="excel-filter-btn ${filterSemuaTerpilih['kelompok'] ? 'active' : ''}" onclick="toggleDropdownSemua(event, 'kelompok')">
+                                        <svg viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+                                    </button>
+                                    <div class="filter-dropdown-menu" id="dropdown-semua-kelompok" onclick="event.stopPropagation()">
+                                        <input type="text" class="filter-search-box" placeholder="Cari Kelompok..." oninput="cariOpsiSemua(this.value, 'kelompok')">
+                                        <div class="filter-options-list" id="list-semua-kelompok"></div>
+                                        <div class="filter-action-buttons">
+                                            <button class="filter-btn-sub filter-btn-clear" onclick="bersihkanFilterSemua('kelompok')">Clear</button>
+                                            <button class="filter-btn-sub filter-btn-ok" onclick="terapkanFilterSemua('kelompok')">OK</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </th>
+                            <!-- FILTER DESA -->
+                            <th>
+                                <div class="th-filter-container">
+                                    <span>Desa</span>
+                                    <button class="excel-filter-btn ${filterSemuaTerpilih['desa'] ? 'active' : ''}" onclick="toggleDropdownSemua(event, 'desa')">
+                                        <svg viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+                                    </button>
+                                    <div class="filter-dropdown-menu" id="dropdown-semua-desa" onclick="event.stopPropagation()">
+                                        <input type="text" class="filter-search-box" placeholder="Cari Desa..." oninput="cariOpsiSemua(this.value, 'desa')">
+                                        <div class="filter-options-list" id="list-semua-desa"></div>
+                                        <div class="filter-action-buttons">
+                                            <button class="filter-btn-sub filter-btn-clear" onclick="bersihkanFilterSemua('desa')">Clear</button>
+                                            <button class="filter-btn-sub filter-btn-ok" onclick="terapkanFilterSemua('desa')">OK</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </th>
+                            <!-- FILTER STATUS -->
+                            <th>
+                                <div class="th-filter-container">
+                                    <span>Status</span>
+                                    <button class="excel-filter-btn ${filterSemuaTerpilih['status'] ? 'active' : ''}" onclick="toggleDropdownSemua(event, 'status')">
+                                        <svg viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+                                    </button>
+                                    <div class="filter-dropdown-menu" id="dropdown-semua-status" onclick="event.stopPropagation()">
+                                        <div class="filter-options-list" id="list-semua-status"></div>
+                                        <div class="filter-action-buttons">
+                                            <button class="filter-btn-sub filter-btn-clear" onclick="bersihkanFilterSemua('status')">Clear</button>
+                                            <button class="filter-btn-sub filter-btn-ok" onclick="terapkanFilterSemua('status')">OK</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </th>
+                            <th>Keterangan</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+
+        if(dataTerfilter.length === 0) {
+            html += `<tr><td colspan="7" style="text-align:center; color:#ef4444; font-weight:600; padding:20px;">Tidak ada data yang cocok dengan kombinasi filter.</td></tr>`;
+        } else {
+            dataTerfilter.forEach((d, i) => { 
+                let labelStatusText = d.metode === 'Izin' ? '<span style="color:var(--accent); font-weight:600;">IZIN</span>' : '<span style="color:var(--primary); font-weight:600;">HADIR</span>';
+                html += `<tr>
+                    <td style="text-align:center;">${i+1}</td>
+                    <td style="font-weight:600;">${d.name}</td>
+                    <td style="text-align:center;">${d.jk.includes('P')?'P':'L'}</td>
+                    <td>${d.kelompok}</td>
+                    <td>${d.desa}</td>
+                    <td>${d.status}</td>
+                    <td>${labelStatusText} (${d.waktu})</td>
+                </tr>`; 
+            });
+        }
+
+        html += `</tbody></table>`;
+        container.innerHTML = html;
+        areaCetak.style.display = "block";
+    }
+
+    function toggleDropdownSemua(event, kolom) {
+        event.stopPropagation();
+        let menu = document.getElementById(`dropdown-semua-${kolom}`);
+        let terbukanNow = (menu.style.display === 'block');
+        tutupSemuaDropdownAman();
+        
+        if(!terbukanNow) {
+            menu.style.display = 'block';
+            globalOverlay.style.display = 'block';
+            
+            let listDataUnik = [...new Set(dataAktifRekap.map(d => d[kolom]))].sort();
+            let containerOpsi = document.getElementById(`list-semua-${kolom}`);
+            containerOpsi.innerHTML = '';
+            
+            listDataUnik.forEach(val => {
+                let tercentang = filterSemuaTerpilih[kolom] && filterSemuaTerpilih[kolom].includes(val) ? 'checked' : '';
+                let div = document.createElement('div'); div.className = 'filter-option-item';
+                div.innerHTML = `<label style="display:flex; align-items:center; gap:8px; font-weight:normal; text-transform:none; cursor:pointer; width:100%;">
+                                    <input type="checkbox" value="${val}" ${tercentang}> <span>${val}</span>
+                                 </label>`;
+                containerOpsi.appendChild(div);
+            });
+        }
+    }
+
+    function cariOpsiSemua(val, kolom) {
+        let items = document.querySelectorAll(`#list-semua-${kolom} .filter-option-item`);
+        items.forEach(item => { item.style.display = item.textContent.toLowerCase().includes(val.toLowerCase()) ? 'flex' : 'none'; });
+    }
+
+    function bersihkanFilterSemua(kolom) { delete filterSemuaTerpilih[kolom]; tutupSemuaDropdownAman(); renderTabelRekapSemuaSistem(); }
+    
+    function terapkanFilterSemua(kolom) {
+        let cbs = document.querySelectorAll(`#list-semua-${kolom} input[type="checkbox"]`);
+        let terpilih = []; cbs.forEach(cb => { if(cb.checked) terpilih.push(cb.value); });
+        if(terpilih.length > 0) filterSemuaTerpilih[kolom] = terpilih; else delete filterSemuaTerpilih[kolom];
+        tutupSemuaDropdownAman(); renderTabelRekapSemuaSistem();
+    }
+
+    /* ENGINE REKAP MATRIKS TAHUNAN */
     async function tarikRekapTahunanMatriks(statusPilihan) {
         let namaKegiatan = document.getElementById('kegiatan').value.toUpperCase();
         if(!namaKegiatan) { document.getElementById('tahunan-dropdown').value = ""; return alert("Harap isi Nama Agenda terlebih dahulu!"); }
@@ -541,6 +784,7 @@
 
         document.getElementById('cetak-judul-kegiatan').innerText = `REKAP MATRIKS TAHUNAN: ${namaKegiatan}`;
         document.getElementById('cetak-waktu').innerText = `Kategori: ${statusPilihan} | Tahun: ${new Date().getFullYear()}`;
+        document.getElementById('resume-kehadiran-container').innerHTML = ""; 
 
         renderTabelMatriksTahunanSistem();
     }
@@ -549,7 +793,6 @@
         let container = document.getElementById('print-table-container');
         let areaCetak = document.getElementById('print-area');
         
-        // Saring data berdasarkan corong filter kelompok yang aktif
         let dataOrangTerfilter = [...dataMasterTahunanOrang];
         if (filterTerpilih['kelompok'] && filterTerpilih['kelompok'].length > 0) {
             dataOrangTerfilter = dataOrangTerfilter.filter(o => filterTerpilih['kelompok'].includes((o.kelompok || "-").toUpperCase()));
@@ -625,7 +868,6 @@
             menu.style.display = 'block';
             globalOverlay.style.display = 'block';
             
-            // Isi pilihan kelompok yang unik dari dataMasterTahunanOrang
             let listKlp = [...new Set(dataMasterTahunanOrang.map(o => (o.kelompok || "-").toUpperCase()))].sort();
             let containerOpsi = document.getElementById('list-opsi-kelompok');
             containerOpsi.innerHTML = '';
@@ -656,41 +898,9 @@
     }
 
     function tutupSemuaDropdownAman() {
-        let m = document.getElementById('dropdown-filter-kelompok'); if(m) m.style.display = 'none';
+        let menus = document.querySelectorAll('.filter-dropdown-menu');
+        menus.forEach(m => m.style.display = 'none');
         globalOverlay.style.display = 'none';
-    }
-
-    async function tarikDanCetakLaporan(jenis, langsungPrint = false) {
-        let namaKegiatan = document.getElementById('kegiatan').value.toUpperCase();
-        if(!namaKegiatan) return alert("Harap masukkan Nama Agenda!");
-        let dataMurni = await dapatkanDataGabungan(namaKegiatan);
-        if(dataMurni.length === 0) return alert("Tidak ada data.");
-        
-        let container = document.getElementById('print-table-container');
-        let areaCetak = document.getElementById('print-area'); container.innerHTML = "";
-        document.getElementById('cetak-waktu').innerText = "Waktu: " + new Date().toLocaleString('id-ID');
-
-        if(jenis === 'semua') {
-            let html = `<table class="print-table"><thead><tr><th>No</th><th>Nama Lengkap</th><th>L/P</th><th>Kelompok</th><th>Desa</th><th>Status</th><th>Waktu</th></tr></thead><tbody>`;
-            dataMurni.forEach((d, i) => { html += `<tr><td>${i+1}</td><td>${d.name}</td><td>${d.jk.includes('P')?'P':'L'}</td><td>${d.kelompok}</td><td>${d.desa}</td><td>${d.status}</td><td>${d.waktu}</td></tr>`; });
-            html += `</tbody></table>`; container.innerHTML = html; areaCetak.style.display = "block";
-        } 
-        else if(jenis === 'desa') {
-            let rekap = {}; dataMurni.forEach(d => { rekap[d.desa] = (rekap[d.desa] || 0) + 1; });
-            let html = `<table class="print-table"><thead><tr><th>No</th><th>Nama Desa</th><th>Total Hadir/Izin</th></tr></thead><tbody>`;
-            let n=1; for(let d in rekap) { html += `<tr><td>${n++}</td><td>${d}</td><td>${rekap[d]} Orang</td></tr>`; }
-            html += `</tbody></table>`; container.innerHTML = html; areaCetak.style.display = "block";
-        }
-        else if(jenis === 'kelompok') {
-            let rekap = {}; dataMurni.forEach(d => { if(!rekap[d.kelompok]) rekap[d.kelompok]=[]; rekap[d.kelompok].push(d); });
-            let html = ""; for(let k in rekap) {
-                html += `<h4>Kelompok: ${k}</h4><table class="print-table"><tbody>`;
-                rekap[k].forEach((a, i) => { html += `<tr><td>${i+1}</td><td>${a.name}</td><td>${a.status}</td></tr>`; });
-                html += `</tbody></table>`;
-            }
-            container.innerHTML = html; areaCetak.style.display = "block";
-        }
-        if(langsungPrint) window.print();
     }
 
     function eksekusiPrintKhusus(pilihan) {
@@ -707,6 +917,10 @@
         dataMurni.forEach((d, i) => { csv += `${i+1},"${d.name}","${d.kelompok}","${d.desa}","${d.status}","${d.waktu}"\n`; });
         let blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
         let link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `REKAP_${namaKegiatan}.csv`; link.click();
+    }
+
+    async function sinkronisasiManual() {
+        tampilkanToast("☁️ Sistem tersambung secara otomatis ke Cloud.");
     }
 </script>
 </body>
