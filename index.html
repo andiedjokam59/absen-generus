@@ -46,6 +46,15 @@
             transition: all 0.3s ease;
         }
 
+        /* CSS KHUSUS UNTUK MENGUNCI LAYAR HP SAAT DROPDOWN AKTIF */
+        body.lock-scroll-mobile {
+            overflow: hidden !important;
+            touch-action: none !important;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+        }
+
         .app-container { 
             width: 100%; max-width: 440px; 
             background: var(--bg-card); 
@@ -210,7 +219,7 @@
             fill: var(--primary);
         }
         
-        /* FIX: Perbaikan Isolasi Scroll & Area Sentuh Dropdown Filter pada HP */
+        /* INTEGRASI FIX: Mengamankan scrolling internal dropdown */
         .filter-dropdown-menu {
             display: none;
             position: absolute;
@@ -223,14 +232,13 @@
             z-index: 2000;
             min-width: 190px;
             max-height: 280px;
-            overflow-y: auto;
+            overflow-y: auto !important;
             padding: 10px;
             box-sizing: border-box;
             font-weight: normal;
             text-transform: none;
-            -webkit-overflow-scrolling: touch; /* Momentum scrolling iOS */
-            overscroll-behavior: contain;      /* Mencegah scroll tembus ke body */
-            touch-action: pan-y;               /* Membatasi gesture browser hanya di sumbu Y */
+            -webkit-overflow-scrolling: touch !important; 
+            overscroll-behavior: contain !important;      
         }
         .filter-search-box {
             width: 100%;
@@ -247,11 +255,10 @@
             display: flex;
             flex-direction: column;
             gap: 6px;
-            max-height: 160px;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-            overscroll-behavior: contain;      /* Mencegah scroll list tembus ke menu dropdown */
-            touch-action: pan-y;
+            max-height: 140px;
+            overflow-y: auto !important;
+            -webkit-overflow-scrolling: touch !important;
+            overscroll-behavior: contain !important;
             padding-right: 2px;
         }
         .filter-option-item {
@@ -260,16 +267,16 @@
             gap: 8px;
             font-size: 12px;
             cursor: pointer;
-            padding: 6px 4px;                  /* Sedikit ditinggikan untuk kenyamanan jempol */
+            padding: 6px 4px;
             border-radius: 4px;
-            min-height: 32px;                  /* Luas area sentuh standar mobile UI */
+            min-height: 34px; 
             box-sizing: border-box;
         }
         .filter-option-item:hover {
             background: var(--bg-main);
         }
         .filter-option-item input {
-            width: 18px !important;            /* Ukuran checkbox disesuaikan lebih besar di HP */
+            width: 18px !important;
             height: 18px !important;
             margin: 0;
             padding: 0;
@@ -701,26 +708,44 @@
         `;
     }
 
+    // FIX JAVASCRIPT: Mengontrol penguncian scroll mobile bodi utama saat dropdown muncul
     function toggleDropdownFilter(event, namaKolom) {
         event.stopPropagation();
         const seluruhDropdown = document.querySelectorAll('.filter-dropdown-menu');
+        let statusSebelumnyaAkanDitutup = false;
+
+        const dd = document.getElementById(`dropdown-filter-${namaKolom}`);
+        if (dd && dd.style.display === 'block') {
+            statusSebelumnyaAkanDitutup = true;
+        }
+
         seluruhDropdown.forEach(d => {
             if(d.id !== `dropdown-filter-${namaKolom}`) d.style.display = 'none';
         });
 
-        const dd = document.getElementById(`dropdown-filter-${namaKolom}`);
-        if (dd.style.display === 'block') {
+        if (statusSebelumnyaAkanDitutup) {
             dd.style.display = 'none';
+            document.body.classList.remove('lock-scroll-mobile'); // Lepas kunci layar HP
         } else {
             dd.style.display = 'block';
             isiOpsiDropdownFilter(namaKolom);
-            setTimeout(() => { dd.focus(); }, 50);
+            document.body.classList.add('lock-scroll-mobile');    // Amankan kunci layar HP
+            
+            // Tambahan pengaman internal sentuhan touchmove agar tidak bocor keluar dari area list opsi dropdown
+            const listOpsi = document.getElementById(`list-opsi-filter-${namaKolom}`);
+            if(listOpsi) {
+                listOpsi.addEventListener('touchmove', function(e) {
+                    e.stopPropagation();
+                }, { passive: true });
+            }
         }
     }
 
+    // Klik di luar area dropdown untuk menutup dan memulihkan scroll HP
     document.addEventListener('click', () => {
         const seluruhDropdown = document.querySelectorAll('.filter-dropdown-menu');
         seluruhDropdown.forEach(d => d.style.display = 'none');
+        document.body.classList.remove('lock-scroll-mobile');
     });
 
     function isiOpsiDropdownFilter(namaKolom) {
@@ -781,6 +806,7 @@
         
         document.getElementById(`btn-filter-${namaKolom}`).classList.remove('active');
         document.getElementById(`dropdown-filter-${namaKolom}`).style.display = 'none';
+        document.body.classList.remove('lock-scroll-mobile'); // Kembalikan scroll HP
         prosesKalkulasiDanRenderTabel();
     }
 
@@ -806,6 +832,7 @@
         }
 
         document.getElementById(`dropdown-filter-${namaKolom}`).style.display = 'none';
+        document.body.classList.remove('lock-scroll-mobile'); // Kembalikan scroll HP
         prosesKalkulasiDanRenderTabel();
     }
 
