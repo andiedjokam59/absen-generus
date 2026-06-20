@@ -94,7 +94,6 @@
             color: var(--text-dark); border-radius: 12px; 
             box-sizing: border-box; font-size: 15px; font-family: inherit;
             transition: all 0.2s;
-            /* PERBAIKAN ANDROID: Memastikan input teks merespons ketukan dengan instan */
             -webkit-user-select: text !important;
             user-select: text !important;
             -webkit-tap-highlight-color: transparent;
@@ -132,9 +131,10 @@
 
         .divider { text-align: center; margin: 24px 0; font-size: 11px; font-weight: 700; color: var(--text-muted); }
 
+        /* PERBAIKAN CSS: Mengunci area scroll agar tidak menggerakkan body di Android */
         .search-results { 
             position: absolute; width: 100%; background: var(--bg-card); border: 1px solid var(--border-color); 
-            max-height: 220px; overflow-y: auto; z-index: 999; border-radius: 12px; margin-top: 2px;
+            max-height: 220px; overflow-y: auto !important; z-index: 999; border-radius: 12px; margin-top: 2px;
             box-shadow: 0 10px 15px -3px var(--shadow); display: none;
             -webkit-overflow-scrolling: touch;
             overscroll-behavior: contain;
@@ -321,7 +321,6 @@
 
     <div class="form-group">
         <label for="search-input">OPSI 2: INPUT MANUAL Nama Anggota</label>
-        <!-- PERBAIKAN UTAMA: Penambahan onfocus dan onclick khusus respons cepat Android -->
         <input type="text" id="search-input" autocomplete="off" placeholder="Ketik nama untuk mencari..." oninput="cariNamaPintar()" onfocus="cariNamaPintar()" onclick="cariNamaPintar()">
         <div id="search-results-box" class="search-results"></div>
     </div>
@@ -477,7 +476,7 @@
     }
     muatSemuaGenerus();
 
-    // OPTIMASI BARU: Berjalan super responsif di Android tanpa Hold
+    // PERBAIKAN TOTAL: Mendukung scroll mulus tanpa konflik salah pilih di Android
     function cariNamaPintar() {
         let keyword = searchInput.value.toLowerCase();
         resultsBox.innerHTML = '';
@@ -498,8 +497,26 @@
                 let namaDesaBersih = g.desa ? g.desa.toUpperCase().replace("DESA ", "") : '-';
                 div.innerText = `${g.nama_lengkap}${infoTambahan} — ${g.kelompok || '-'} [${namaDesaBersih}]`;
                 
-                // Mencegah delay sentuhan 300ms mobile browser
+                // Variabel internal pelacak scroll per baris nama
+                let isScrolling = false;
+                let startY = 0;
+
+                div.addEventListener('touchstart', function(e) {
+                    isScrolling = false;
+                    startY = e.touches[0].pageY; 
+                }, { passive: true });
+
+                div.addEventListener('touchmove', function(e) {
+                    let moveY = e.touches[0].pageY;
+                    // Jari bergeser lebih dari 5px dianggap menyekrol layar, bukan mengetuk pilihan
+                    if (Math.abs(moveY - startY) > 5) {
+                        isScrolling = true;
+                    }
+                }, { passive: true });
+                
                 const eksekusiPilihan = function(e) {
+                    if (isScrolling) return; // Jika mendeteksi scroll, batalkan eksekusi
+                    
                     e.preventDefault(); 
                     searchInput.value = g.nama_lengkap; 
                     selectedIdInput.value = g.id_generus;
