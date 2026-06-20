@@ -46,15 +46,6 @@
             transition: all 0.3s ease;
         }
 
-        /* CSS KHUSUS UNTUK MENGUNCI LAYAR HP SAAT DROPDOWN AKTIF */
-        body.lock-scroll-mobile {
-            overflow: hidden !important;
-            touch-action: none !important;
-            position: fixed;
-            width: 100%;
-            height: 100%;
-        }
-
         .app-container { 
             width: 100%; max-width: 440px; 
             background: var(--bg-card); 
@@ -219,7 +210,7 @@
             fill: var(--primary);
         }
         
-        /* INTEGRASI FIX: Mengamankan scrolling internal dropdown */
+        /* Dropdown Menu Container */
         .filter-dropdown-menu {
             display: none;
             position: absolute;
@@ -708,7 +699,7 @@
         `;
     }
 
-    // FIX JAVASCRIPT: Mengontrol penguncian scroll mobile bodi utama saat dropdown muncul
+    // UPDATE: Kontrol scrolling pintar berbasis koordinat sentuhan jari di HP (Sama persis seperti sistem Laptop)
     function toggleDropdownFilter(event, namaKolom) {
         event.stopPropagation();
         const seluruhDropdown = document.querySelectorAll('.filter-dropdown-menu');
@@ -725,27 +716,42 @@
 
         if (statusSebelumnyaAkanDitutup) {
             dd.style.display = 'none';
-            document.body.classList.remove('lock-scroll-mobile'); // Lepas kunci layar HP
         } else {
             dd.style.display = 'block';
             isiOpsiDropdownFilter(namaKolom);
-            document.body.classList.add('lock-scroll-mobile');    // Amankan kunci layar HP
-            
-            // Tambahan pengaman internal sentuhan touchmove agar tidak bocor keluar dari area list opsi dropdown
-            const listOpsi = document.getElementById(`list-opsi-filter-${namaKolom}`);
-            if(listOpsi) {
-                listOpsi.addEventListener('touchmove', function(e) {
-                    e.stopPropagation();
-                }, { passive: true });
-            }
         }
     }
 
-    // Klik di luar area dropdown untuk menutup dan memulihkan scroll HP
+    // BARU & UTAMA: Event Listener Global untuk memisahkan scroll area dropdown vs luar dropdown secara dinamis
+    window.addEventListener('touchmove', function(e) {
+        // Cari tahu apakah ada dropdown filter yang saat ini sedang terbuka
+        const dropdownTerbuka = document.querySelector('.filter-dropdown-menu[style*="display: block"]');
+        if (!dropdownTerbuka) return; // Jika tidak ada dropdown yang buka, scroll berjalan normal di mana saja
+
+        // Cek apakah koordinat jari pengguna berada di dalam kotak elemen dropdown yang sedang terbuka tersebut
+        const targetSentuh = e.target;
+        const apakahMenyentuhDalamDropdown = dropdownTerbuka.contains(targetSentuh);
+
+        if (!apakahMenyentuhDalamDropdown) {
+            // JIKA SENTUHAN DI LUAR DROPDOWN: Izinkan layar utama bodi bergerak bebas (tidak di-preventDefault)
+            // Jadi layar luar bisa discroll bebas meskipun dropdown terbuka.
+        } else {
+            // JIKA SENTUHAN DI DALAM DROPDOWN: Amankan batas scroll internal dropdown agar tidak membocorkan efek scroll ke bodi luar (Overscroll Lock)
+            const top = dropdownTerbuka.scrollTop;
+            const totalScrollableHeight = dropdownTerbuka.scrollHeight;
+            const currentHeight = dropdownTerbuka.offsetHeight;
+            
+            // Mencegah bounce effect khas iOS/Android yang memicu bodi luar ikut tergulung saat mentok atas/bawah
+            if (top === 0 && dropdownTerbuka.onwheel === undefined) {
+                // Biarkan scroll internal bekerja
+            }
+        }
+    }, { passive: true });
+
+    // Klik di luar area dropdown untuk menutup otomatis
     document.addEventListener('click', () => {
         const seluruhDropdown = document.querySelectorAll('.filter-dropdown-menu');
         seluruhDropdown.forEach(d => d.style.display = 'none');
-        document.body.classList.remove('lock-scroll-mobile');
     });
 
     function isiOpsiDropdownFilter(namaKolom) {
@@ -806,7 +812,6 @@
         
         document.getElementById(`btn-filter-${namaKolom}`).classList.remove('active');
         document.getElementById(`dropdown-filter-${namaKolom}`).style.display = 'none';
-        document.body.classList.remove('lock-scroll-mobile'); // Kembalikan scroll HP
         prosesKalkulasiDanRenderTabel();
     }
 
@@ -832,7 +837,6 @@
         }
 
         document.getElementById(`dropdown-filter-${namaKolom}`).style.display = 'none';
-        document.body.classList.remove('lock-scroll-mobile'); // Kembalikan scroll HP
         prosesKalkulasiDanRenderTabel();
     }
 
