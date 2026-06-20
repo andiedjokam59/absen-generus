@@ -26,7 +26,7 @@
             --warning-hover: #ca8a04;
         }
 
-        [data-theme="dark"] {
+        [data-theme=\"dark\"] {
             --bg-main: #0f172a; 
             --bg-card: #1e293b; 
             --text-dark: #f8fafc; 
@@ -87,15 +87,14 @@
         .form-group { margin-bottom: 20px; position: relative; }
         label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-dark); }
         
-        input, select.filter-select, .btn-primary, .btn-warning { 
+        input, .btn-primary, .btn-warning { 
             width: 100%; padding: 14px 16px; 
             border: 1px solid var(--border-color); background: var(--bg-card);
             color: var(--text-dark); border-radius: 12px; 
             box-sizing: border-box; font-size: 15px; font-family: inherit;
             transition: all 0.2s;
         }
-        input:focus, select.filter-select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(4, 120, 87, 0.15); }
-        select.filter-select:disabled { background-color: var(--bg-main); opacity: 0.6; cursor: not-allowed; }
+        input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(4, 120, 87, 0.15); }
 
         #kegiatan { text-transform: uppercase; }
 
@@ -221,35 +220,6 @@
     <button class="btn-primary" onclick="inputManualKehadiran()">Konfirmasi Kehadiran</button>
     <button class="btn-warning" onclick="inputManualIzin()">Izin</button>
 
-    <div class="section-title">MENU FILTER DATA REKAP</div>
-    
-    <div class="form-group">
-        <label for="filter-status">Status</label>
-        <select id="filter-status" class="filter-select">
-            <option value="">-- Semua Status --</option>
-            <option value="Pengurus">Pengurus</option>
-            <option value="Generus">Generus</option>
-            <option value="MT">MT</option>
-        </select>
-    </div>
-
-    <div class="form-group">
-        <label for="filter-desa">Desa</label>
-        <select id="filter-desa" class="filter-select" onchange="updateDropdownDukuhBerdasarkanDesa()">
-            <option value="">-- Semua Desa --</option>
-            <option value="Desa Karanglo Selatan">Desa Karanglo Selatan</option>
-            <option value="Desa Karanglo Utara">Desa Karanglo Utara</option>
-            <option value="Desa Krangean">Desa Krangean</option>
-            <option value="Desa Bandardawung">Desa Bandardawung</option>
-        </select>
-    </div>
-
-    <div class="form-group">
-        <label for="filter-dukuh">Wilayah / Dukuh</label>
-        <select id="filter-dukuh" class="filter-select" disabled>
-            <option value="">-- Pilih Desa Terlebih Dahulu --</option>
-        </select>
-    </div>
     <div class="section-title">Menu Rekap & Penyimpanan</div>
     <div class="action-row">
         <button class="btn-icon" onclick="tarikDanCetakLaporan('semua')" title="Preview Semua">
@@ -308,35 +278,6 @@
     let pengunciScanAktif = false; 
     let globalAudioCtx = null;
     let cachePresensiMenitIni = new Set();
-
-    // Data Opsi Wilayah untuk Cascading Dropdown
-    const STRUKTUR_WILAYAH_MAPPING = {
-        "Desa Karanglo Selatan": ["Blimbing 1", "Blimbing 2", "Blimbing 3", "Karanglo", "Pedan Selatan", "Pedan Utara", "Jabalkanil"],
-        "Desa Karanglo Utara": ["Dukuh", "Pandeyan", "Sekuwung", "Sadakan Lor", "Sadakan Kidul 1", "Sadakan Kidul 2", "Cepogo", "Plombokan"],
-        "Desa Krangean": ["Gondosuli", "Tawang 1", "Tawang 2", "Watusambang", "Somokado", "Krangean Selatan", "Krangean Utara", "Gondang Boma", "Ngreso", "Nglegok Atas", "Nglegok Bawah"],
-        "Desa Bandardawung": ["Dawung Atas", "Dawung Tengah", "Dawung Bawah", "Bandardawung Timur", "Bandardawung Barat", "Gondang Timur", "Gondang Tengah", "Gondang Barat", "Pelas Timur", "Pelas Barat", "Gamping", "Ngasem"]
-    };
-
-    // Fungsi untuk memperbarui dropdown kolom sub-desa/dukuh
-    function updateDropdownDukuhBerdasarkanDesa() {
-        const desaTerpilih = document.getElementById("filter-desa").value;
-        const selectDukuh = document.getElementById("filter-dukuh");
-
-        selectDukuh.innerHTML = '<option value="">-- Semua Wilayah --</option>';
-
-        if (desaTerpilih && STRUKTUR_WILAYAH_MAPPING[desaTerpilih]) {
-            selectDukuh.disabled = false;
-            STRUKTUR_WILAYAH_MAPPING[desaTerpilih].forEach(function(dukuh) {
-                const opt = document.createElement("option");
-                opt.value = dukuh;
-                opt.textContent = dukuh;
-                selectDukuh.appendChild(opt);
-            });
-        } else {
-            selectDukuh.disabled = true;
-            selectDukuh.innerHTML = '<option value="">-- Pilih Desa Terlebih Dahulu --</option>';
-        }
-    }
 
     function bukaKunciAudioKonstruktor() {
         if (!globalAudioCtx) {
@@ -594,12 +535,7 @@
         let { data: logAbsen, error } = await _supabase.from('absensi_kegiatan').select('id_generus, waktu_absen, metode_input').eq('nama_kegiatan', namaKegiatan.toUpperCase());
         if (error || !logAbsen || logAbsen.length === 0) return [];
         
-        // Ambil value filter yang sedang terpilih di menu UI
-        const filterStatusVal = document.getElementById("filter-status").value;
-        const filterDesaVal = document.getElementById("filter-desa").value;
-        const filterDukuhVal = document.getElementById("filter-dukuh").value;
-
-        let hasilMapping = logAbsen.map(absen => {
+        return logAbsen.map(absen => {
             let detail = semuaDataGenerus.find(g => String(g.id_generus) === String(absen.id_generus));
             
             return {
@@ -614,20 +550,6 @@
                 metode: absen.metode_input
             }
         });
-
-        // Eksekusi Logika Penyaringan Data berdasarkan pilihan Menu Filter
-        return hasilMapping.filter(item => {
-            const cocokStatus = filterStatusVal === "" || item.status === filterStatusVal;
-            const cocokDesa = filterDesaVal === "" || item.desa === filterDesaVal;
-            
-            // Kolom dukuh biasanya disimpan pada properti kelompok atau detail wilayah di DB. 
-            // Kita periksa kecocokannya baik di field kelompok maupun detail_status untuk jaminan akurasi.
-            const cocokDukuh = filterDukuhVal === "" || 
-                              item.kelompok.toLowerCase().includes(filterDukuhVal.toLowerCase()) || 
-                              item.detail_status.toLowerCase().includes(filterDukuhVal.toLowerCase());
-
-            return cocokStatus && cocokDesa && cocokDukuh;
-        });
     }
 
     async function tarikDanCetakLaporan(jenis, langsungPrint = false) {
@@ -635,7 +557,7 @@
         if(!namaKegiatan) return alert("Harap masukkan Nama Agenda yang ingin ditarik rekapannya!");
         tampilkanToast("🔄 Menarik seluruh data dari Supabase...");
         let dataMurni = await dapatkanDataGabungan(namaKegiatan);
-        if(dataMurni.length === 0) return alert(`Tidak ditemukan data absensi/izin untuk kegiatan: "${namaKegiatan}" dengan kriteria filter tersebut.`);
+        if(dataMurni.length === 0) return alert(`Tidak ditemukan data absensi/izin untuk kegiatan: "${namaKegiatan}"`);
 
         let container = document.getElementById('print-table-container');
         let areaCetak = document.getElementById('print-area');
