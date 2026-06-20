@@ -7,7 +7,7 @@
     <link rel="manifest" href="manifest.json">
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght=400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
         :root {
@@ -36,271 +36,72 @@
             --icon-color: #94a3b8;
         }
 
-        body { 
-            font-family: 'Inter', sans-serif; 
-            margin: 0; padding: 0; 
-            background-color: var(--bg-main); 
-            color: var(--text-dark);
-            display: flex; justify-content: center; align-items: center;
-            min-height: 100vh;
-            transition: all 0.3s ease;
-            overscroll-behavior-y: auto; 
-        }
-
-        .app-container { 
-            width: 100%; max-width: 440px; 
-            background: var(--bg-card); 
-            padding: 32px 24px; border-radius: 24px; 
-            box-shadow: 0 10px 25px -5px var(--shadow), 0 8px 10px -6px var(--shadow);
-            box-sizing: border-box; margin: 16px;
-            position: relative;
-        }
-
-        .top-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            width: 100%;
-        }
-
-        .theme-toggle-btn {
-            background: var(--bg-main); border: 1px solid var(--border-color);
-            color: var(--text-dark); padding: 8px 14px; border-radius: 20px;
-            font-size: 12px; font-weight: 600; cursor: pointer;
-            transition: all 0.2s ease;
-            width: auto;
-        }
-
-        .net-status { 
-            font-weight: 700; font-size: 11px; padding: 6px 14px; 
-            border-radius: 20px; display: inline-block;
-            text-transform: uppercase; letter-spacing: 0.5px;
-        }
+        body { font-family: 'Inter', sans-serif; margin: 0; padding: 0; background-color: var(--bg-main); color: var(--text-dark); display: flex; justify-content: center; align-items: center; min-height: 100vh; transition: all 0.3s ease; overscroll-behavior-y: auto; }
+        .app-container { width: 100%; max-width: 440px; background: var(--bg-card); padding: 32px 24px; border-radius: 24px; box-shadow: 0 10px 25px -5px var(--shadow), 0 8px 10px -6px var(--shadow); box-sizing: border-box; margin: 16px; position: relative; }
+        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; width: 100%; }
+        .theme-toggle-btn { background: var(--bg-main); border: 1px solid var(--border-color); color: var(--text-dark); padding: 8px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; width: auto; }
+        .net-status { font-weight: 700; font-size: 11px; padding: 6px 14px; border-radius: 20px; display: inline-block; text-transform: uppercase; letter-spacing: 0.5px; }
         .online { background: rgba(16, 185, 129, 0.12); color: #10b981 !important; }
         .offline { background: rgba(239, 68, 68, 0.12); color: #ef4444 !important; }
-
         .brand-header { text-align: center; margin: 10px 0 24px 0; }
         .brand-logo { width: 110px; height: 110px; object-fit: contain; border-radius: 12px; margin-bottom: 14px; }
         .brand-header h2 { font-size: 24px; font-weight: 700; margin: 0; letter-spacing: -0.5px; }
         .brand-header p { font-size: 13px; color: var(--accent); font-weight: 600; margin: 4px 0 0 0; text-transform: uppercase; letter-spacing: 0.5px; }
-
         .form-group { margin-bottom: 20px; position: relative; }
         label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-dark); }
-        
-        input, .btn-primary, .btn-warning { 
-            width: 100%; padding: 14px 16px; 
-            border: 1px solid var(--border-color); background: var(--bg-card);
-            color: var(--text-dark); border-radius: 12px; 
-            box-sizing: border-box; font-size: 15px; font-family: inherit;
-            transition: all 0.2s;
-            -webkit-user-select: text !important;
-            user-select: text !important;
-            -webkit-tap-highlight-color: transparent;
-        }
+        input, .btn-primary, .btn-warning { width: 100%; padding: 14px 16px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-dark); border-radius: 12px; box-sizing: border-box; font-size: 15px; font-family: inherit; transition: all 0.2s; -webkit-user-select: text !important; user-select: text !important; -webkit-tap-highlight-color: transparent; }
         input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(4, 120, 87, 0.15); }
-
         #kegiatan { text-transform: uppercase; }
-
         .btn-primary { background: var(--primary); color: #fff; border: none; font-weight: 600; cursor: pointer; margin-top: 8px; box-shadow: 0 4px 12px rgba(4, 120, 87, 0.2); text-align: center; }
         .btn-primary:hover { background: var(--primary-hover); }
-
         .btn-warning { background: var(--warning); color: #0f172a; border: none; font-weight: 600; cursor: pointer; margin-top: 8px; box-shadow: 0 4px 12px rgba(234, 179, 8, 0.2); text-align: center; }
         .btn-warning:hover { background: var(--warning-hover); }
-
         .section-title { font-size: 12px; font-weight: 700; color: var(--text-muted); text-align: center; margin: 24px 0 12px 0; letter-spacing: 0.8px; text-transform: uppercase; }
-        
         #reader { width: 100%; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: none !important; background: var(--bg-card); }
-        #reader button {
-            background-color: var(--primary) !important;
-            color: #ffffff !important;
-            border: none !important;
-            padding: 12px 20px !important;
-            font-size: 14px !important;
-            font-weight: 600 !important;
-            border-radius: 12px !important;
-            cursor: pointer !important;
-            transition: background-color 0.2s ease, transform 0.1s ease !important;
-            box-shadow: 0 4px 12px rgba(4, 120, 87, 0.15) !important;
-            margin: 10px 0 !important;
-            font-family: inherit !important;
-        }
+        #reader button { background-color: var(--primary) !important; color: #ffffff !important; border: none !important; padding: 12px 20px !important; font-size: 14px !important; font-weight: 600 !important; border-radius: 12px !important; cursor: pointer !important; transition: background-color 0.2s ease, transform 0.1s ease !important; box-shadow: 0 4px 12px rgba(4, 120, 87, 0.15) !important; margin: 10px 0 !important; font-family: inherit !important; }
         #reader button:hover { background-color: var(--primary-hover) !important; }
         #reader button:active { transform: scale(0.98) !important; }
         #reader a { color: var(--primary) !important; font-weight: 500; text-decoration: none; font-size: 13px; }
-
         .divider { text-align: center; margin: 24px 0; font-size: 11px; font-weight: 700; color: var(--text-muted); }
-
-        .search-results { 
-            position: absolute; width: 100%; background: var(--bg-card); border: 1px solid var(--border-color); 
-            max-height: 220px; overflow-y: auto !important; z-index: 999; border-radius: 12px; margin-top: 2px;
-            box-shadow: 0 10px 15px -3px var(--shadow); display: none;
-            -webkit-overflow-scrolling: touch;
-            overscroll-behavior: contain;
-        }
+        .search-results { position: absolute; width: 100%; background: var(--bg-card); border: 1px solid var(--border-color); max-height: 220px; overflow-y: auto !important; z-index: 999; border-radius: 12px; margin-top: 2px; box-shadow: 0 10px 15px -3px var(--shadow); display: none; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
         .search-item { padding: 12px 16px; cursor: pointer; border-bottom: 1px solid var(--border-color); font-size: 14px; min-height: 44px; box-sizing: border-box; }
         .search-item:hover { background: var(--bg-main); color: var(--primary); }
-
         .action-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; margin-top: 10px; position: relative; }
-        .btn-icon, .select-wrapper { 
-            background: transparent; border: 1px solid var(--border-color); 
-            color: var(--text-dark); padding: 10px 0; border-radius: 12px; 
-            cursor: pointer; display: flex; flex-direction: column; align-items: center; 
-            justify-content: center; gap: 4px; font-size: 9px; font-weight: 600;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); width: 100%; box-sizing: border-box;
-        }
-        
-        .btn-icon svg { 
-            width: 16px; height: 16px; 
-            fill: none; stroke: var(--icon-color); 
-            stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
-            transition: all 0.2s ease;
-        }
-        
+        .btn-icon, .select-wrapper { background: transparent; border: 1px solid var(--border-color); color: var(--text-dark); padding: 10px 0; border-radius: 12px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-size: 9px; font-weight: 600; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); width: 100%; box-sizing: border-box; }
+        .btn-icon svg { width: 16px; height: 16px; fill: none; stroke: var(--icon-color); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: all 0.2s ease; }
         .btn-icon:hover { background: var(--bg-main); border-color: var(--text-muted); }
         .btn-icon:hover svg { stroke: var(--primary); transform: translateY(-1px); }
         .btn-icon:active { transform: scale(0.95); }
-
         .select-wrapper { position: relative; padding: 0; }
-        .select-wrapper select {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            opacity: 0; cursor: pointer; font-family: inherit;
-        }
+        .select-wrapper select { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; font-family: inherit; }
         .select-wrapper:hover { background: var(--bg-main); border-color: var(--text-muted); }
         .select-wrapper:hover svg { stroke: var(--primary); transform: translateY(-1px); }
-
-        .toast-notif {
-            position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
-            background: #1e293b; color: #fff; padding: 12px 24px; border-radius: 30px; 
-            font-size: 14px; font-weight: 500; display: none; z-index: 10000; text-align: center;
-            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3);
-        }
-        
+        .toast-notif { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #1e293b; color: #fff; padding: 12px 24px; border-radius: 30px; font-size: 14px; font-weight: 500; display: none; z-index: 10000; text-align: center; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); }
         #print-area { display: none; width: 100%; margin-top: 30px; }
         .print-box-wilayah { margin-bottom: 25px; page-break-inside: avoid; }
         .print-box-wilayah h4 { margin: 0 0 8px 0; font-size: 14px; color: #0f172a; text-transform: uppercase; border-bottom: 2px solid #0f172a; padding-bottom: 4px; }
-        
         .print-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; font-size: 11px; }
         .print-table th, .print-table td { border: 1px solid #94a3b8; padding: 6px 8px; text-align: left; }
         .print-table th { background: #f1f5f9; color: #0f172a; font-weight: 600; position: relative; }
-
-        .th-filter-container {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 4px;
-        }
-        .excel-filter-btn {
-            background: none;
-            border: none;
-            padding: 4px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 4px;
-            min-width: 20px;
-            min-height: 20px;
-        }
+        .th-filter-container { display: flex; align-items: center; justify-content: space-between; gap: 4px; }
+        .excel-filter-btn { background: none; border: none; padding: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 4px; min-width: 20px; min-height: 20px; }
         .excel-filter-btn:hover { background: rgba(0,0,0,0.1); }
         [data-theme="dark"] .excel-filter-btn:hover { background: rgba(255,255,255,0.1); }
         .excel-filter-btn svg { width: 12px; height: 12px; fill: var(--icon-color); }
         .excel-filter-btn.active svg { fill: var(--primary); }
-
-        .filter-backdrop-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100vw; height: 100vh;
-            background: transparent;
-            z-index: 1999;
-        }
-        
-        .filter-dropdown-menu {
-            display: none;
-            position: absolute;
-            top: 100%; left: 0;
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            border-radius: 12px;
-            z-index: 2000;
-            min-width: 180px;
-            max-height: 280px;
-            overflow: hidden;
-            padding: 12px;
-            box-sizing: border-box;
-            font-weight: normal;
-            text-transform: none;
-            overscroll-behavior: contain !important;
-        }
-        
-        .filter-search-box {
-            width: 100%;
-            padding: 8px 10px;
-            font-size: 13px;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            margin-bottom: 8px;
-            box-sizing: border-box;
-            background: var(--bg-main);
-            color: var(--text-dark);
-        }
-        
-        .filter-options-list {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            max-height: 140px;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-            padding-right: 4px;
-            overscroll-behavior: contain !important;
-        }
-        
-        .filter-option-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 13px;
-            cursor: pointer;
-            padding: 6px 4px;
-            border-radius: 6px;
-            min-height: 32px;
-            box-sizing: border-box;
-        }
+        .filter-backdrop-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: transparent; z-index: 1999; }
+        .filter-dropdown-menu { display: none; position: absolute; top: 100%; left: 0; background: var(--bg-card); border: 1px solid var(--border-color); box-shadow: 0 10px 25px rgba(0,0,0,0.2); border-radius: 12px; z-index: 2000; min-width: 180px; max-height: 280px; overflow: hidden; padding: 12px; box-sizing: border-box; font-weight: normal; text-transform: none; overscroll-behavior: contain !important; }
+        .filter-search-box { width: 100%; padding: 8px 10px; font-size: 13px; border: 1px solid var(--border-color); border-radius: 6px; margin-bottom: 8px; box-sizing: border-box; background: var(--bg-main); color: var(--text-dark); }
+        .filter-options-list { display: flex; flex-direction: column; gap: 4px; max-height: 140px; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-right: 4px; overscroll-behavior: contain !important; }
+        .filter-option-item { display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; padding: 6px 4px; border-radius: 6px; min-height: 32px; box-sizing: border-box; }
         .filter-option-item:hover { background: var(--bg-main); }
         .filter-option-item input { width: 18px !important; height: 18px !important; margin: 0; padding: 0; cursor: pointer; }
-        
-        .filter-action-buttons {
-            display: flex;
-            justify-content: flex-end;
-            gap: 8px;
-            margin-top: 10px;
-            border-top: 1px solid var(--border-color);
-            padding-top: 10px;
-        }
+        .filter-action-buttons { display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px; border-top: 1px solid var(--border-color); padding-top: 10px; }
         .filter-btn-sub { padding: 8px 12px; font-size: 12px; font-weight: 600; border-radius: 6px; border: none; cursor: pointer; }
         .filter-btn-ok { background: var(--primary); color: white; }
         .filter-btn-clear { background: var(--border-color); color: var(--text-dark); }
-
-        .resume-kehadiran-box {
-            background: var(--bg-main);
-            border: 1px solid var(--border-color);
-            padding: 12px 16px;
-            border-radius: 12px;
-            margin-bottom: 15px;
-            font-size: 12px;
-            font-weight: 600;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            color: var(--text-dark);
-        }
-        .resume-row {
-            display: flex;
-            gap: 16px;
-        }
-
+        .resume-kehadiran-box { background: var(--bg-main); border: 1px solid var(--border-color); padding: 12px 16px; border-radius: 12px; margin-bottom: 15px; font-size: 12px; font-weight: 600; display: flex; flex-direction: column; gap: 6px; color: var(--text-dark); }
+        .resume-row { display: flex; gap: 16px; }
         @media print {
             body { background: #fff!important; color: #000!important; display: block; padding: 0; margin: 0; position: static !important; overflow: auto !important; }
             .app-container { max-width: 100%; width: 100%; box-shadow: none!important; padding: 0; margin: 0; background: #fff!important; }
@@ -348,22 +149,10 @@
 
     <div class="section-title">Menu Rekap & Penyimpanan</div>
     <div class="action-row">
-        <button class="btn-icon" onclick="tarikDanCetakLaporan('semua')" title="Preview Semua">
-            <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-            Semua
-        </button>
-        <button class="btn-icon" onclick="tarikDanCetakLaporan('desa')" title="Rekap Desa">
-            <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
-            Desa
-        </button>
-        <button class="btn-icon" onclick="tarikDanCetakLaporan('kelompok')" title="Rekap Kelompok">
-            <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-            Klp
-        </button>
-        <button class="btn-icon" onclick="sinkronisasiManual()" title="Simpan Cloud">
-            <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
-            Simpan
-        </button>
+        <button class="btn-icon" onclick="tarikDanCetakLaporan('semua')" title="Preview Semua"><svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>Semua</button>
+        <button class="btn-icon" onclick="tarikDanCetakLaporan('desa')" title="Rekap Desa"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>Desa</button>
+        <button class="btn-icon" onclick="tarikDanCetakLaporan('kelompok')" title="Rekap Kelompok"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>Klp</button>
+        <button class="btn-icon" onclick="sinkronisasiManual()" title="Simpan Cloud"><svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>Simpan</button>
         <div class="select-wrapper" title="Cetak File">
             <svg viewBox="0 0 24 24" style="width:16px; height:16px; fill:none; stroke:var(--icon-color); stroke-width:2; stroke-linecap:round; stroke-linejoin:round; transition:all 0.2s ease;"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
             <span style="margin-top:4px;">Print</span>
@@ -375,11 +164,7 @@
                 <option value="tahunan">Print Hasil Set Tahun</option>
             </select>
         </div>
-        <button class="btn-icon" onclick="eksporKeExcel()" title="Ekspor Excel">
-            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-            Excel
-        </button>
-
+        <button class="btn-icon" onclick="eksporKeExcel()" title="Ekspor Excel"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>Excel</button>
         <div class="select-wrapper" title="Rekap Tahunan" style="grid-column: span 6; border-color: var(--accent); margin-top: 8px; padding: 6px 0;">
             <div style="display:flex; align-items:center; gap:8px; justify-content:center;">
                 <svg viewBox="0 0 24 24" style="stroke: var(--accent); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; width:18px; height:18px;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
@@ -405,9 +190,8 @@
 <div id="toast-box" class="toast-notif"></div>
 
 <script>
-    // MASUKKAN KREDENSIAL SUPABASE ANDA DI SINI
-    const SUPABASE_URL = ""; 
-    const SUPABASE_KEY = "";
+    const SUPABASE_URL = "https://gttavghryoadthnvwthd.supabase.co"; 
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0dGF2Z2hyeW9hZHRobnZ3dGhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA5MDI5NDQsImV4cCI6MjA5NjQ3ODk0NH0.0O7I9EqSaiQq8_LKMJS9U-XDuitY6sPfYQVtBsJAeas";
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     const netIndicator = document.getElementById('network-indicator');
@@ -480,7 +264,6 @@
     window.addEventListener('offline', () => { netIndicator.innerText = "● Offline"; netIndicator.className = "net-status offline"; });
 
     async function muatSemuaGenerus() {
-        if(!SUPABASE_URL || !SUPABASE_KEY) { searchInput.placeholder = "Kredensial Supabase belum diisi."; return; }
         try {
             let { data: generus, error } = await _supabase.from('data_generus').select('*');
             if (!error) { semuaDataGenerus = generus; searchInput.placeholder = `Cari di antara ${generus.length} data...`; }
@@ -517,7 +300,7 @@
 
     async function prosesAbsensi(idGenerus, metode) {
         let namaKegiatan = document.getElementById('kegiatan').value.toUpperCase();
-        if(!namaKegiatan) { bunyikanSuaraGagal(); alert("⚠️ Isi Nama Agenda Terlebih Dahulu!"); return; }
+        if(!namaKegiatan) { bunyikanSuaraGagal(); alert("Harap isi Nama Agenda terlebih dahulu!"); return; }
         
         let profil = semuaDataGenerus.find(g => g.id_generus == idGenerus) || { nama_lengkap: "ID: " + idGenerus };
         
@@ -538,11 +321,9 @@
                 let selisihJam = (waktuSekarang - waktuAbsenTerakhir) / (1000 * 60 * 60);
 
                 if (selisihJam < 3) {
-                    let sisaMenit = Math.ceil((3 - selisihJam) * 60);
-                    // MODIFIKASI: Suara keluar berbarengan sebelum jendela alert mematikan alur eksekusi browser
-                    bunyikanSuaraGagal(); 
-                    alert(`❌ ABSENSI GANDA\n\n${profil.nama_lengkap} sudah terdata.\nTunggu ${sisaMenit} menit lagi.`);
-                    return; 
+                    bunyikanSuaraGagal(); // Perbaikan 1: Suara dobel (berbunyi saat alert muncul)
+                    alert(`Gagal: ${profil.nama_lengkap} sudah absen pada agenda ini.\nSilakan coba lagi nanti.`); // Perbaikan 2: Notifikasi ringkas
+                    return;
                 }
             }
 
@@ -556,7 +337,7 @@
             let { error: errorInsert } = await _supabase.from('absensi_kegiatan').insert([dataAbsen]);
             if (!errorInsert) { 
                 bunyikanSuaraSukses(); 
-                tampilkanToast(`✓ Sukses mencatat data ${profil.nama_lengkap}`); 
+                tampilkanToast(`✓ Berhasil: ${profil.nama_lengkap}`); 
             } else {
                 throw errorInsert;
             }
@@ -564,7 +345,7 @@
         } catch (err) {
             bunyikanSuaraGagal();
             console.error(err);
-            alert("⚠️ Terjadi kesalahan sistem saat memproses absensi.");
+            alert("Sistem error, coba ulangi lagi.");
         }
     }
 
