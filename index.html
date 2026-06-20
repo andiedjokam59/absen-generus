@@ -394,7 +394,6 @@
     let globalAudioCtx = null;
     let cachePresensiMenitIni = new Set();
 
-    // Struktur Wilayah yang telah dibersihkan kata "DESA" di bagian pilihan filter
     const STRUKTUR_DESA = {
         "KARANGLO SELATAN": ["BLIMBING 1", "BLIMBING 2", "BLIMBING 3", "KARANGLO", "PEDAN SELATAN", "PEDAN UTARA", "JABALKANIL"],
         "KARANGLO UTARA": ["DUKUH", "PANDEYAN", "SEKUWUNG", "SADAKAN LOR", "SADAKAN KIDUL 1", "SADAKAN KIDUL 2", "CEPOGO", "PLOMBOKAN"],
@@ -509,7 +508,6 @@
                 div.className = 'search-item';
                 
                 let infoTambahan = g.status ? ` — [${g.status}${g.usia_dapukan ? ': ' + g.usia_dapukan : ''}]` : '';
-                // Menghapus kata "Desa" dari display hasil pencarian jika ada
                 let namaDesaBersih = g.desa ? g.desa.toUpperCase().replace("DESA ", "") : '-';
                 div.innerText = `${g.nama_lengkap}${infoTambahan} — ${g.kelompok || '-'} [${namaDesaBersih}]`;
                 
@@ -662,8 +660,6 @@
         
         return logAbsen.map(absen => {
             let detail = semuaDataGenerus.find(g => String(g.id_generus) === String(absen.id_generus));
-            
-            // Format nama desa agar bersih dari kata "DESA "
             let desaClean = detail && detail.desa ? detail.desa.toUpperCase().replace("DESA ", "") : "-";
             
             return {
@@ -713,8 +709,6 @@
         } else {
             dd.style.display = 'block';
             isiOpsiDropdownFilter(namaKolom);
-            
-            // Otomatis arahkan fokus scroll agar tidak terpaku ke gesture layar luar HP
             setTimeout(() => { dd.focus(); }, 50);
         }
     }
@@ -731,7 +725,6 @@
 
         let kumpulanOpsi = [];
         
-        // Aturan 1 & 3: Patenkan pilihan status & bersihkan kata Desa
         if (namaKolom === 'status') {
             kumpulanOpsi = ["GENERUS", "PENGURUS", "MT"];
         } else if (namaKolom === 'desa') {
@@ -830,7 +823,7 @@
             if (d.metode === "Izin") {
                 totalIzinSemua++;
             } else {
-                if (d.jk.includes('Perempuan') || d.jk === 'P' ? true : false) totalPerempuanHadir++;
+                if (d.jk.includes('Perempuan') || d.jk === 'P') totalPerempuanHadir++;
                 else totalLakiHadir++;
             }
         });
@@ -848,10 +841,10 @@
                 <td>${i+1}</td>
                 <td style="font-weight:600;">${d.name}${penandaIzin}</td>
                 <td>${jkShort}</td>
-                <td>${d.status}</td>
-                <td>${d.detail_status}</td>
                 <td>${d.kelompok}</td>
                 <td>${d.desa}</td>
+                <td>${d.status}</td>
+                <td>${d.detail_status}</td>
                 <td style="font-weight:${d.metode === 'Izin' ? '700' : '500'}; color:${d.metode === 'Izin' ? '#b45309' : 'inherit'};">${d.waktu}</td>
             `;
             tbody.appendChild(tr);
@@ -902,10 +895,10 @@
                                 <th style="width:30px;">No</th>
                                 <th>${buatElemenHeaderFilter('Nama Lengkap', 'name')}</th>
                                 <th style="width:55px;">${buatElemenHeaderFilter('L/P', 'jk')}</th>
-                                <th>${buatElemenHeaderFilter('Status', 'status')}</th>
-                                <th>${buatElemenHeaderFilter('Usia/Dapukan', 'detail_status')}</th>
                                 <th>${buatElemenHeaderFilter('Kelompok', 'kelompok')}</th>
                                 <th>${buatElemenHeaderFilter('Desa', 'desa')}</th>
+                                <th>${buatElemenHeaderFilter('Status', 'status')}</th>
+                                <th>${buatElemenHeaderFilter('Usia/Dapukan', 'detail_status')}</th>
                                 <th style="width:70px;">${buatElemenHeaderFilter('Waktu', 'waktu')}</th>
                             </tr>
                         </thead>
@@ -917,10 +910,10 @@
                             <td>${i+1}</td>
                             <td style="font-weight:600;">${d.name}${penandaIzin}</td>
                             <td>${d.jk.includes('Perempuan') || d.jk === 'P' ? 'P' : 'L'}</td>
-                            <td>${d.status}</td>
-                            <td>${d.detail_status}</td>
                             <td>${d.kelompok}</td>
                             <td>${d.desa}</td>
+                            <td>${d.status}</td>
+                            <td>${d.detail_status}</td>
                             <td style="font-weight:${d.metode === 'Izin' ? '700' : '500'}; color:${d.metode === 'Izin' ? '#b45309' : 'inherit'};">${d.waktu}</td>
                          </tr>`; 
             });
@@ -968,11 +961,11 @@
                         <thead>
                             <tr>
                                 <th style="width:40px; text-align:center;">No</th>
-                                <th>Nama Wilayah Desa</th>
+                                <th>Nama Desa</th>
                                 <th style="width:90px; text-align:center;">Laki-Laki</th>
                                 <th style="width:90px; text-align:center;">Perempuan</th>
                                 <th style="width:80px; text-align:center;">Izin</th>
-                                <th style="width:110px; text-align:center;">Total Masuk</th>
+                                <th style="width:110px; text-align:center;">Total Hadir</th>
                             </tr>
                         </thead>
                         <tbody>`;
@@ -1043,22 +1036,23 @@
                             <thead>
                                 <tr>
                                     <th style="width:40px; text-align:center;">No</th>
-                                    <th>Nama Lengkap</th>
+                                    <th style="width:40%;">Nama Lengkap</th>
                                     <th style="width:80px;">Status</th>
                                     <th>Usia / Dapukan</th>
-                                    <th style="width:90px;">Jenis Kelamin</th>
+                                    <th style="width:60px; text-align:center;">L/P</th>
                                 </tr>
                             </thead>
                             <tbody>`;
                 
                 anggota.forEach((a, idx) => {
                     let penandaIzin = a.metode === "Izin" ? " <span style='color:#eab308; font-weight:700;'>(IZIN)</span>" : "";
+                    let jkShort = a.jk.includes('Perempuan') || a.jk === 'P' ? 'P' : 'L';
                     html += `<tr>
                                 <td style="text-align:center;">${idx+1}</td>
                                 <td style="font-weight:600;">${a.name}${penandaIzin}</td>
                                 <td>${a.status}</td>
                                 <td>${a.detail_status}</td>
-                                <td>${a.jk}</td>
+                                <td style="text-align:center;">${jkShort}</td>
                              </tr>`;
                 });
 
@@ -1110,11 +1104,11 @@
         let dataMurni = await dapatkanDataGabungan(namaKegiatan);
         if(dataMurni.length === 0) return alert("Tidak ada data untuk diekspor!");
 
-        let csvContent = "No,Nama Lengkap,Jenis Kelamin,Status,Usia atau Dapukan,Kelompok,Desa,Waktu Absen/Status,Metode\n";
+        let csvContent = "No,Nama Lengkap,Jenis Kelamin,Kelompok,Desa,Status,Usia atau Dapukan,Waktu Absen/Status,Metode\n";
         
         dataMurni.forEach((d, i) => { 
             let jenisKelamin = d.jk.includes('Perempuan') || d.jk === 'P' ? 'P' : 'L';
-            csvContent += `${i+1},"${d.name}","${jenisKelamin}","${d.status}","${d.detail_status}","${d.kelompok}","${d.desa}","${d.waktu}","${d.metode}"\n`;
+            csvContent += `${i+1},"${d.name}","${jenisKelamin}","${d.kelompok}","${d.desa}","${d.status}","${d.detail_status}","${d.waktu}","${d.metode}"\n`;
         });
         
         let blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
