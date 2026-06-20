@@ -44,13 +44,8 @@
             display: flex; justify-content: center; align-items: center;
             min-height: 100vh;
             transition: all 0.3s ease;
-        }
-
-        body.modal-open {
-            overflow: hidden !important;
-            position: fixed;
-            width: 100%;
-            height: 100%;
+            /* Cegah pull-to-refresh bawaan android jika tidak diinginkan, namun scroll tetap lancar */
+            overscroll-behavior-y: auto; 
         }
 
         .app-container { 
@@ -218,8 +213,17 @@
         .excel-filter-btn.active svg {
             fill: var(--primary);
         }
+
+        /* BARU: Backdrop Transparan Pengunci Klik Luar Dropdown */
+        .filter-backdrop-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: transparent;
+            z-index: 1999;
+        }
         
-        /* FIX KHUSUS ANDROID & IOS: Optimalisasi Dropdown Filter */
+        /* Dropdown Menu UI */
         .filter-dropdown-menu {
             display: none;
             position: absolute;
@@ -238,9 +242,8 @@
             font-weight: normal;
             text-transform: none;
             
-            /* Cegah overscroll memicu pull-to-refresh Android */
+            /* Kunci scroll bodi luar HANYA ketika jari men-scroll isi dropdown ini */
             overscroll-behavior: contain !important;
-            touch-action: pan-y !important;
         }
         
         .filter-search-box {
@@ -261,7 +264,8 @@
             gap: 4px;
             max-height: 140px;
             overflow-y: auto;
-            -webkit-overflow-scrolling: touch; /* Momentum scroll iOS */
+            /* Aktifkan momentum scroll asli bawaan iOS/Android */
+            -webkit-overflow-scrolling: touch;
             padding-right: 4px;
             overscroll-behavior: contain !important;
         }
@@ -274,7 +278,7 @@
             cursor: pointer;
             padding: 6px 4px;
             border-radius: 6px;
-            min-height: 32px; /* Area sentuh jari Android aman */
+            min-height: 32px;
             box-sizing: border-box;
         }
         .filter-option-item:hover {
@@ -310,13 +314,16 @@
         @media print {
             body { background: #fff!important; color: #000!important; display: block; padding: 0; margin: 0; position: static !important; overflow: auto !important; }
             .app-container { max-width: 100%; width: 100%; box-shadow: none!important; padding: 0; margin: 0; background: #fff!important; }
-            .top-bar, .section-title, #reader, .divider, .form-group, .btn-primary, .btn-warning, .action-row, .search-results, .toast-notif, .excel-filter-btn, .filter-dropdown-menu { display: none!important; }
+            .top-bar, .section-title, #reader, .divider, .form-group, .btn-primary, .btn-warning, .action-row, .search-results, .toast-notif, .excel-filter-btn, .filter-dropdown-menu, .filter-backdrop-overlay { display: none!important; }
             #print-area { display: block!important; }
             .print-table th { padding: 6px 8px !important; }
         }
     </style>
 </head>
 <body onclick="bukaKunciAudioKonstruktor()">
+
+<!-- Elemen Overlay Transparan Global -->
+<div id="global-filter-overlay" class="filter-backdrop-overlay" onclick="tutupSemuaDropdownAman()"></div>
 
 <div class="app-container">
     <div class="top-bar">
@@ -403,6 +410,7 @@
     const resultsBox = document.getElementById('search-results-box');
     const selectedIdInput = document.getElementById('selected-id-generus');
     const themeBtn = document.getElementById('theme-btn');
+    const globalOverlay = document.getElementById('global-filter-overlay');
     
     let semuaDataGenerus = [];
     let dataAktifRekap = []; 
@@ -716,54 +724,28 @@
     function toggleDropdownFilter(event, namaKolom) {
         event.stopPropagation();
         const seluruhDropdown = document.querySelectorAll('.filter-dropdown-menu');
-        
         let targetDd = document.getElementById(`dropdown-filter-${namaKolom}`);
         let kondisiAwalTerbuka = (targetDd.style.display === 'block');
 
-        // Tutup semua menu dropdown terlebih dahulu
+        // Reset semua dropdown
         seluruhDropdown.forEach(d => d.style.display = 'none');
 
         if (!kondisiAwalTerbuka) {
             targetDd.style.display = 'block';
             isiOpsiDropdownFilter(namaKolom);
-            
-            // Kunci scroll body utama khusus Android agar scroll internal dropdown lancar
-            document.body.classList.add('modal-open');
+            // Aktifkan backdrop transparan pembungkus untuk menangkap click/touch di luar
+            globalOverlay.style.display = 'block';
         } else {
-            perbaruiKondisiScrollBodi();
+            tutupSemuaDropdownAman();
         }
     }
 
-    // Logika Manajemen Kunci Scroll Layar Utama Android & iOS
-    function perbaruiKondisiScrollBodi() {
-        const adadropdownTerbuka = document.querySelector('.filter-dropdown-menu[style*="display: block"]');
-        if (!adadropdownTerbuka) {
-            document.body.classList.remove('modal-open');
-        }
-    }
-
-    document.addEventListener('click', () => {
+    function tutupSemuaDropdownAman() {
         const seluruhDropdown = document.querySelectorAll('.filter-dropdown-menu');
         seluruhDropdown.forEach(d => d.style.display = 'none');
-        perbaruiKondisiScrollBodi();
-    });
-
-    // Interceptor Touch Move Super Ketat agar Scroll Opsi Filter di Android Tidak Macet/Mentok
-    document.addEventListener('touchmove', function(e) {
-        const dropdownAktif = document.querySelector('.filter-dropdown-menu[style*="display: block"]');
-        if (!dropdownAktif) return;
-
-        // Cek apakah jari menyentuh bagian dalam list opsi dropdown
-        const areaListOpsi = e.target.closest('.filter-options-list');
-        
-        if (areaListOpsi) {
-            // Biarkan scroll atas-bawah berjalan normal di dalam list Android
-            e.stopPropagation();
-        } else {
-            // Tolak semua pergeseran/tarikan di luar area agar tidak men-scroll halaman belakang
-            e.preventDefault();
-        }
-    }, { passive: false });
+        // Sembunyikan backdrop overlay pengunci
+        globalOverlay.style.display = 'none';
+    }
 
     function isiOpsiDropdownFilter(namaKolom) {
         const listContainer = document.getElementById(`list-opsi-filter-${namaKolom}`);
@@ -822,8 +804,7 @@
         if (namaKolom === 'desa') delete filterTerpilih['kelompok']; 
         
         document.getElementById(`btn-filter-${namaKolom}`).classList.remove('active');
-        document.getElementById(`dropdown-filter-${namaKolom}`).style.display = 'none';
-        perbaruiKondisiScrollBodi();
+        tutupSemuaDropdownAman();
         prosesKalkulasiDanRenderTabel();
     }
 
@@ -848,8 +829,7 @@
             if(btnKlp) btnKlp.classList.remove('active');
         }
 
-        document.getElementById(`dropdown-filter-${namaKolom}`).style.display = 'none';
-        perbaruiKondisiScrollBodi();
+        tutupSemuaDropdownAman();
         prosesKalkulasiDanRenderTabel();
     }
 
