@@ -169,10 +169,23 @@
         .select-wrapper { position: relative; padding: 0; }
         .select-wrapper select {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            opacity: 0; cursor: pointer; font-family: inherit;
+            opacity: 0; cursor: pointer; font-family: inherit; z-index: 2;
         }
         .select-wrapper:hover { background: var(--bg-main); border-color: var(--text-muted); }
         .select-wrapper:hover svg { stroke: var(--primary); transform: translateY(-1px); }
+
+        /* Desain Border Elegan & Simpel untuk Elemen Dropdown Kustom */
+        .custom-dropdown-border {
+            border: 1.5px solid var(--primary) !important;
+            border-radius: 12px;
+            box-shadow: 0 2px 6px rgba(4, 120, 87, 0.08);
+            background: var(--bg-card);
+            transition: all 0.2s ease-in-out;
+        }
+        .custom-dropdown-border:hover {
+            border-color: var(--primary-hover) !important;
+            box-shadow: 0 4px 12px rgba(4, 120, 87, 0.15);
+        }
 
         .scan-notif-modal {
             position: fixed;
@@ -384,14 +397,18 @@
     <div class="form-group">
         <label for="kegiatan">Nama Agenda Pertemuan</label>
         <div class="agenda-input-wrapper">
-            <input type="text" id="kegiatan" placeholder="Ketik manual / Pilih template..." oninput="this.value = this.value.toUpperCase(); updateJudulCetak();">
-            <div class="select-wrapper" style="width: 100px; padding: 0; border-radius: 12px; height: 50px; border: 1px solid var(--border-color);">
-                <span style="font-size:11px; color:var(--primary); font-weight:700; display:flex; align-items:center; justify-content:center; height:100%;">RUTIN</span>
+            <input type="text" id="kegiatan" placeholder="Ketik manual / Pilih template..." oninput="this.value = this.value.toUpperCase(); updateJudulCetak(); perbaruiTeksTombolTahunan(this.value);">
+            <div class="select-wrapper custom-dropdown-border" style="width: 115px; padding: 0; height: 50px;">
+                <span style="font-size:11px; color:var(--primary); font-weight:700; display:flex; align-items:center; justify-content:center; height:100%; text-align:center; padding: 0 4px;">📋 ROUTINE</span>
                 <select id="template-agenda-select" onchange="pilihTemplateAgenda(this.value)" style="height:100%;">
                     <option value="" disabled selected hidden>Pilih</option>
-                    <option value="PENGAJIAN MUDA-MUDI DAERAH">1. PENGAJIAN MUDA-MUDI DAERAH</option>
-                    <option value="MUSYAWARAH KMM DAERAH">2. MUSYAWARAH KMM DAERAH</option>
-                    <option value="PENEROBOSAN KMM DAERAH">3. PENEROBOSAN KMM DAERAH</option>
+                    <option value="PENGAJIAN MUDA-MUDI DAERAH">Pengajian muda-mudi daerah</option>
+                    <option value="PENGAJIAN UMUM DAERAH">Pengajian umum daerah</option>
+                    <option value="PENGAJIAN IBU-IBU DAERAH">Pengajian ibu-ibu daerah</option>
+                    <option value="MUSYAWARAH KMM">Musyawarah KMM</option>
+                    <option value="MUSYAWARAH PPG">Musyawarah PPG</option>
+                    <option value="MUSYAWARAH DAERAH">Musyawarah Daerah</option>
+                    <option value="MUSYAWARAH PONDOK">Musyawarah Pondok</option>
                     <option value="BERSIH">-- Tulis Manual Bebas --</option>
                 </select>
             </div>
@@ -447,20 +464,16 @@
             Excel
         </button>
 
-        <div class="select-wrapper" title="Rekap Tahunan Kegiatan" style="grid-column: span 6; border-color: var(--accent); margin-top: 8px; padding: 6px 0;">
-            <div style="display:flex; align-items:center; gap:8px; justify-content:center; position: relative;">
-                <svg viewBox="0 0 24 24" style="stroke: var(--accent); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; width:18px; height:18px;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                <span style="color: var(--accent); font-size:11px; font-weight:700; text-transform: uppercase;">Rekap Kegiatan Tahunan Berdasarkan Nama</span>
-                
-                <!-- Tombol Kecil Pemilihan Tahun -->
-                <select id="tahun-pilihan-select" onchange="updateTahunDataRekap()" onclick="event.stopPropagation()" style="width: auto; opacity: 1; position: relative; font-size: 11px; font-weight: bold; border: 1px solid var(--accent); border-radius: 6px; padding: 2px 4px; background: var(--bg-card); color: var(--text-dark); cursor: pointer; margin-left: 5px;">
-                    <!-- Diisi dinamis oleh JavaScript -->
-                </select>
+        <div class="select-wrapper custom-dropdown-border" title="Rekap Tahunan" style="grid-column: span 6; margin-top: 12px; padding: 10px 0; min-height: 50px;">
+            <div style="display:flex; align-items:center; gap:8px; justify-content:center; width:100%; padding:0 12px; box-sizing:border-box;">
+                <svg viewBox="0 0 24 24" style="stroke: var(--primary); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; width:18px; height:18px; flex-shrink:0;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                <span id="rekap-tahunan-label-text" style="color: var(--primary); font-size:12px; font-weight:700; text-transform: uppercase; text-align:center; line-height:1.2;">Rekap Tahunan Kegiatan</span>
             </div>
-            <select id="tahunan-dropdown" onchange="tarikRekapTahunanMatriks(this.value)">
-                <option value="" disabled selected hidden>Klik untuk memisahkan kategori (Generus/Pengurus)</option>
-                <option value="GENERUS">Khusus Anggota GENERUS</option>
-                <option value="PENGURUS">Khusus Anggota PENGURUS</option>
+            <select id="tahunan-dropdown" onchange="tarikRekapTahunanMatriks(this.value)" style="z-index: 5;">
+                <option value="" disabled selected hidden>Klik di sini untuk memilih Kategori Status Kegiatan</option>
+                <option value="GENERUS">GENERUS</option>
+                <option value="PENGURUS">PENGURUS</option>
+                <option value="MT">MT</option>
             </select>
         </div>
     </div>
@@ -500,27 +513,6 @@
     let pengunciScanAktif = false; 
     let globalAudioCtx = null;
     let toastTimeout = null;
-    let tahunTerpilihSistem = new Date().getFullYear();
-
-    // Inisialisasi opsi tombol kecil pemilihan tahun
-    function inisialisasiOpsiTahun() {
-        const selectTahun = document.getElementById('tahun-pilihan-select');
-        const tahunSekarang = new Date().getFullYear();
-        selectTahun.innerHTML = '';
-        for (let i = tahunSekarang; i >= tahunSekarang - 4; i--) {
-            let opt = document.createElement('option');
-            opt.value = i;
-            opt.innerText = i;
-            selectTahun.appendChild(opt);
-        }
-        tahunTerpilihSistem = tahunSekarang;
-    }
-    inisialisasiOpsiTahun();
-
-    function updateTahunDataRekap() {
-        tahunTerpilihSistem = parseInt(document.getElementById('tahun-pilihan-select').value);
-        tampilkanNotifKustom('success', 'Tahun Diubah', `Target pengambilan data set ke tahun ${tahunTerpilledSistem}`);
-    }
 
     function bukaKunciAudioKonstruktor() {
         if (!globalAudioCtx) { globalAudioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
@@ -586,7 +578,17 @@
             inputAgenda.value = nilai.toUpperCase();
         }
         updateJudulCetak();
+        perbaruiTeksTombolTahunan(inputAgenda.value);
         document.getElementById('template-agenda-select').value = ""; 
+    }
+
+    function perbaruiTeksTombolTahunan(nilaiInput) {
+        const label = document.getElementById('rekap-tahunan-label-text');
+        if (nilaiInput && nilaiInput.trim() !== "") {
+            label.innerText = `REKAP TAHUNAN: ${nilaiInput.trim()}`;
+        } else {
+            label.innerText = "Rekap Tahunan Kegiatan";
+        }
     }
 
     function ubahTemaSistem() {
@@ -962,7 +964,6 @@
         tutupSemuaDropdownAman(); renderTabelRekapSemuaSistem();
     }
 
-    // REKAP TAHUNAN BARU: Berdasarkan Nama Kegiatan, Filter Tahun, & Pemisahan Generus/Pengurus (Mendukung Multi-Dapukan)
     async function tarikRekapTahunanMatriks(statusPilihan) {
         let namaKegiatan = document.getElementById('kegiatan').value.toUpperCase();
         if(!namaKegiatan) { document.getElementById('tahunan-dropdown').value = ""; return tampilkanNotifKustom('error', 'Gagal', 'Harap isi Nama Agenda terlebih dahulu!'); }
@@ -970,15 +971,12 @@
         let { data: logAbsen, error } = await _supabase.from('absensi_kegiatan').select('*').eq('nama_kegiatan', namaKegiatan.trim().toUpperCase());
         if (error || !logAbsen) return tampilkanNotifKustom('error', 'Gagal', 'Gagal memuat data log presensi.');
 
-        // Filter log absensi berdasarkan tombol tahun terpilih
-        dataMentahTahunanLog = logAbsen.filter(l => new Date(l.waktu_absen).getFullYear() === tahunTerpilihSistem);
-        
-        // Menggunakan pencocokan string '.includes()' agar 1 ID dengan multi-dapukan (misal status: "PENGURUS, MT") tetap terjaring secara akurat
-        dataMasterTahunanOrang = semuaDataGenerus.filter(g => g.status && g.status.toUpperCase().includes(statusPilihan.toUpperCase()));
+        dataMentahTahunanLog = logAbsen;
+        dataMasterTahunanOrang = semuaDataGenerus.filter(g => g.status && g.status.toUpperCase() === statusPilihan.toUpperCase());
         filterTerpilih = {}; 
 
         document.getElementById('cetak-judul-kegiatan').innerText = `REKAP MATRIKS TAHUNAN: ${namaKegiatan}`;
-        document.getElementById('cetak-waktu').innerText = `Kategori: ${statusPilihan} | Tahun: ${tahunTerpilihSistem}`;
+        document.getElementById('cetak-waktu').innerText = `Kategori: ${statusPilihan} | Tahun: ${new Date().getFullYear()}`;
         document.getElementById('resume-kehadiran-container').innerHTML = ""; 
 
         renderTabelMatriksTahunanSistem();
@@ -1027,7 +1025,7 @@
                     <tbody>`;
 
         if(dataOrangTerfilter.length === 0) {
-            html += `<tr><td colspan="17" style="text-align:center; color:#ef4444; font-weight:600; padding:20px;">Tidak ada data yang cocok dengan kriteria filter.</td></tr>`;
+            html += `<tr><td colspan="17" style="text-align:center; color:#ef4444; font-weight:600; padding:20px;">Tidak ada data yang cocok dengan filter kelompok terpilih.</td></tr>`;
         } else {
             let akumulasiHadirSemua = 0;
             let akumulasiIzinSemua = 0;
