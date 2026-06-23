@@ -965,25 +965,35 @@
         tutupSemuaDropdownAman(); renderTabelRekapSemuaSistem();
     }
 
-    async function tarikRekapTahunanMatriks(statusPilihan) {
-        let namaKegiatan = document.getElementById('kegiatan').value.toUpperCase();
-        if(!namaKegiatan) { document.getElementById('tahunan-dropdown').value = ""; return tampilkanNotifKustom('error', 'Gagal', 'Harap isi Nama Agenda terlebih dahulu!'); }
-        
-        let { data: logAbsen, error } = await _supabase.from('absensi_kegiatan').select('*').eq('nama_kegiatan', namaKegiatan.trim().toUpperCase());
-        if (error || !logAbsen) return tampilkanNotifKustom('error', 'Gagal', 'Gagal memuat data log presensi.');
-
-        dataMentahTahunanLog = logAbsen;
-        dataMasterTahunanOrang = semuaDataGenerus.filter(g => g.status && g.status.toUpperCase() === statusPilihan.toUpperCase());
-        
-        filterTerpilih = {}; 
-        subDapukanPengurusTerpilih = "SEMUA";
-
-        document.getElementById('cetak-judul-kegiatan').innerText = `REKAP MATRIKS TAHUNAN: ${namaKegiatan}`;
-        document.getElementById('cetak-waktu').innerText = `Kategori: ${statusPilihan} | Tahun: ${new Date().getFullYear()}`;
-        document.getElementById('resume-kehadiran-container').innerHTML = ""; 
-
-        renderTabelMatriksTahunanSistem();
+async function tarikRekapTahunanMatriks(statusPilihan) {
+    let namaKegiatan = document.getElementById('kegiatan').value.toUpperCase();
+    if(!namaKegiatan) {
+        document.getElementById('tahunan-dropdown').value = "";
+        return tampilkanNotifKustom('error', 'Gagal', 'Harap isi Nama Agenda terlebih dahulu!');
     }
+    
+    // BARU: Menggunakan .ilike() dengan wildcard % supaya fleksibel mendeteksi text/kata kunci
+    let { data: logAbsen, error } = await _supabase
+        .from('absensi_kegiatan')
+        .select('*')
+        .ilike('nama_kegiatan', `%${namaKegiatan.trim()}%`);
+        
+    if (error || !logAbsen) return tampilkanNotifKustom('error', 'Gagal', 'Gagal memuat data log presensi.');
+    
+    dataMentahTahunanLog = logAbsen;
+    
+    // BARU pada filter lokal: Menggunakan .includes() agar anggota dengan dapukan ganda (misal: "PENGURUS, KMM") tetap lolos sensor pencarian
+    dataMasterTahunanOrang = semuaDataGenerus.filter(g => 
+        g.status && g.status.toUpperCase().includes(statusPilihan.toUpperCase())
+    );
+    
+    filterTerpilih = {};
+    subDapukanPengurusTerpilih = "SEMUA";
+    document.getElementById('cetak-judul-kegiatan').innerText = `REKAP MATRIKS TAHUNAN: ${namaKegiatan}`;
+    document.getElementById('cetak-waktu').innerText = `Kategori: ${statusPilihan} | Tahun: ${new Date().getFullYear()}`;
+    document.getElementById('resume-kehadiran-container').innerHTML = "";
+    renderTabelMatriksTahunanSistem();
+}
 
     function renderTabelMatriksTahunanSistem() {
         let container = document.getElementById('print-table-container');
