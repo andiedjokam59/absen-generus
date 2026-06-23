@@ -214,15 +214,15 @@
         }
         .resume-row { display: flex; gap: 16px; }
 
-        /* KOTAK PENGATURAN TAHUN REKAP TAHUNAN */
-        .box-tahun-rekap {
-            display: flex; align-items: center; gap: 10px; background: var(--bg-main); border: 1px dashed var(--accent); padding: 10px 14px; border-radius: 12px; margin-bottom: 12px;
+        /* BOX TAHUN SEKARANG DI LETAKKAN DI BAWAH SESUAI REQUEST */
+        .box-tahun-bawah {
+            display: flex; align-items: center; justify-content: space-between; background: var(--bg-main); border: 1px dashed var(--border-color); padding: 8px 16px; border-radius: 12px; margin-top: 14px; margin-bottom: 6px;
         }
 
         @media print {
             body { background: #fff!important; color: #000!important; display: block; padding: 0; margin: 0; position: static !important; overflow: auto !important; }
             .app-container { max-width: 100%; width: 100%; box-shadow: none!important; padding: 0; margin: 0; background: #fff!important; }
-            .top-bar, .section-title, #reader, .divider, .form-group, .btn-primary, .btn-warning, .action-row, .search-results, .toast-notif, .excel-filter-btn, .filter-dropdown-menu, .filter-backdrop-overlay, .box-tahun-rekap { display: none!important; }
+            .top-bar, .section-title, #reader, .divider, .form-group, .btn-primary, .btn-warning, .action-row, .search-results, .toast-notif, .excel-filter-btn, .filter-dropdown-menu, .filter-backdrop-overlay, .box-tahun-bawah { display: none!important; }
             #print-area { display: block!important; }
             .print-table th { padding: 6px 8px !important; }
         }
@@ -249,12 +249,6 @@
         <input type="text" id="kegiatan" placeholder="Masukkan nama kegiatan..." oninput="this.value = this.value.toUpperCase(); updateJudulCetak();">
     </div>
 
-    <div class="box-tahun-rekap">
-        <label style="margin:0; font-size:11px; white-space:nowrap; color:var(--accent);">PILIH TAHUN REKAP:</label>
-        <select id="tahun-rekap-select" style="padding: 6px 12px; font-size:13px; border-radius:8px;">
-            </select>
-    </div>
-
     <div class="section-title">OPSI 1: SCAN BARCODE</div>
     <div id="reader"></div>
 
@@ -271,6 +265,15 @@
     <button class="btn-warning" onclick="inputManualIziin()">Izin</button>
 
     <div class="section-title">Menu Rekap & Penyimpanan</div>
+    
+    <!-- PERUBAHAN 3: PILIHAN TAHUN SEKARANG DI BAWAH, MINIMALIS HANYA ANGKA -->
+    <div class="box-tahun-bawah">
+        <span style="font-size:12px; font-weight:600; color:var(--text-muted);">TAHUN REKAP:</span>
+        <select id="tahun-rekap-select" style="padding: 6px 12px; font-size:13px; border-radius:8px; width:100px; height:auto; margin:0;">
+            <!-- Opsi Angka Tahun Diisi Otomatis -->
+        </select>
+    </div>
+
     <div class="action-row">
         <button class="btn-icon" onclick="tarikDanCetakLaporan('semua')" title="Preview Semua">
             <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>Semua
@@ -299,19 +302,11 @@
             <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>Excel
         </button>
 
-        <div class="select-wrapper" title="Rekap Tahunan" style="grid-column: span 6; border-color: var(--accent); margin-top: 8px; padding: 6px 0;">
-            <div style="display:flex; align-items:center; gap:8px; justify-content:center;">
-                <svg viewBox="0 0 24 24" style="stroke: var(--accent); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; width:18px; height:18px;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                <span style="color: var(--accent); font-size:11px; font-weight:700; text-transform: uppercase;">Proses Rekap Kegiatan Tahunan</span>
-            </div>
-            <select id="tahunan-dropdown" onchange="tarikRekapTahunanMatriks(this.value)">
-                <option value="" disabled selected hidden>Klik di sini untuk memproses Rekap Tahunan</option>
-                <option value="OTOMATIS">-- DETEKSI OTOMATIS BERDASARKAN AGENDA --</option>
-                <option value="GENERUS">Saring Manual: Khusus Anggota GENERUS</option>
-                <option value="PENGURUS">Saring Manual: Semua Jajaran PENGURUS</option>
-                <option value="MT">Saring Manual: Khusus Anggota MT</option>
-            </select>
-        </div>
+        <!-- PERUBAHAN 2: TOMBOL REKAP SEKARANG MURNI JADI TOMBOL PEMROSESAN TANPA DROPDOWN ANGGOTA MANUAL -->
+        <button onclick="tarikRekapTahunanMatriks()" style="grid-column: span 6; border: 1px solid var(--accent); background:transparent; margin-top: 8px; padding: 12px 0; border-radius:12px; display:flex; align-items:center; gap:8px; justify-content:center; cursor:pointer;">
+            <svg viewBox="0 0 24 24" style="stroke: var(--accent); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; width:18px; height:18px;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+            <span style="color: var(--accent); font-size:12px; font-weight:700; text-transform: uppercase;">Mulai Proses Rekap Kegiatan Tahunan</span>
+        </button>
     </div>
 
     <div id="print-area">
@@ -345,7 +340,6 @@
     let pengunciScanAktif = false; 
     let globalAudioCtx = null;
 
-    // GENERATE PILIHAN TAHUN SEGERA SETELAH APLIKASI DIKIK (Dinamis Otomatis Berganti)
     function inisialisasiTahunDinamis() {
         const selectTahun = document.getElementById('tahun-rekap-select');
         const tahunSekarang = new Date().getFullYear();
@@ -353,7 +347,7 @@
         for (let i = 0; i < 5; i++) {
             let th = tahunSekarang - i;
             let opt = document.createElement('option');
-            opt.value = th; opt.innerText = "Tahun " + th;
+            opt.value = th; opt.innerText = th; // HANYA ANGKA SAJA
             selectTahun.appendChild(opt);
         }
     }
@@ -719,11 +713,11 @@
     }
 
     // =========================================================================
-    // PERBAIKAN UTAMA: LOGIKA PEMILAHAN BIJAKSANA (ANTI-BENTROK KATA "DAERAH")
+    // PERBAIKAN & PENYESUAIAN PINTAR: BALIK KEMBALI KE METODE REKAP DETEKSI OTOMATIS
     // =========================================================================
-    async function tarikRekapTahunanMatriks(statusPilihan) {
+    async function tarikRekapTahunanMatriks() {
         let namaKegiatan = document.getElementById('kegiatan').value.toUpperCase();
-        if(!namaKegiatan) { document.getElementById('tahunan-dropdown').value = ""; return alert("Harap isi Nama Agenda terlebih dahulu!"); }
+        if(!namaKegiatan) { return alert("Harap isi Nama Agenda terlebih dahulu!"); }
         
         let tahunTerpilih = document.getElementById('tahun-rekap-select').value;
         let tMulai = `${tahunTerpilih}-01-01T00:00:00.000Z`;
@@ -731,7 +725,6 @@
 
         tampilkanToast(`🔄 Memproses matriks tahun ${tahunTerpilih}...`);
         
-        // Ambil log absensi dari Supabase berdasarkan filter tanggal tahun terpilih
         let { data: logAbsen, error } = await _supabase.from('absensi_kegiatan')
             .select('*')
             .eq('nama_kegiatan', namaKegiatan.trim().toUpperCase())
@@ -741,26 +734,19 @@
         if (error || !logAbsen) return alert("Gagal memuat data log presensi.");
         dataMentahTahunanLog = logAbsen;
 
-        // JIKA MEMILIH MODE DETEKSI OTOMATIS
-        if (statusPilihan === "OTOMATIS") {
-            if (namaKegiatan.includes("KMM")) {
-                // Saring orang yang kolom statusnya punya kata "KMM" (Misal: "PENGURUS KMM DAERAH", "PENGURUS KMM")
-                dataMasterTahunanOrang = semuaDataGenerus.filter(g => g.status && g.status.toUpperCase().includes("KMM"));
-                tampilkanToast("💡 Terdeteksi: Otomatis menyaring jajaran bidang KMM");
-            } 
-            else if (namaKegiatan.includes("PPG")) {
-                // Saring orang yang kolom statusnya punya kata "PPG" (Misal: "PENGURUS PPG DAERAH", "PENGURUS PPG")
-                dataMasterTahunanOrang = semuaDataGenerus.filter(g => g.status && g.status.toUpperCase().includes("PPG"));
-                tampilkanToast("💡 Terdeteksi: Otomatis menyaring jajaran bidang PPG");
-            } 
-            else {
-                // Agenda umum/rutin biasa, tampilkan seluruh anggota tanpa pembatasan bidang
-                dataMasterTahunanOrang = semuaDataGenerus;
-                tampilkanToast("💡 Terdeteksi: Agenda umum, memuat semua data anggota");
-            }
-        } else {
-            // JIKA PILIH MANUAL LEWAT DROPDOWN (GENERUS, MT, atau PENGURUS global)
-            dataMasterTahunanOrang = semuaDataGenerus.filter(g => g.status && g.status.toUpperCase() === statusPilihan.toUpperCase());
+        // PERUBAHAN 1 & 2: DETEKSI OTOMATIS & KEGIATAN RUTIN UMUM AKTIF KEMBALI
+        if (namaKegiatan.includes("KMM")) {
+            dataMasterTahunanOrang = semuaDataGenerus.filter(g => g.status && g.status.toUpperCase().includes("KMM"));
+            tampilkanToast("💡 Terdeteksi: Otomatis menyaring jajaran bidang KMM");
+        } 
+        else if (namaKegiatan.includes("PPG")) {
+            dataMasterTahunanOrang = todos = semuaDataGenerus.filter(g => g.status && g.status.toUpperCase().includes("PPG"));
+            tampilkanToast("💡 Terdeteksi: Otomatis menyaring jajaran bidang PPG");
+        } 
+        else {
+            // KEGIATAN RUTIN / UMUM DIKEMBALIKAN (Menampilkan semua tanpa filter status)
+            dataMasterTahunanOrang = semuaDataGenerus;
+            tampilkanToast("💡 Terdeteksi: Agenda rutin/umum, memuat semua data anggota");
         }
 
         filterTerpilih = {}; 
@@ -847,7 +833,6 @@
         }
 
         html += `</tbody></table>`; container.innerHTML = html; areaCetak.style.display = "block";
-        document.getElementById('tahunan-dropdown').value = "";
     }
 
     function toggleDropdownKelompok(event) {
@@ -876,7 +861,7 @@
         items.forEach(item => { item.style.display = item.textContent.toLowerCase().includes(val.toLowerCase()) ? 'flex' : 'none'; });
     }
 
-    function bersihkanFilterKelompok() { delete filterTerpilih['kelompok']; tutupSemuaDropdownAman(); renderTabelMatriksTahunanSistem(); }
+    function bersihkanFilterKelompok() { delete filterTerpilih['kelompok']; tutupSemuaDropdownAman(); renderTabelRekapMatriksTahunanSistem(); }
     
     function terapkanFilterKelompok() {
         let cbs = document.querySelectorAll('#list-opsi-kelompok input[type="checkbox"]');
