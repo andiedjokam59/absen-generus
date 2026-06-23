@@ -386,7 +386,7 @@
         <div class="agenda-input-wrapper">
             <input type="text" id="kegiatan" placeholder="Ketik manual / Pilih template..." oninput="this.value = this.value.toUpperCase(); updateJudulCetak(); syncDropdownTahunanLabel();">
             <div class="select-wrapper" style="width: 100px; padding: 0; border: 1px solid var(--primary); border-radius: 12px; height: 50px;">
-                <span style="font-size:11px; color:var(--primary); font-weight:700; display:flex; align-items:center; justify-content:center; height:100%;">📋 RUTIN</span>
+                <span style="font-size:11px; color:var(--primary); font-weight:700; display:flex; align-items:center; justify-content:center; height:100%;">RUTIN</span>
                 <select id="template-agenda-select" onchange="pilihTemplateAgenda(this.value)" style="height:100%;">
                     <option value="" disabled selected hidden>Pilih</option>
                     <option value="PENGAJIAN MUDA-MUDI DAERAH">1. PENGAJIAN MUDA-MUDI DAERAH</option>
@@ -453,7 +453,6 @@
                 <span id="label-tahunan-dinamis" style="color: var(--accent); font-size:11px; font-weight:700; text-transform: uppercase;">Proses Rekap Kegiatan Tahunan</span>
             </div>
             <select id="tahunan-dropdown" onchange="tarikRekapTahunanMatriks(this.value)">
-                <option value="" disabled selected hidden>Klik di sini untuk memilih Kategori Status Kegiatan</option>
                 <option value="GENERUS">Khusus Anggota GENERUS</option>
                 <option value="PENGURUS">Khusus Anggota PENGURUS</option>
                 <option value="MT">Khusus Anggota MT</option>
@@ -950,7 +949,7 @@
 
     async function tarikRekapTahunanMatriks(statusPilihan) {
         let namaKegiatan = document.getElementById('kegiatan').value.toUpperCase();
-        if(!namaKegiatan) { document.getElementById('tahunan-dropdown').value = ""; return tampilkanNotifKustom('error', 'Gagal', 'Harap isi Nama Agenda terlebih dahulu!'); }
+        if(!namaKegiatan) { document.getElementById('tahunan-dropdown').value = "GENERUS"; return tampilkanNotifKustom('error', 'Gagal', 'Harap isi Nama Agenda terlebih dahulu!'); }
         
         let { data: logAbsen, error } = await _supabase.from('absensi_kegiatan').select('*').eq('nama_kegiatan', namaKegiatan.trim().toUpperCase());
         if (error || !logAbsen) return tampilkanNotifKustom('error', 'Gagal', 'Gagal memuat data log presensi.');
@@ -1052,7 +1051,6 @@
         html += `</tbody></table>`;
         container.innerHTML = html;
         areaCetak.style.display = "block";
-        document.getElementById('tahunan-dropdown').value = "";
     }
 
     function toggleDropdownKelompok(event) {
