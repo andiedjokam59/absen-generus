@@ -995,123 +995,134 @@ async function tarikRekapTahunanMatriks(statusPilihan) {
     renderTabelMatriksTahunanSistem();
 }
 
-    function renderTabelMatriksTahunanSistem() {
-        let container = document.getElementById('print-table-container');
-        let areaCetak = document.getElementById('print-area');
-        
-        let statusKategoriAktif = "";
-        if (dataMasterTahunanOrang.length > 0 && dataMasterTahunanOrang[0].status) {
-            statusKategoriAktif = dataMasterTahunanOrang[0].status.toUpperCase();
+function renderTabelMatriksTahunanSistem() {
+    let container = document.getElementById('print-table-container');
+    let areaCetak = document.getElementById('print-area');
+    
+    let statusKategoriAktif = "";
+    if (dataMasterTahunanOrang.length > 0 && dataMasterTahunanOrang[0].status) {
+        statusKategoriAktif = dataMasterTahunanOrang[0].status.toUpperCase();
+    }
+
+    let dataOrangTerfilter = [...dataMasterTahunanOrang];
+    let headerDinamisKolom3Html = "";
+
+    if (statusKategoriAktif === "PENGURUS") {
+        // SOLUSI PINTAR: Deteksi kata kunci fleksibel untuk KMM, PPG, DAERAH, PONDOK
+        if (subDapukanPengurusTerpilih !== "SEMUA") {
+            dataOrangTerfilter = dataOrangTerfilter.filter(o => {
+                if (!o.usia_dapukan) return false;
+                
+                // Normalisasi teks agar tidak sensitif huruf besar/kecil dan menghapus spasi liar
+                let dbValue = o.usia_dapukan.toUpperCase().trim();
+                let filterValue = subDapukanPengurusTerpilih.toUpperCase().trim();
+                
+                // Pencarian dua arah: 
+                // 1. dbValue.includes(filterValue) -> Menangani jika di DB "KETUA KMM" dan filter "KMM"
+                // 2. filterValue.includes(dbValue) -> Menangani jika di DB "KMM" dan filter "KETUA KMM"
+                return dbValue.includes(filterValue) || filterValue.includes(dbValue);
+            });
         }
 
-        let dataOrangTerfilter = [...dataMasterTahunanOrang];
-        let headerDinamisKolom3Html = "";
+        headerDinamisKolom3Html = `
+            <th style="min-width:130px; padding: 4px;">
+                <select id="filter-dapukan-pengurus-inline" onchange="saringDapukanPengurusLokal(this.value)" style="width:100%; padding:6px; border-radius:6px; font-family:inherit; font-size:11px; font-weight:700; background: var(--bg-card); color: var(--text-dark); border: 1px solid var(--border-color);">
+                    <option value="SEMUA" ${subDapukanPengurusTerpilih === 'SEMUA' ? 'selected' : ''}>DAPUKAN: SEMUA</option>
+                    <option value="KMM" ${subDapukanPengurusTerpilih === 'KMM' ? 'selected' : ''}>KMM</option>
+                    <option value="PPG" ${subDapukanPengurusTerpilih === 'PPG' ? 'selected' : ''}>PPG</option>
+                    <option value="DAERAH" ${subDapukanPengurusTerpilih === 'DAERAH' ? 'selected' : ''}>DAERAH</option>
+                    <option value="PONDOK" ${subDapukanPengurusTerpilih === 'PONDOK' ? 'selected' : ''}>PONDOK</option>
+                </select>
+            </th>`;
+    } else {
+        if (filterTerpilih['kelompok'] && filterTerpilih['kelompok'].length > 0) {
+            dataOrangTerfilter = dataOrangTerfilter.filter(o => filterTerpilih['kelompok'].includes((o.kelompok || "-").toUpperCase()));
+        }
 
-        if (statusKategoriAktif === "PENGURUS") {
-            if (subDapukanPengurusTerpilih !== "SEMUA") {
-                dataOrangTerfilter = dataOrangTerfilter.filter(o => o.usia_dapukan && o.usia_dapukan.toUpperCase() === subDapukanPengurusTerpilih);
-            }
-
-            headerDinamisKolom3Html = `
-                <th style="min-width:130px; padding: 4px;">
-                    <select id="filter-dapukan-pengurus-inline" onchange="saringDapukanPengurusLokal(this.value)" style="width:100%; padding:6px; border-radius:6px; font-family:inherit; font-size:11px; font-weight:700; background: var(--bg-card); color: var(--text-dark); border: 1px solid var(--border-color);">
-                        <option value="SEMUA" ${subDapukanPengurusTerpilih === 'SEMUA' ? 'selected' : ''}>DAPUKAN: SEMUA</option>
-                        <option value="KMM" ${subDapukanPengurusTerpilih === 'KMM' ? 'selected' : ''}>KMM</option>
-                        <option value="PPG" ${subDapukanPengurusTerpilih === 'PPG' ? 'selected' : ''}>PPG</option>
-                        <option value="DAERAH" ${subDapukanPengurusTerpilih === 'DAERAH' ? 'selected' : ''}>DAERAH</option>
-                        <option value="PONDOK" ${subDapukanPengurusTerpilih === 'PONDOK' ? 'selected' : ''}>PONDOK</option>
-                    </select>
-                </th>`;
-        } else {
-            if (filterTerpilih['kelompok'] && filterTerpilih['kelompok'].length > 0) {
-                dataOrangTerfilter = dataOrangTerfilter.filter(o => filterTerpilih['kelompok'].includes((o.kelompok || "-").toUpperCase()));
-            }
-
-            headerDinamisKolom3Html = `
-                <th style="min-width:110px;">
-                    <div class="th-filter-container">
-                        <span>Kelompok</span>
-                        <button class="excel-filter-btn ${filterTerpilih['kelompok'] ? 'active' : ''}" onclick="toggleDropdownKelompok(event)">
-                            <svg viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
-                        </button>
-                        <div class="filter-dropdown-menu" id="dropdown-filter-kelompok" onclick="event.stopPropagation()">
-                            <input type="text" class="filter-search-box" placeholder="Cari Kelompok..." oninput="cariOpsiKelompok(this.value)">
-                            <div class="filter-options-list" id="list-opsi-kelompok"></div>
-                            <div class="filter-action-buttons">
-                                <button class="filter-btn-sub filter-btn-clear" onclick="bersihkanFilterKelompok()">Clear</button>
-                                <button class="filter-btn-sub filter-btn-ok" onclick="terapkanFilterKelompok()">OK</button>
-                            </div>
+        headerDinamisKolom3Html = `
+            <th style="min-width:110px;">
+                <div class="th-filter-container">
+                    <span>Kelompok</span>
+                    <button class="excel-filter-btn ${filterTerpilih['kelompok'] ? 'active' : ''}" onclick="toggleDropdownKelompok(event)">
+                        <svg viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+                    </button>
+                    <div class="filter-dropdown-menu" id="dropdown-filter-kelompok" onclick="event.stopPropagation()">
+                        <input type="text" class="filter-search-box" placeholder="Cari Kelompok..." oninput="cariOpsiKelompok(this.value)">
+                        <div class="filter-options-list" id="list-opsi-kelompok"></div>
+                        <div class="filter-action-buttons">
+                            <button class="filter-btn-sub filter-btn-clear" onclick="bersihkanFilterKelompok()">Clear</button>
+                            <button class="filter-btn-sub filter-btn-ok" onclick="terapkanFilterKelompok()">OK</button>
                         </div>
                     </div>
-                </th>`;
-        }
+                </div>
+            </th>`;
+    }
 
-        let html = `<table class="print-table">
-                    <thead>
-                        <tr>
-                            <th style="width:30px; text-align:center;">No</th>
-                            <th>Nama Lengkap</th>
-                            ${headerDinamisKolom3Html}
-                            <th style="text-align:center; width:20px;">Jan</th><th style="text-align:center; width:20px;">Feb</th>
-                            <th style="text-align:center; width:20px;">Mar</th><th style="text-align:center; width:20px;">Apr</th>
-                            <th style="text-align:center; width:20px;">Mei</th><th style="text-align:center; width:20px;">Jun</th>
-                            <th style="text-align:center; width:20px;">Jul</th><th style="text-align:center; width:20px;">Agu</th>
-                            <th style="text-align:center; width:20px;">Sep</th><th style="text-align:center; width:20px;">Okt</th>
-                            <th style="text-align:center; width:20px;">Nov</th><th style="text-align:center; width:20px;">Des</th>
-                            <th style="text-align:center; width:45px; background:#f1f5f9; font-weight:700;">Hadir</th>
-                            <th style="text-align:center; width:45px; background:#ffe4e6; font-weight:700;">Izin</th>
-                        </tr>
-                    </thead>
-                    <tbody>`;
+    let html = `<table class="print-table">
+                <thead>
+                    <tr>
+                        <th style="width:30px; text-align:center;">No</th>
+                        <th>Nama Lengkap</th>
+                        ${headerDinamisKolom3Html}
+                        <th style="text-align:center; width:20px;">Jan</th><th style="text-align:center; width:20px;">Feb</th>
+                        <th style="text-align:center; width:20px;">Mar</th><th style="text-align:center; width:20px;">Apr</th>
+                        <th style="text-align:center; width:20px;">Mei</th><th style="text-align:center; width:20px;">Jun</th>
+                        <th style="text-align:center; width:20px;">Jul</th><th style="text-align:center; width:20px;">Agu</th>
+                        <th style="text-align:center; width:20px;">Sep</th><th style="text-align:center; width:20px;">Okt</th>
+                        <th style="text-align:center; width:20px;">Nov</th><th style="text-align:center; width:20px;">Des</th>
+                        <th style="text-align:center; width:45px; background:#f1f5f9; font-weight:700;">Hadir</th>
+                        <th style="text-align:center; width:45px; background:#ffe4e6; font-weight:700;">Izin</th>
+                    </tr>
+                </thead>
+                <tbody>`;
 
-        if(dataOrangTerfilter.length === 0) {
-            html += `<tr><td colspan="17" style="text-align:center; color:#ef4444; font-weight:600; padding:20px;">Tidak ada data anggota yang cocok.</td></tr>`;
-        } else {
-            let akumulasiHadirSemua = 0;
-            let akumulasiIzinSemua = 0;
+    if(dataOrangTerfilter.length === 0) {
+        html += `<tr><td colspan="17" style="text-align:center; color:#ef4444; font-weight:600; padding:20px;">Tidak ada data anggota yang cocok.</td></tr>`;
+    } else {
+        let akumulasiHadirSemua = 0;
+        let akumulasiIzinSemua = 0;
 
-            dataOrangTerfilter.sort((a,b) => (a.nama_lengkap || '').localeCompare(b.nama_lengkap)).forEach((orang, idx) => {
-                let logOrang = dataMentahTahunanLog.filter(l => String(l.id_generus) === String(orang.id_generus));
+        dataOrangTerfilter.sort((a,b) => (a.nama_lengkap || '').localeCompare(b.nama_lengkap)).forEach((orang, idx) => {
+            let logOrang = dataMentahTahunanLog.filter(l => String(l.id_generus) === String(orang.id_generus));
+            let kolom3Isi = (statusKategoriAktif === "PENGURUS") ? (orang.usia_dapukan || "-").toUpperCase() : (orang.kelompok || "-").toUpperCase();
+
+            html += `<tr>
+                        <td style="text-align:center;">${idx + 1}</td>
+                        <td style="font-weight:600;">${orang.nama_lengkap}</td>
+                        <td>${kolom3Isi}</td>`;
+            
+            let totalHadir = 0;
+            let totalIzin = 0;
+            for (let m = 0; m < 12; m++) {
+                let hadir = logOrang.some(l => new Date(l.waktu_absen).getMonth() === m && l.metode_input !== 'Izin');
+                let izin = logOrang.some(l => new Date(l.waktu_absen).getMonth() === m && l.metode_input === 'Izin');
                 
-                let kolom3Isi = (statusKategoriAktif === "PENGURUS") ? (orang.usia_dapukan || "-").toUpperCase() : (orang.kelompok || "-").toUpperCase();
-
-                html += `<tr>
-                            <td style="text-align:center;">${idx + 1}</td>
-                            <td style="font-weight:600;">${orang.nama_lengkap}</td>
-                            <td>${kolom3Isi}</td>`;
-                
-                let totalHadir = 0;
-                let totalIzin = 0;
-                for (let m = 0; m < 12; m++) {
-                    let hadir = logOrang.some(l => new Date(l.waktu_absen).getMonth() === m && l.metode_input !== 'Izin');
-                    let izin = logOrang.some(l => new Date(l.waktu_absen).getMonth() === m && l.metode_input === 'Izin');
-                    
-                    if (hadir) { html += `<td style="text-align:center; color:#10b981; font-weight:700;">✔</td>`; totalHadir++; }
-                    else if (izin) { html += `<td style="text-align:center; color:#eab308; font-weight:700; font-size:9px;">IZN</td>`; totalIzin++; }
-                    else { html += `<td style="text-align:center; color:#cbd5e1;">-</td>`; }
-                }
-                
-                akumulasiHadirSemua += totalHadir;
-                akumulasiIzinSemua += totalIzin;
-
-                html += `
-                    <td style="text-align:center; font-weight:700; background:#f8fafc; color:#047857;">${totalHadir}x</td>
-                    <td style="text-align:center; font-weight:700; background:#fff5f5; color:#b91c1c;">${totalIzin}x</td>
-                </tr>`;
-            });
+                if (hadir) { html += `<td style="text-align:center; color:#10b981; font-weight:700;">✔</td>`; totalHadir++; }
+                else if (izin) { html += `<td style="text-align:center; color:#eab308; font-weight:700; font-size:9px;">IZN</td>`; totalIzin++; }
+                else { html += `<td style="text-align:center; color:#cbd5e1;">-</td>`; }
+            }
+            
+            akumulasiHadirSemua += totalHadir;
+            akumulasiIzinSemua += totalIzin;
 
             html += `
-                <tr style="background: #f1f5f9; font-weight: 700;">
-                    <td colspan="15" style="text-align: right; padding: 8px;">TOTAL AKUMULASI KESELURUHAN:</td>
-                    <td style="text-align: center; color: #047857; background: #e6f4ea;">${akumulasiHadirSemua}x</td>
-                    <td style="text-align: center; color: #b91c1c; background: #fce8e6;">${akumulasiIzinSemua}x</td>
-                </tr>`;
-        }
+                <td style="text-align:center; font-weight:700; background:#f8fafc; color:#047857;">${totalHadir}x</td>
+                <td style="text-align:center; font-weight:700; background:#fff5f5; color:#b91c1c;">${totalIzin}x</td>
+            </tr>`;
+        });
 
-        html += `</tbody></table>`;
-        container.innerHTML = html;
-        areaCetak.style.display = "block";
+        html += `
+            <tr style="background: #f1f5f9; font-weight: 700;">
+                <td colspan="15" style="text-align: right; padding: 8px;">TOTAL AKUMULASI KESELURUHAN:</td>
+                <td style="text-align: center; color: #047857; background: #e6f4ea;">${akumulasiHadirSemua}x</td>
+                <td style="text-align: center; color: #b91c1c; background: #fce8e6;">${akumulasiIzinSemua}x</td>
+            </tr>`;
     }
+
+    html += `</tbody></table>`;
+    container.innerHTML = html;
+    areaCetak.style.display = "block";
+}
 
     function saringDapukanPengurusLokal(nilaiPilihan) {
         subDapukanPengurusTerpilih = nilaiPilihan.toUpperCase();
