@@ -346,7 +346,7 @@
             border-top: 1px solid var(--border-color);
             padding-top: 10px;
         }
-        .filter-btn-sub { padding: 8px 12px; font-size: 12px; font-weight: 600; border-radius: 6px; border: none; cursor: pointer; }
+        .filter-btn-sub padding: 8px 12px; font-size: 12px; font-weight: 600; border-radius: 6px; border: none; cursor: pointer; }
         .filter-btn-ok { background: var(--primary); color: white; }
         .filter-btn-clear { background: var(--border-color); color: var(--text-dark); }
 
@@ -534,7 +534,7 @@
 
     function bunyikanSuaraGagal() {
         try {
-            bukaKunciAudioKonstruktor();
+            bukaKunciAudioConstructur();
             let ctx = globalAudioCtx || new (window.AudioContext || window.webkitAudioContext)();
             let osc1 = ctx.createOscillator(); let gain1 = ctx.createGain();
             osc1.connect(gain1); gain1.connect(ctx.destination);
