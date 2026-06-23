@@ -169,11 +169,62 @@
         .select-wrapper:hover { background: var(--bg-main); border-color: var(--text-muted); }
         .select-wrapper:hover svg { stroke: var(--primary); transform: translateY(-1px); }
 
-        .toast-notif {
-            position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
-            background: #1e293b; color: #fff; padding: 12px 24px; border-radius: 30px; 
-            font-size: 14px; font-weight: 500; display: none; z-index: 10000; text-align: center;
-            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3);
+        /* KUSTOMISASI NOTIFIKASI POPUP BARU */
+        .scan-notif-modal {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: var(--bg-card);
+            border: 2px solid var(--border-color);
+            color: var(--text-dark);
+            padding: 20px 32px;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            z-index: 10005;
+            text-align: center;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.15), 0 10px 10px -5px rgba(0,0,0,0.1);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            min-width: 260px;
+        }
+        .scan-notif-modal.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) translateY(0);
+        }
+        .scan-notif-icon {
+            width: 56px;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+        .scan-notif-modal.success-status .scan-notif-icon {
+            background: rgba(16, 185, 129, 0.15);
+            color: #10b981;
+        }
+        .scan-notif-modal.error-status .scan-notif-icon {
+            background: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+        }
+        .scan-notif-title {
+            font-size: 18px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        .scan-notif-desc {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin: 0;
+            font-weight: 500;
         }
         
         #print-area { display: none; width: 100%; margin-top: 30px; }
@@ -304,7 +355,7 @@
         @media print {
             body { background: #fff!important; color: #000!important; display: block; padding: 0; margin: 0; position: static !important; overflow: auto !important; }
             .app-container { max-width: 100%; width: 100%; box-shadow: none!important; padding: 0; margin: 0; background: #fff!important; }
-            .top-bar, .section-title, #reader, .divider, .form-group, .btn-primary, .btn-warning, .action-row, .search-results, .toast-notif, .excel-filter-btn, .filter-dropdown-menu, .filter-backdrop-overlay { display: none!important; }
+            .top-bar, .section-title, #reader, .divider, .form-group, .btn-primary, .btn-warning, .action-row, .search-results, .scan-notif-modal, .excel-filter-btn, .filter-dropdown-menu, .filter-backdrop-overlay { display: none!important; }
             #print-area { display: block!important; }
             .print-table th { padding: 6px 8px !important; }
         }
@@ -402,7 +453,12 @@
     </div>
 </div>
 
-<div id="toast-box" class="toast-notif"></div>
+<!-- CONTAINER POPUP NOTIFIKASI KUSTOM ELEGAN -->
+<div id="scan-modal" class="scan-notif-modal">
+    <div id="scan-modal-icon" class="scan-notif-icon"></div>
+    <div id="scan-modal-title" class="scan-notif-title"></div>
+    <div id="scan-modal-desc" class="scan-notif-desc"></div>
+</div>
 
 <script>
     const SUPABASE_URL = "https://gttavghryoadthnvwthd.supabase.co"; 
@@ -424,34 +480,67 @@
     let filterSemuaTerpilih = {}; 
     let pengunciScanAktif = false; 
     let globalAudioCtx = null;
+    let toastTimeout = null;
 
     function bukaKunciAudioKonstruktor() {
         if (!globalAudioCtx) { globalAudioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
         if (globalAudioCtx.state === 'suspended') { globalAudioCtx.resume(); }
     }
 
+    // SUARA "TUT" (Frekuensi Tinggi - Sukses)
     function bunyikanSuaraSukses() {
         try {
             bukaKunciAudioKonstruktor();
             let ctx = globalAudioCtx || new (window.AudioContext || window.webkitAudioContext)();
             let oscillator = ctx.createOscillator(); let gainNode = ctx.createGain();
             oscillator.connect(gainNode); gainNode.connect(ctx.destination);
-            oscillator.type = 'sine'; oscillator.frequency.value = 880; 
-            gainNode.gain.setValueAtTime(0.15, ctx.currentTime); 
-            oscillator.start(); oscillator.stop(ctx.currentTime + 0.12); 
+            oscillator.type = 'sine'; oscillator.frequency.value = 1000; 
+            gainNode.gain.setValueAtTime(0.2, ctx.currentTime); 
+            oscillator.start(); oscillator.stop(ctx.currentTime + 0.1); 
         } catch (e) {}
     }
 
+    // SUARA "TOT" (Frekuensi Rendah Sawtooth - Gagal)
     function bunyikanSuaraGagal() {
         try {
             bukaKunciAudioKonstruktor();
             let ctx = globalAudioCtx || new (window.AudioContext || window.webkitAudioContext)();
             let osc1 = ctx.createOscillator(); let gain1 = ctx.createGain();
             osc1.connect(gain1); gain1.connect(ctx.destination);
-            osc1.type = 'sawtooth'; osc1.frequency.value = 140; 
-            gain1.gain.setValueAtTime(0.2, ctx.currentTime);
-            osc1.start(ctx.currentTime); osc1.stop(ctx.currentTime + 0.18);
+            osc1.type = 'sawtooth'; osc1.frequency.value = 180; 
+            gain1.gain.setValueAtTime(0.25, ctx.currentTime);
+            osc1.start(ctx.currentTime); osc1.stop(ctx.currentTime + 0.25);
         } catch (e) {}
+    }
+
+    // FUNGSI POPUP NOTIFIKASI KUSTOM (PENGGANTI ALERT BROWSER)
+    function tampilkanNotifKustom(status, judul, deskripsi) {
+        const modal = document.getElementById('scan-modal');
+        const iconContainer = document.getElementById('scan-modal-icon');
+        const titleContainer = document.getElementById('scan-modal-title');
+        const descContainer = document.getElementById('scan-modal-desc');
+
+        clearTimeout(toastTimeout);
+        modal.className = "scan-notif-modal"; 
+
+        if (status === 'success') {
+            modal.classList.add('success-status');
+            iconContainer.innerHTML = `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+            titleContainer.style.color = "#10b981";
+        } else {
+            modal.classList.add('error-status');
+            iconContainer.innerHTML = `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
+            titleContainer.style.color = "#ef4444";
+        }
+
+        titleContainer.innerText = judul;
+        descContainer.innerText = deskripsi;
+        
+        modal.classList.add('show');
+
+        toastTimeout = setTimeout(() => {
+            modal.classList.remove('show');
+        }, 2500);
     }
 
     function ubahTemaSistem() {
@@ -467,12 +556,6 @@
     function updateJudulCetak() {
         let agenda = document.getElementById('kegiatan').value.toUpperCase();
         document.getElementById('cetak-judul-kegiatan').innerText = agenda ? `Laporan Presensi: ${agenda}` : "Laporan Presensi Kegiatan";
-    }
-
-    function tampilkanToast(pesan) {
-        let box = document.getElementById('toast-box');
-        box.innerText = pesan; box.style.display = 'block';
-        setTimeout(() => { box.style.display = 'none'; }, 3000);
     }
 
     window.addEventListener('online', () => { netIndicator.innerText = "● Online"; netIndicator.className = "net-status online"; });
@@ -513,17 +596,17 @@
     let html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 220 });
     html5QrcodeScanner.render(onScanSuccess);
 
-    // ==========================================
-    // PERBAIKAN: PROTEKSI ABSEN GANDA (3 JAM)
-    // ==========================================
     async function prosesAbsensi(idGenerus, metode) {
         let namaKegiatan = document.getElementById('kegiatan').value.toUpperCase();
-        if(!namaKegiatan) { bunyikanSuaraGagal(); alert("Harap isi Nama Agenda terlebih dahulu!"); return; }
+        if(!namaKegiatan) { 
+            bunyikanSuaraGagal(); 
+            tampilkanNotifKustom('error', 'Gagal Scan', 'Harap isi Nama Agenda terlebih dahulu!'); 
+            return; 
+        }
         
         let profil = semuaDataGenerus.find(g => g.id_generus == idGenerus) || { nama_lengkap: "ID: " + idGenerus };
         
         try {
-            // 1. Ambil data log absensi terakhir untuk orang ini di kegiatan yang sama
             let { data: logTerakhir, error: errorCek } = await _supabase
                 .from('absensi_kegiatan')
                 .select('waktu_absen')
@@ -534,23 +617,19 @@
 
             if (errorCek) throw errorCek;
 
-            // 2. Jika ada riwayat absen sebelumnya, periksa selisih waktunya
             if (logTerakhir && logTerakhir.length > 0) {
                 let waktuAbsenTerakhir = new Date(logTerakhir[0].waktu_absen);
                 let waktuSekarang = new Date();
-                
-                // Hitung selisih waktu dalam satuan jam
                 let selisihJam = (waktuSekarang - waktuAbsenTerakhir) / (1000 * 60 * 60);
 
                 if (selisihJam < 3) {
-                    bunyikanSuaraGagal(); // Bunyi tetot (gagal)
+                    bunyikanSuaraGagal(); 
                     let sisaMenit = Math.ceil((3 - selisihJam) * 60);
-                    alert(`Gagal! ${profil.nama_lengkap} sudah melakukan presensi pada agenda ini.\nHarap tunggu ${sisaMenit} menit lagi untuk dapat melakukan scan ulang.`);
-                    return; // Menghentikan proses penyimpanan data baru
+                    tampilkanNotifKustom('error', 'Sudah Absen', `${profil.nama_lengkap} kembali ${sisaMenit} menit lagi.`);
+                    return; 
                 }
             }
 
-            // 3. Jika aman (belum pernah absen / sudah melewati 3 jam), simpan ke database
             const dataAbsen = { 
                 nama_kegiatan: namaKegiatan.trim(), 
                 id_generus: idGenerus, 
@@ -561,7 +640,7 @@
             let { error: errorInsert } = await _supabase.from('absensi_kegiatan').insert([dataAbsen]);
             if (!errorInsert) { 
                 bunyikanSuaraSukses(); 
-                tampilkanToast(`✓ Sukses mencatat data ${profil.nama_lengkap}`); 
+                tampilkanNotifKustom('success', 'Scan Berhasil', profil.nama_lengkap);
             } else {
                 throw errorInsert;
             }
@@ -569,12 +648,12 @@
         } catch (err) {
             bunyikanSuaraGagal();
             console.error(err);
-            alert("Terjadi kesalahan sistem saat memproses absensi.");
+            tampilkanNotifKustom('error', 'Sistem Error', 'Terjadi kesalahan pemrosesan database.');
         }
     }
 
-    function inputManualKehadiran() { if(!selectedIdInput.value) return alert("Pilih nama!"); prosesAbsensi(selectedIdInput.value, "Manual"); searchInput.value=''; selectedIdInput.value=''; }
-    function inputManualIziin() { if(!selectedIdInput.value) return alert("Pilih nama!"); prosesAbsensi(selectedIdInput.value, "Izin"); searchInput.value=''; selectedIdInput.value=''; }
+    function inputManualKehadiran() { if(!selectedIdInput.value) return tampilkanNotifKustom('error', 'Gagal', 'Pilih nama terlebih dahulu!'); prosesAbsensi(selectedIdInput.value, "Manual"); searchInput.value=''; selectedIdInput.value=''; }
+    function inputManualIziin() { if(!selectedIdInput.value) return tampilkanNotifKustom('error', 'Gagal', 'Pilih nama terlebih dahulu!'); prosesAbsensi(selectedIdInput.value, "Izin"); searchInput.value=''; selectedIdInput.value=''; }
 
     async function dapatkanDataGabungan(namaKegiatan) {
         let { data: logAbsen, error } = await _supabase.from('absensi_kegiatan').select('*').eq('nama_kegiatan', namaKegiatan.toUpperCase());
@@ -595,11 +674,10 @@
 
     async function tarikDanCetakLaporan(jenis, langsungPrint = false) {
         let namaKegiatan = document.getElementById('kegiatan').value.toUpperCase();
-        if(!namaKegiatan) return alert("Harap masukkan Nama Agenda!");
+        if(!namaKegiatan) return tampilkanNotifKustom('error', 'Gagal', 'Harap masukkan Nama Agenda!');
         
-        tampilkanToast(`🔄 Memuat data rekap ${jenis}...`);
         dataAktifRekap = await dapatkanDataGabungan(namaKegiatan);
-        if(dataAktifRekap.length === 0) return alert("Tidak ada data presensi pada agenda ini.");
+        if(dataAktifRekap.length === 0) return tampilkanNotifKustom('error', 'Kosong', 'Tidak ada data presensi pada agenda ini.');
         
         let container = document.getElementById('print-table-container');
         let resumeContainer = document.getElementById('resume-kehadiran-container');
@@ -841,11 +919,10 @@
 
     async function tarikRekapTahunanMatriks(statusPilihan) {
         let namaKegiatan = document.getElementById('kegiatan').value.toUpperCase();
-        if(!namaKegiatan) { document.getElementById('tahunan-dropdown').value = ""; return alert("Harap isi Nama Agenda terlebih dahulu!"); }
+        if(!namaKegiatan) { document.getElementById('tahunan-dropdown').value = ""; return tampilkanNotifKustom('error', 'Gagal', 'Harap isi Nama Agenda terlebih dahulu!'); }
         
-        tampilkanToast(`🔄 Memproses matriks tahunan untuk ${statusPilihan}...`);
         let { data: logAbsen, error } = await _supabase.from('absensi_kegiatan').select('*').eq('nama_kegiatan', namaKegiatan.trim().toUpperCase());
-        if (error || !logAbsen) return alert("Gagal memuat data.");
+        if (error || !logAbsen) return tampilkanNotifKustom('error', 'Gagal', 'Gagal memuat data log presensi.');
 
         dataMentahTahunanLog = logAbsen;
         dataMasterTahunanOrang = semuaDataGenerus.filter(g => g.status && g.status.toUpperCase() === statusPilihan.toUpperCase());
@@ -999,7 +1076,7 @@
     }
 
     async function eksporKeExcel() {
-        let namaKegiatan = document.getElementById('kegiatan').value.toUpperCase(); if(!namaKegiatan) return alert("Isi Agenda!");
+        let namaKegiatan = document.getElementById('kegiatan').value.toUpperCase(); if(!namaKegiatan) return tampilkanNotifKustom('error', 'Gagal', 'Isi nama agenda!');
         let dataMurni = await dapatkanDataGabungan(namaKegiatan);
         let csv = "No,Nama Lengkap,Kelompok,Desa,Status,Waktu\n";
         dataMurni.forEach((d, i) => { csv += `${i+1},"${d.name}","${d.kelompok}","${d.desa}","${d.status}","${d.waktu}"\n`; });
@@ -1008,7 +1085,7 @@
     }
 
     async function sinkronisasiManual() {
-        tampilkanToast("☁️ Sistem tersambung secara otomatis ke Cloud.");
+        tampilkanNotifKustom('success', 'Sinkronisasi', 'Sistem tersambung secara otomatis ke Cloud.');
     }
 </script>
 </body>
