@@ -174,7 +174,6 @@
         .select-wrapper:hover { background: var(--bg-main); border-color: var(--text-muted); }
         .select-wrapper:hover svg { stroke: var(--primary); transform: translateY(-1px); }
 
-        /* Desain Border Elegan & Simpel untuk Elemen Dropdown Kustom */
         .custom-dropdown-border {
             border: 1.5px solid var(--primary) !important;
             border-radius: 12px;
@@ -513,6 +512,9 @@
     let pengunciScanAktif = false; 
     let globalAudioCtx = null;
     let toastTimeout = null;
+
+    // Tambahan state untuk menyimpan pilihan sub-dapukan pengurus secara lokal
+    let subDapukanPengurusTerpilih = "SEMUA";
 
     function bukaKunciAudioKonstruktor() {
         if (!globalAudioCtx) { globalAudioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
@@ -973,7 +975,10 @@
 
         dataMentahTahunanLog = logAbsen;
         dataMasterTahunanOrang = semuaDataGenerus.filter(g => g.status && g.status.toUpperCase() === statusPilihan.toUpperCase());
+        
+        // Reset sub filter setiap ganti kategori utama
         filterTerpilih = {}; 
+        subDapukanPengurusTerpilih = "SEMUA";
 
         document.getElementById('cetak-judul-kegiatan').innerText = `REKAP MATRIKS TAHUNAN: ${namaKegiatan}`;
         document.getElementById('cetak-waktu').innerText = `Kategori: ${statusPilihan} | Tahun: ${new Date().getFullYear()}`;
@@ -982,13 +987,63 @@
         renderTabelMatriksTahunanSistem();
     }
 
+    /* =========================================================================
+       TAHAP 2: LOGIKA KONDISIONAL HEADER DINAMIS (KMM, PPG, DAERAH, PONDOK)
+       ========================================================================= */
     function renderTabelMatriksTahunanSistem() {
         let container = document.getElementById('print-table-container');
         let areaCetak = document.getElementById('print-area');
         
+        // Baca status aktif yang sedang dipilih (GENERUS / PENGURUS / MT)
+        let statusKategoriAktif = "";
+        if (dataMasterTahunanOrang.length > 0 && dataMasterTahunanOrang[0].status) {
+            statusKategoriAktif = dataMasterTahunanOrang[0].status.toUpperCase();
+        }
+
         let dataOrangTerfilter = [...dataMasterTahunanOrang];
-        if (filterTerpilih['kelompok'] && filterTerpilih['kelompok'].length > 0) {
-            dataOrangTerfilter = dataOrangTerfilter.filter(o => filterTerpilih['kelompok'].includes((o.kelompok || "-").toUpperCase()));
+        let headerDinamisKolom3Html = "";
+
+        // TAHAP 2 IMPLEMENTASI: Cek Jika GENERUS vs PENGURUS
+        if (statusKategoriAktif === "PENGURUS") {
+            // Saring data lokal berdasarkan input dari dropdown inline kolom "usia/dapukan" (usia_dapukan)
+            if (subDapukanPengurusTerpilih !== "SEMUA") {
+                dataOrangTerfilter = dataOrangTerfilter.filter(o => o.usia_dapukan && o.usia_dapukan.toUpperCase() === subDapukanPengurusTerpilih);
+            }
+
+            // Render Header kolom 3 berupa Dropdown Select Fleksibel Langsung
+            headerDinamisKolom3Html = `
+                <th style="min-width:130px; padding: 4px;">
+                    <select id="filter-dapukan-pengurus-inline" onchange="saringDapukanPengurusLokal(this.value)" style="width:100%; padding:6px; border-radius:6px; font-family:inherit; font-size:11px; font-weight:700; background: var(--bg-card); color: var(--text-dark); border: 1px solid var(--border-color);">
+                        <option value="SEMUA" ${subDapukanPengurusTerpilih === 'SEMUA' ? 'selected' : ''}>DAPUKAN: SEMUA</option>
+                        <option value="KMM" ${subDapukanPengurusTerpilih === 'KMM' ? 'selected' : ''}>KMM</option>
+                        <option value="PPG" ${subDapukanPengurusTerpilih === 'PPG' ? 'selected' : ''}>PPG</option>
+                        <option value="DAERAH" ${subDapukanPengurusTerpilih === 'DAERAH' ? 'selected' : ''}>DAERAH</option>
+                        <option value="PONDOK" ${subDapukanPengurusTerpilih === 'PONDOK' ? 'selected' : ''}>PONDOK</option>
+                    </select>
+                </th>`;
+        } else {
+            // Jika GENERUS atau MT, gunakan filter "Kelompok" standar beserta logo filter popup kustom
+            if (filterTerpilih['kelompok'] && filterTerpilih['kelompok'].length > 0) {
+                dataOrangTerfilter = dataOrangTerfilter.filter(o => filterTerpilih['kelompok'].includes((o.kelompok || "-").toUpperCase()));
+            }
+
+            headerDinamisKolom3Html = `
+                <th style="min-width:110px;">
+                    <div class="th-filter-container">
+                        <span>Kelompok</span>
+                        <button class="excel-filter-btn ${filterTerpilih['kelompok'] ? 'active' : ''}" onclick="toggleDropdownKelompok(event)">
+                            <svg viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+                        </button>
+                        <div class="filter-dropdown-menu" id="dropdown-filter-kelompok" onclick="event.stopPropagation()">
+                            <input type="text" class="filter-search-box" placeholder="Cari Kelompok..." oninput="cariOpsiKelompok(this.value)">
+                            <div class="filter-options-list" id="list-opsi-kelompok"></div>
+                            <div class="filter-action-buttons">
+                                <button class="filter-btn-sub filter-btn-clear" onclick="bersihkanFilterKelompok()">Clear</button>
+                                <button class="filter-btn-sub filter-btn-ok" onclick="terapkanFilterKelompok()">OK</button>
+                            </div>
+                        </div>
+                    </div>
+                </th>`;
         }
 
         let html = `<table class="print-table">
@@ -996,22 +1051,7 @@
                         <tr>
                             <th style="width:30px; text-align:center;">No</th>
                             <th>Nama Lengkap</th>
-                            <th style="min-width:110px;">
-                                <div class="th-filter-container">
-                                    <span>Kelompok</span>
-                                    <button class="excel-filter-btn ${filterTerpilih['kelompok'] ? 'active' : ''}" onclick="toggleDropdownKelompok(event)">
-                                        <svg viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
-                                    </button>
-                                    <div class="filter-dropdown-menu" id="dropdown-filter-kelompok" onclick="event.stopPropagation()">
-                                        <input type="text" class="filter-search-box" placeholder="Cari Kelompok..." oninput="cariOpsiKelompok(this.value)">
-                                        <div class="filter-options-list" id="list-opsi-kelompok"></div>
-                                        <div class="filter-action-buttons">
-                                            <button class="filter-btn-sub filter-btn-clear" onclick="bersihkanFilterKelompok()">Clear</button>
-                                            <button class="filter-btn-sub filter-btn-ok" onclick="terapkanFilterKelompok()">OK</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </th>
+                            ${headerDinamisKolom3Html}
                             <th style="text-align:center; width:20px;">Jan</th><th style="text-align:center; width:20px;">Feb</th>
                             <th style="text-align:center; width:20px;">Mar</th><th style="text-align:center; width:20px;">Apr</th>
                             <th style="text-align:center; width:20px;">Mei</th><th style="text-align:center; width:20px;">Jun</th>
@@ -1025,17 +1065,21 @@
                     <tbody>`;
 
         if(dataOrangTerfilter.length === 0) {
-            html += `<tr><td colspan="17" style="text-align:center; color:#ef4444; font-weight:600; padding:20px;">Tidak ada data yang cocok dengan filter kelompok terpilih.</td></tr>`;
+            html += `<tr><td colspan="17" style="text-align:center; color:#ef4444; font-weight:600; padding:20px;">Tidak ada data anggota yang cocok.</td></tr>`;
         } else {
             let akumulasiHadirSemua = 0;
             let akumulasiIzinSemua = 0;
 
             dataOrangTerfilter.sort((a,b) => (a.nama_lengkap || '').localeCompare(b.nama_lengkap)).forEach((orang, idx) => {
                 let logOrang = dataMentahTahunanLog.filter(l => String(l.id_generus) === String(orang.id_generus));
+                
+                // Tampilkan info kelompok/usia_dapukan di kolom ke-3 sesuai statusnya
+                let kolom3Isi = (statusKategoriAktif === "PENGURUS") ? (orang.usia_dapukan || "-").toUpperCase() : (orang.kelompok || "-").toUpperCase();
+
                 html += `<tr>
                             <td style="text-align:center;">${idx + 1}</td>
                             <td style="font-weight:600;">${orang.nama_lengkap}</td>
-                            <td>${(orang.kelompok || "-").toUpperCase()}</td>`;
+                            <td>${kolom3Isi}</td>`;
                 
                 let totalHadir = 0;
                 let totalIzin = 0;
@@ -1068,12 +1112,18 @@
         html += `</tbody></table>`;
         container.innerHTML = html;
         areaCetak.style.display = "block";
-        document.getElementById('tahunan-dropdown').value = "";
+    }
+
+    // Fungsi Trigger saat dropdown inline Pengurus diganti nilainya
+    function saringDapukanPengurusLokal(nilaiPilihan) {
+        subDapukanPengurusTerpilih = nilaiPilihan.toUpperCase();
+        renderTabelMatriksTahunanSistem();
     }
 
     function toggleDropdownKelompok(event) {
         event.stopPropagation();
         let menu = document.getElementById('dropdown-filter-kelompok');
+        if(!menu) return;
         let terbukanNow = (menu.style.display === 'block');
         tutupSemuaDropdownAman();
         if(!terbukanNow) {
@@ -1117,8 +1167,7 @@
 
     function eksekusiPrintKhusus(pilihan) {
         if(!pilihan) return;
-        if(pilihan === 'tahunan') { window.print(); } 
-        else { tarikDanCetakLaporan(pilihan, true); }
+        if(pilihan === 'tahunan') { window.print(); } \n        else { tarikDanCetakLaporan(pilihan, true); }
         document.getElementById('print-dropdown').value = "";
     }
 
