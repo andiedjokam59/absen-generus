@@ -147,7 +147,7 @@
         .search-item:hover { background: var(--bg-main); color: var(--primary); }
 
         .action-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; margin-top: 10px; position: relative; }
-        .btn-icon, .select-wrapper { 
+        .btn-icon, .select-wrapper, .btn-tahunan-direct { 
             background: transparent; border: 1px solid var(--border-color); 
             color: var(--text-dark); padding: 10px 0; border-radius: 12px; 
             cursor: pointer; display: flex; flex-direction: column; align-items: center; 
@@ -155,16 +155,27 @@
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); width: 100%; box-sizing: border-box;
         }
         
-        .btn-icon svg { 
+        .btn-icon svg, .btn-tahunan-direct svg { 
             width: 16px; height: 16px; 
             fill: none; stroke: var(--icon-color); 
             stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
             transition: all 0.2s ease;
         }
         
-        .btn-icon:hover { background: var(--bg-main); border-color: var(--text-muted); }
-        .btn-icon:hover svg { stroke: var(--primary); transform: translateY(-1px); }
-        .btn-icon:active { transform: scale(0.95); }
+        .btn-icon:hover, .btn-tahunan-direct:hover { background: var(--bg-main); border-color: var(--text-muted); }
+        .btn-icon:hover svg, .btn-tahunan-direct:hover svg { stroke: var(--primary); transform: translateY(-1px); }
+        .btn-icon:active, .btn-tahunan-direct:active { transform: scale(0.95); }
+
+        .btn-tahunan-direct {
+            grid-column: span 6;
+            border-color: var(--accent);
+            margin-top: 8px;
+            padding: 12px 0;
+            flex-direction: row;
+            gap: 8px;
+            font-size: 11px;
+        }
+        .btn-tahunan-direct:hover svg { stroke: var(--accent); }
 
         .select-wrapper { position: relative; padding: 0; }
         .select-wrapper select {
@@ -447,17 +458,11 @@
             Excel
         </button>
 
-        <div class="select-wrapper" title="Rekap Tahunan" style="grid-column: span 6; border-color: var(--accent); margin-top: 8px; padding: 6px 0;">
-            <div style="display:flex; align-items:center; gap:8px; justify-content:center;">
-                <svg viewBox="0 0 24 24" style="stroke: var(--accent); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; width:18px; height:18px;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                <span id="label-tahunan-dinamis" style="color: var(--accent); font-size:11px; font-weight:700; text-transform: uppercase;">Proses Rekap Kegiatan Tahunan</span>
-            </div>
-            <select id="tahunan-dropdown" onchange="tarikRekapTahunanMatriks(this.value)">
-                <option value="GENERUS">Khusus Anggota GENERUS</option>
-                <option value="PENGURUS">Khusus Anggota PENGURUS</option>
-                <option value="MT">Khusus Anggota MT</option>
-            </select>
-        </div>
+        <!-- Diubah Menjadi Tombol Klik Langsung Tanpa Opsi Dropdown Kategori Lagi -->
+        <button class="btn-tahunan-direct" onclick="tarikRekapTahunanMatriks()" title="Rekap Tahunan">
+            <svg viewBox="0 0 24 24" style="stroke: var(--accent); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+            <span id="label-tahunan-dinamis" style="color: var(--accent); font-weight:700; text-transform: uppercase;">Proses Rekap Kegiatan Tahunan</span>
+        </button>
     </div>
 
     <div id="print-area">
@@ -944,22 +949,23 @@
         let cbs = document.querySelectorAll(`#list-semua-${kolom} input[type="checkbox"]`);
         let terpilih = []; cbs.forEach(cb => { if(cb.checked) terpilih.push(cb.value); });
         if(terpilih.length > 0) filterSemuaTerpilih[kolom] = terpilih; else delete filterSemuaTerpilih[kolom];
-        tutupSemuaDropdownAman(); renderTabelRekapSemuaSistem();
+        tutupSemuaDropdownAman(); renderTabelSemuaSistem();
     }
 
-    async function tarikRekapTahunanMatriks(statusPilihan) {
+    // Fungsi Diperbarui: Klik langsung memuat rekap semua orang yang terdaftar di database utama
+    async function tarikRekapTahunanMatriks() {
         let namaKegiatan = document.getElementById('kegiatan').value.toUpperCase();
-        if(!namaKegiatan) { document.getElementById('tahunan-dropdown').value = "GENERUS"; return tampilkanNotifKustom('error', 'Gagal', 'Harap isi Nama Agenda terlebih dahulu!'); }
+        if(!namaKegiatan) { return tampilkanNotifKustom('error', 'Gagal', 'Harap isi Nama Agenda terlebih dahulu!'); }
         
         let { data: logAbsen, error } = await _supabase.from('absensi_kegiatan').select('*').eq('nama_kegiatan', namaKegiatan.trim().toUpperCase());
         if (error || !logAbsen) return tampilkanNotifKustom('error', 'Gagal', 'Gagal memuat data log presensi.');
 
         dataMentahTahunanLog = logAbsen;
-        dataMasterTahunanOrang = semuaDataGenerus.filter(g => g.status && g.status.toUpperCase() === statusPilihan.toUpperCase());
+        dataMasterTahunanOrang = semuaDataGenerus; // Memuat semua jajaran anggota sekaligus
         filterTerpilih = {}; 
 
         document.getElementById('cetak-judul-kegiatan').innerText = `REKAP KEGIATAN TAHUNAN: ${namaKegiatan}`;
-        document.getElementById('cetak-waktu').innerText = `Kategori: ${statusPilihan} | Tahun: ${new Date().getFullYear()}`;
+        document.getElementById('cetak-waktu').innerText = `Tahun Berjalan: ${new Date().getFullYear()}`;
         document.getElementById('resume-kehadiran-container').innerHTML = ""; 
 
         renderTabelMatriksTahunanSistem();
