@@ -88,7 +88,12 @@
         .form-group { margin-bottom: 20px; position: relative; }
         label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-dark); }
         
-        input, select, .btn-primary, .btn-warning { 
+        .agenda-input-wrapper {
+            display: flex;
+            gap: 8px;
+        }
+
+        input, .btn-primary, .btn-warning { 
             width: 100%; padding: 14px 16px; 
             border: 1px solid var(--border-color); background: var(--bg-card);
             color: var(--text-dark); border-radius: 12px; 
@@ -98,7 +103,7 @@
             user-select: text !important;
             -webkit-tap-highlight-color: transparent;
         }
-        input:focus, select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(4, 120, 87, 0.15); }
+        input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(4, 120, 87, 0.15); }
 
         #kegiatan { text-transform: uppercase; }
 
@@ -112,11 +117,18 @@
         
         #reader { width: 100%; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: none !important; background: var(--bg-card); }
         #reader button {
-            background-color: var(--primary) !important; color: #ffffff !important; border: none !important;
-            padding: 12px 20px !important; font-size: 14px !important; font-weight: 600 !important;
-            border-radius: 12px !important; cursor: pointer !important;
+            background-color: var(--primary) !important;
+            color: #ffffff !important;
+            border: none !important;
+            padding: 12px 20px !important;
+            font-size: 14px !important;
+            font-weight: 600 !important;
+            border-radius: 12px !important;
+            cursor: pointer !important;
             transition: background-color 0.2s ease, transform 0.1s ease !important;
-            box-shadow: 0 4px 12px rgba(4, 120, 87, 0.15) !important; margin: 10px 0 !important; font-family: inherit !important;
+            box-shadow: 0 4px 12px rgba(4, 120, 87, 0.15) !important;
+            margin: 10px 0 !important;
+            font-family: inherit !important;
         }
         #reader button:hover { background-color: var(--primary-hover) !important; }
         #reader button:active { transform: scale(0.98) !important; }
@@ -128,7 +140,8 @@
             position: absolute; width: 100%; background: var(--bg-card); border: 1px solid var(--border-color); 
             max-height: 220px; overflow-y: auto !important; z-index: 999; border-radius: 12px; margin-top: 2px;
             box-shadow: 0 10px 15px -3px var(--shadow); display: none;
-            -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;
         }
         .search-item { padding: 12px 16px; cursor: pointer; border-bottom: 1px solid var(--border-color); font-size: 14px; min-height: 44px; box-sizing: border-box; }
         .search-item:hover { background: var(--bg-main); color: var(--primary); }
@@ -143,8 +156,10 @@
         }
         
         .btn-icon svg { 
-            width: 16px; height: 16px; fill: none; stroke: var(--icon-color); 
-            stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: all 0.2s ease;
+            width: 16px; height: 16px; 
+            fill: none; stroke: var(--icon-color); 
+            stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+            transition: all 0.2s ease;
         }
         
         .btn-icon:hover { background: var(--bg-main); border-color: var(--text-muted); }
@@ -153,16 +168,67 @@
 
         .select-wrapper { position: relative; padding: 0; }
         .select-wrapper select {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; font-family: inherit;
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            opacity: 0; cursor: pointer; font-family: inherit;
         }
         .select-wrapper:hover { background: var(--bg-main); border-color: var(--text-muted); }
         .select-wrapper:hover svg { stroke: var(--primary); transform: translateY(-1px); }
 
-        .toast-notif {
-            position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
-            background: #1e293b; color: #fff; padding: 12px 24px; border-radius: 30px; 
-            font-size: 14px; font-weight: 500; display: none; z-index: 10000; text-align: center;
-            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3);
+        .scan-notif-modal {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: var(--bg-card);
+            border: 2px solid var(--border-color);
+            color: var(--text-dark);
+            padding: 20px 32px;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            z-index: 10005;
+            text-align: center;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.15), 0 10px 10px -5px rgba(0,0,0,0.1);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            min-width: 260px;
+        }
+        .scan-notif-modal.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) translateY(0);
+        }
+        .scan-notif-icon {
+            width: 56px;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+        .scan-notif-modal.success-status .scan-notif-icon {
+            background: rgba(16, 185, 129, 0.15);
+            color: #10b981;
+        }
+        .scan-notif-modal.error-status .scan-notif-icon {
+            background: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+        }
+        .scan-notif-title {
+            font-size: 18px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        .scan-notif-desc {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin: 0;
+            font-weight: 500;
         }
         
         #print-area { display: none; width: 100%; margin-top: 30px; }
@@ -173,56 +239,127 @@
         .print-table th, .print-table td { border: 1px solid #94a3b8; padding: 6px 8px; text-align: left; }
         .print-table th { background: #f1f5f9; color: #0f172a; font-weight: 600; position: relative; }
 
-        .th-filter-container { display: flex; align-items: center; justify-content: space-between; gap: 4px; }
+        .th-filter-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 4px;
+        }
         .excel-filter-btn {
-            background: none; border: none; padding: 4px; cursor: pointer; display: flex; align-items: center;
-            justify-content: center; border-radius: 4px; min-width: 20px; min-height: 20px;
+            background: none;
+            border: none;
+            padding: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            min-width: 20px;
+            min-height: 20px;
         }
         .excel-filter-btn:hover { background: rgba(0,0,0,0.1); }
         [data-theme="dark"] .excel-filter-btn:hover { background: rgba(255,255,255,0.1); }
         .excel-filter-btn svg { width: 12px; height: 12px; fill: var(--icon-color); }
         .excel-filter-btn.active svg { fill: var(--primary); }
 
-        .filter-backdrop-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: transparent; z-index: 1999; }
+        .filter-backdrop-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: transparent;
+            z-index: 1999;
+        }
+        
         .filter-dropdown-menu {
-            display: none; position: absolute; top: 100%; left: 0; background: var(--bg-card); border: 1px solid var(--border-color);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2); border-radius: 12px; z-index: 2000; min-width: 180px; max-height: 280px;
-            overflow: hidden; padding: 12px; box-sizing: border-box; font-weight: normal; text-transform: none; overscroll-behavior: contain !important;
+            display: none;
+            position: absolute;
+            top: 100%; left: 0;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            border-radius: 12px;
+            z-index: 2000;
+            min-width: 180px;
+            max-height: 280px;
+            overflow: hidden;
+            padding: 12px;
+            box-sizing: border-box;
+            font-weight: normal;
+            text-transform: none;
+            overscroll-behavior: contain !important;
         }
         
         .filter-search-box {
-            width: 100%; padding: 8px 10px; font-size: 13px; border: 1px solid var(--border-color); border-radius: 6px; margin-bottom: 8px; box-sizing: border-box; background: var(--bg-main); color: var(--text-dark);
+            width: 100%;
+            padding: 8px 10px;
+            font-size: 13px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            margin-bottom: 8px;
+            box-sizing: border-box;
+            background: var(--bg-main);
+            color: var(--text-dark);
         }
         
         .filter-options-list {
-            display: flex; flex-direction: column; gap: 4px; max-height: 140px; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-right: 4px; overscroll-behavior: contain !important;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            max-height: 140px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding-right: 4px;
+            overscroll-behavior: contain !important;
         }
         
         .filter-option-item {
-            display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; padding: 6px 4px; border-radius: 6px; min-height: 32px; box-sizing: border-box;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            cursor: pointer;
+            padding: 6px 4px;
+            border-radius: 6px;
+            min-height: 32px;
+            box-sizing: border-box;
         }
         .filter-option-item:hover { background: var(--bg-main); }
         .filter-option-item input { width: 18px !important; height: 18px !important; margin: 0; padding: 0; cursor: pointer; }
         
-        .filter-action-buttons { display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px; border-top: 1px solid var(--border-color); padding-top: 10px; }
+        .filter-action-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-top: 10px;
+            border-top: 1px solid var(--border-color);
+            padding-top: 10px;
+        }
         .filter-btn-sub { padding: 8px 12px; font-size: 12px; font-weight: 600; border-radius: 6px; border: none; cursor: pointer; }
         .filter-btn-ok { background: var(--primary); color: white; }
         .filter-btn-clear { background: var(--border-color); color: var(--text-dark); }
 
         .resume-kehadiran-box {
-            background: var(--bg-main); border: 1px solid var(--border-color); padding: 12px 16px; border-radius: 12px; margin-bottom: 15px; font-size: 12px; font-weight: 600; display: flex; flex-direction: column; gap: 6px; color: var(--text-dark);
+            background: var(--bg-main);
+            border: 1px solid var(--border-color);
+            padding: 12px 16px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            font-size: 12px;
+            font-weight: 600;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            color: var(--text-dark);
         }
-        .resume-row { display: flex; gap: 16px; }
-
-        /* BOX TAHUN SEKARANG DI LETAKKAN DI BAWAH SESUAI REQUEST */
-        .box-tahun-bawah {
-            display: flex; align-items: center; justify-content: space-between; background: var(--bg-main); border: 1px dashed var(--border-color); padding: 8px 16px; border-radius: 12px; margin-top: 14px; margin-bottom: 6px;
+        .resume-row {
+            display: flex;
+            gap: 16px;
         }
 
         @media print {
             body { background: #fff!important; color: #000!important; display: block; padding: 0; margin: 0; position: static !important; overflow: auto !important; }
             .app-container { max-width: 100%; width: 100%; box-shadow: none!important; padding: 0; margin: 0; background: #fff!important; }
-            .top-bar, .section-title, #reader, .divider, .form-group, .btn-primary, .btn-warning, .action-row, .search-results, .toast-notif, .excel-filter-btn, .filter-dropdown-menu, .filter-backdrop-overlay, .box-tahun-bawah { display: none!important; }
+            .top-bar, .section-title, #reader, .divider, .form-group, .btn-primary, .btn-warning, .action-row, .search-results, .scan-notif-modal, .excel-filter-btn, .filter-dropdown-menu, .filter-backdrop-overlay { display: none!important; }
             #print-area { display: block!important; }
             .print-table th { padding: 6px 8px !important; }
         }
@@ -246,7 +383,19 @@
     
     <div class="form-group">
         <label for="kegiatan">Nama Agenda Pertemuan</label>
-        <input type="text" id="kegiatan" placeholder="Masukkan nama kegiatan..." oninput="this.value = this.value.toUpperCase(); updateJudulCetak();">
+        <div class="agenda-input-wrapper">
+            <input type="text" id="kegiatan" placeholder="Ketik manual / Pilih template..." oninput="this.value = this.value.toUpperCase(); updateJudulCetak();">
+            <div class="select-wrapper" style="width: 100px; padding: 0; border-radius: 12px; height: 50px;">
+                <span style="font-size:11px; color:var(--primary); font-weight:700; display:flex; align-items:center; justify-content:center; height:100%;">📋 ROUTINE</span>
+                <select id="template-agenda-select" onchange="pilihTemplateAgenda(this.value)" style="height:100%;">
+                    <option value="" disabled selected hidden>Pilih</option>
+                    <option value="PENGAJIAN MUDA-MUDI DAERAH">1. PENGAJIAN MUDA-MUDI DAERAH</option>
+                    <option value="MUSYAWARAH KMM DAERAH">2. MUSYAWARAH KMM DAERAH</option>
+                    <option value="PENEROBOSAN KMM DAERAH">3. PENEROBOSAN KMM DAERAH</option>
+                    <option value="BERSIH">-- Tulis Manual Bebas --</option>
+                </select>
+            </div>
+        </div>
     </div>
 
     <div class="section-title">OPSI 1: SCAN BARCODE</div>
@@ -265,27 +414,22 @@
     <button class="btn-warning" onclick="inputManualIziin()">Izin</button>
 
     <div class="section-title">Menu Rekap & Penyimpanan</div>
-    
-    <!-- PERUBAHAN 3: PILIHAN TAHUN SEKARANG DI BAWAH, MINIMALIS HANYA ANGKA -->
-    <div class="box-tahun-bawah">
-        <span style="font-size:12px; font-weight:600; color:var(--text-muted);">TAHUN REKAP:</span>
-        <select id="tahun-rekap-select" style="padding: 6px 12px; font-size:13px; border-radius:8px; width:100px; height:auto; margin:0;">
-            <!-- Opsi Angka Tahun Diisi Otomatis -->
-        </select>
-    </div>
-
     <div class="action-row">
         <button class="btn-icon" onclick="tarikDanCetakLaporan('semua')" title="Preview Semua">
-            <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>Semua
+            <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            Semua
         </button>
         <button class="btn-icon" onclick="tarikDanCetakLaporan('desa')" title="Rekap Desa">
-            <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>Desa
+            <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+            Desa
         </button>
         <button class="btn-icon" onclick="tarikDanCetakLaporan('kelompok')" title="Rekap Kelompok">
-            <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>Klp
+            <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+            Klp
         </button>
         <button class="btn-icon" onclick="sinkronisasiManual()" title="Simpan Cloud">
-            <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>Simpan
+            <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+            Simpan
         </button>
         <div class="select-wrapper" title="Cetak File">
             <svg viewBox="0 0 24 24" style="width:16px; height:16px; fill:none; stroke:var(--icon-color); stroke-width:2; stroke-linecap:round; stroke-linejoin:round; transition:all 0.2s ease;"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
@@ -299,14 +443,22 @@
             </select>
         </div>
         <button class="btn-icon" onclick="eksporKeExcel()" title="Ekspor Excel">
-            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>Excel
+            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+            Excel
         </button>
 
-        <!-- PERUBAHAN 2: TOMBOL REKAP SEKARANG MURNI JADI TOMBOL PEMROSESAN TANPA DROPDOWN ANGGOTA MANUAL -->
-        <button onclick="tarikRekapTahunanMatriks()" style="grid-column: span 6; border: 1px solid var(--accent); background:transparent; margin-top: 8px; padding: 12px 0; border-radius:12px; display:flex; align-items:center; gap:8px; justify-content:center; cursor:pointer;">
-            <svg viewBox="0 0 24 24" style="stroke: var(--accent); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; width:18px; height:18px;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-            <span style="color: var(--accent); font-size:12px; font-weight:700; text-transform: uppercase;">Mulai Proses Rekap Kegiatan Tahunan</span>
-        </button>
+        <div class="select-wrapper" title="Rekap Tahunan" style="grid-column: span 6; border-color: var(--accent); margin-top: 8px; padding: 6px 0;">
+            <div style="display:flex; align-items:center; gap:8px; justify-content:center;">
+                <svg viewBox="0 0 24 24" style="stroke: var(--accent); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; width:18px; height:18px;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                <span style="color: var(--accent); font-size:11px; font-weight:700; text-transform: uppercase;">Proses Rekap Kegiatan Tahunan</span>
+            </div>
+            <select id="tahunan-dropdown" onchange="tarikRekapTahunanMatriks(this.value)">
+                <option value="" disabled selected hidden>Klik di sini untuk memilih Kategori Status Kegiatan</option>
+                <option value="GENERUS">Khusus Anggota GENERUS</option>
+                <option value="PENGURUS">Khusus Anggota PENGURUS</option>
+                <option value="MT">Khusus Anggota MT</option>
+            </select>
+        </div>
     </div>
 
     <div id="print-area">
@@ -317,7 +469,11 @@
     </div>
 </div>
 
-<div id="toast-box" class="toast-notif"></div>
+<div id="scan-modal" class="scan-notif-modal">
+    <div id="scan-modal-icon" class="scan-notif-icon"></div>
+    <div id="scan-modal-title" class="scan-notif-title"></div>
+    <div id="scan-modal-desc" class="scan-notif-desc"></div>
+</div>
 
 <script>
     const SUPABASE_URL = "https://gttavghryoadthnvwthd.supabase.co"; 
@@ -339,19 +495,7 @@
     let filterSemuaTerpilih = {}; 
     let pengunciScanAktif = false; 
     let globalAudioCtx = null;
-
-    function inisialisasiTahunDinamis() {
-        const selectTahun = document.getElementById('tahun-rekap-select');
-        const tahunSekarang = new Date().getFullYear();
-        selectTahun.innerHTML = "";
-        for (let i = 0; i < 5; i++) {
-            let th = tahunSekarang - i;
-            let opt = document.createElement('option');
-            opt.value = th; opt.innerText = th; // HANYA ANGKA SAJA
-            selectTahun.appendChild(opt);
-        }
-    }
-    inisialisasiTahunDinamis();
+    let toastTimeout = null;
 
     function bukaKunciAudioKonstruktor() {
         if (!globalAudioCtx) { globalAudioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
@@ -364,9 +508,9 @@
             let ctx = globalAudioCtx || new (window.AudioContext || window.webkitAudioContext)();
             let oscillator = ctx.createOscillator(); let gainNode = ctx.createGain();
             oscillator.connect(gainNode); gainNode.connect(ctx.destination);
-            oscillator.type = 'sine'; oscillator.frequency.value = 880; 
-            gainNode.gain.setValueAtTime(0.15, ctx.currentTime); 
-            oscillator.start(); oscillator.stop(ctx.currentTime + 0.12); 
+            oscillator.type = 'sine'; oscillator.frequency.value = 1000; 
+            gainNode.gain.setValueAtTime(0.2, ctx.currentTime); 
+            oscillator.start(); oscillator.stop(ctx.currentTime + 0.1); 
         } catch (e) {}
     }
 
@@ -376,10 +520,48 @@
             let ctx = globalAudioCtx || new (window.AudioContext || window.webkitAudioContext)();
             let osc1 = ctx.createOscillator(); let gain1 = ctx.createGain();
             osc1.connect(gain1); gain1.connect(ctx.destination);
-            osc1.type = 'sawtooth'; osc1.frequency.value = 140; 
-            gain1.gain.setValueAtTime(0.2, ctx.currentTime);
-            osc1.start(ctx.currentTime); osc1.stop(ctx.currentTime + 0.18);
+            osc1.type = 'sawtooth'; osc1.frequency.value = 180; 
+            gain1.gain.setValueAtTime(0.25, ctx.currentTime);
+            osc1.start(ctx.currentTime); osc1.stop(ctx.currentTime + 0.25);
         } catch (e) {}
+    }
+
+    function tampilkanNotifKustom(status, judul, deskripsi) {
+        const modal = document.getElementById('scan-modal');
+        const iconContainer = document.getElementById('scan-modal-icon');
+        const titleContainer = document.getElementById('scan-modal-title');
+        const descContainer = document.getElementById('scan-modal-desc');
+
+        clearTimeout(toastTimeout);
+        modal.className = "scan-notif-modal"; 
+
+        if (status === 'success') {
+            modal.classList.add('success-status');
+            iconContainer.innerHTML = `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+            titleContainer.style.color = "#10b981";
+        } else {
+            modal.classList.add('error-status');
+            iconContainer.innerHTML = `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
+            titleContainer.style.color = "#ef4444";
+        }
+
+        titleContainer.innerText = judul;
+        descContainer.innerText = deskripsi;
+        
+        modal.classList.add('show');
+        toastTimeout = setTimeout(() => { modal.classList.remove('show'); }, 2500);
+    }
+
+    function pilihTemplateAgenda(nilai) {
+        const inputAgenda = document.getElementById('kegiatan');
+        if(nilai === 'BERSIH') {
+            inputAgenda.value = "";
+            inputAgenda.focus();
+        } else if(nilai) {
+            inputAgenda.value = nilai.toUpperCase();
+        }
+        updateJudulCetak();
+        document.getElementById('template-agenda-select').value = ""; 
     }
 
     function ubahTemaSistem() {
@@ -395,12 +577,6 @@
     function updateJudulCetak() {
         let agenda = document.getElementById('kegiatan').value.toUpperCase();
         document.getElementById('cetak-judul-kegiatan').innerText = agenda ? `Laporan Presensi: ${agenda}` : "Laporan Presensi Kegiatan";
-    }
-
-    function tampilkanToast(pesan) {
-        let box = document.getElementById('toast-box');
-        box.innerText = pesan; box.style.display = 'block';
-        setTimeout(() => { box.style.display = 'none'; }, 3000);
     }
 
     window.addEventListener('online', () => { netIndicator.innerText = "● Online"; netIndicator.className = "net-status online"; });
@@ -443,7 +619,11 @@
 
     async function prosesAbsensi(idGenerus, metode) {
         let namaKegiatan = document.getElementById('kegiatan').value.toUpperCase();
-        if(!namaKegiatan) { bunyikanSuaraGagal(); alert("Harap isi Nama Agenda terlebih dahulu!"); return; }
+        if(!namaKegiatan) { 
+            bunyikanSuaraGagal(); 
+            tampilkanNotifKustom('error', 'Gagal Scan', 'Harap isi Nama Agenda terlebih dahulu!'); 
+            return; 
+        }
         
         let profil = semuaDataGenerus.find(g => g.id_generus == idGenerus) || { nama_lengkap: "ID: " + idGenerus };
         
@@ -464,29 +644,36 @@
                 let selisihJam = (waktuSekarang - waktuAbsenTerakhir) / (1000 * 60 * 60);
 
                 if (selisihJam < 3) {
-                    bunyikanSuaraGagal();
+                    bunyikanSuaraGagal(); 
                     let sisaMenit = Math.ceil((3 - selisihJam) * 60);
-                    alert(`Gagal! ${profil.nama_lengkap} sudah melakukan presensi pada agenda ini.\nHarap tunggu ${sisaMenit} menit lagi.`);
-                    return;
+                    tampilkanNotifKustom('error', 'Sudah Absen', `${profil.nama_lengkap} kembali ${sisaMenit} menit lagi.`);
+                    return; 
                 }
             }
 
             const dataAbsen = { 
-                nama_kegiatan: namaKegiatan.trim(), id_generus: idGenerus, metode_input: metode, waktu_absen: new Date().toISOString() 
+                nama_kegiatan: namaKegiatan.trim(), 
+                id_generus: idGenerus, 
+                metode_input: metode, 
+                waktu_absen: new Date().toISOString() 
             };
             
             let { error: errorInsert } = await _supabase.from('absensi_kegiatan').insert([dataAbsen]);
             if (!errorInsert) { 
-                bunyikanSuaraSukses(); tampilkanToast(`✓ Sukses mencatat data ${profil.nama_lengkap}`); 
-            } else { throw errorInsert; }
+                bunyikanSuaraSukses(); 
+                tampilkanNotifKustom('success', 'Scan Berhasil', profil.nama_lengkap);
+            } else {
+                throw errorInsert;
+            }
 
         } catch (err) {
-            bunyikanSuaraGagal(); alert("Terjadi kesalahan sistem saat memproses absensi.");
+            bunyikanSuaraGagal();
+            tampilkanNotifKustom('error', 'Sistem Error', 'Terjadi kesalahan pemrosesan database.');
         }
     }
 
-    function inputManualKehadiran() { if(!selectedIdInput.value) return alert("Pilih nama!"); prosesAbsensi(selectedIdInput.value, "Manual"); searchInput.value=''; selectedIdInput.value=''; }
-    function inputManualIziin() { if(!selectedIdInput.value) return alert("Pilih nama!"); prosesAbsensi(selectedIdInput.value, "Izin"); searchInput.value=''; selectedIdInput.value=''; }
+    function inputManualKehadiran() { if(!selectedIdInput.value) return tampilkanNotifKustom('error', 'Gagal', 'Pilih nama terlebih dahulu!'); prosesAbsensi(selectedIdInput.value, "Manual"); searchInput.value=''; selectedIdInput.value=''; }
+    function inputManualIziin() { if(!selectedIdInput.value) return tampilkanNotifKustom('error', 'Gagal', 'Pilih nama terlebih dahulu!'); prosesAbsensi(selectedIdInput.value, "Izin"); searchInput.value=''; selectedIdInput.value=''; }
 
     async function dapatkanDataGabungan(namaKegiatan) {
         let { data: logAbsen, error } = await _supabase.from('absensi_kegiatan').select('*').eq('nama_kegiatan', namaKegiatan.toUpperCase());
@@ -507,17 +694,17 @@
 
     async function tarikDanCetakLaporan(jenis, langsungPrint = false) {
         let namaKegiatan = document.getElementById('kegiatan').value.toUpperCase();
-        if(!namaKegiatan) return alert("Harap masukkan Nama Agenda!");
+        if(!namaKegiatan) return tampilkanNotifKustom('error', 'Gagal', 'Harap masukkan Nama Agenda!');
         
-        tampilkanToast(`🔄 Memuat data rekap ${jenis}...`);
         dataAktifRekap = await dapatkanDataGabungan(namaKegiatan);
-        if(dataAktifRekap.length === 0) return alert("Tidak ada data presensi pada agenda ini.");
+        if(dataAktifRekap.length === 0) return tampilkanNotifKustom('error', 'Kosong', 'Tidak ada data presensi pada agenda ini.');
         
         let container = document.getElementById('print-table-container');
         let resumeContainer = document.getElementById('resume-kehadiran-container');
         let areaCetak = document.getElementById('print-area'); 
         
-        container.innerHTML = ""; resumeContainer.innerHTML = "";
+        container.innerHTML = "";
+        resumeContainer.innerHTML = "";
         document.getElementById('cetak-waktu').innerText = "Waktu Rekap: " + new Date().toLocaleString('id-ID');
 
         let totalHadir = dataAktifRekap.filter(d => d.metode !== 'Izin').length;
@@ -537,12 +724,16 @@
                 </div>
             </div>`;
 
-        if(jenis === 'semua') { filterSemuaTerpilih = {}; renderTabelRekapSemuaSistem(); } 
+        if(jenis === 'semua') {
+            filterSemuaTerpilih = {}; 
+            renderTabelRekapSemuaSistem();
+        } 
         else if(jenis === 'desa') {
             let rekapDesa = {};
             dataAktifRekap.forEach(d => {
                 if(!rekapDesa[d.desa]) rekapDesa[d.desa] = { hadir: 0, izin: 0 };
-                if(d.metode === 'Izin') rekapDesa[d.desa].izin++; else rekapDesa[d.desa].hadir++;
+                if(d.metode === 'Izin') rekapDesa[d.desa].izin++;
+                else rekapDesa[d.desa].hadir++;
             });
             
             let html = `<table class="print-table"><thead><tr><th>No</th><th>Nama Desa</th><th style="text-align:center;">Hadir</th><th style="text-align:center;">Izin</th><th style="text-align:center;">Total</th></tr></thead><tbody>`;
@@ -551,11 +742,17 @@
                 let t = rekapDesa[d].hadir + rekapDesa[d].izin;
                 html += `<tr><td>${n++}</td><td style="font-weight:600;">DESA ${d}</td><td style="text-align:center; color:var(--primary); font-weight:700;">${rekapDesa[d].hadir}</td><td style="text-align:center; color:var(--accent); font-weight:700;">${rekapDesa[d].izin}</td><td style="text-align:center; font-weight:700; background:#f8fafc;">${t} Orang</td></tr>`; 
             }
-            html += `</tbody></table>`; container.innerHTML = html; areaCetak.style.display = "block";
+            html += `</tbody></table>`; 
+            container.innerHTML = html; 
+            areaCetak.style.display = "block";
         }
         else if(jenis === 'kelompok') {
             let rekapKlp = {}; 
-            dataAktifRekap.forEach(d => { if(!rekapKlp[d.kelompok]) rekapKlp[d.kelompok]=[]; rekapKlp[d.kelompok].push(d); });
+            dataAktifRekap.forEach(d => { 
+                if(!rekapKlp[d.kelompok]) rekapKlp[d.kelompok]=[]; 
+                rekapKlp[d.kelompok].push(d); 
+            });
+            
             let html = ""; 
             for(let k in rekapKlp) {
                 let hKlp = rekapKlp[k].filter(d => d.metode !== 'Izin').length;
@@ -567,16 +764,31 @@
                                 <span style="font-size:11px; text-transform:none; color:var(--text-muted);">Hadir: ${hKlp} | Izin: ${iKlp}</span>
                             </h4>
                             <table class="print-table">
-                                <thead><tr><th style="width:30px; text-align:center;">No</th><th>Nama Lengkap</th><th style="width:50px; text-align:center;">L/P</th><th>Status Absen</th><th>Metode</th></tr></thead>
+                                <thead>
+                                    <tr>
+                                        <th style="width:30px; text-align:center;">No</th>
+                                        <th>Nama Lengkap</th>
+                                        <th style="width:50px; text-align:center;">L/P</th>
+                                        <th>Status Absen</th>
+                                        <th>Metode</th>
+                                    </tr>
+                                </thead>
                                 <tbody>`;
                 rekapKlp[k].forEach((a, i) => { 
                     let st = a.metode === 'Izin' ? '<span style="color:var(--accent); font-weight:700;">IZIN</span>' : '<span style="color:var(--primary); font-weight:700;">HADIR</span>';
                     let genderDisplay = a.jk.includes('P') ? 'P' : 'L';
-                    html += `<tr><td style="text-align:center;">${i+1}</td><td style="font-weight:600;">${a.name}</td><td style="text-align:center;">${genderDisplay}</td><td>${st}</td><td>${a.metode}</td></tr>`; 
+                    html += `<tr>
+                                <td style="text-align:center;">${i+1}</td>
+                                <td style="font-weight:600;">${a.name}</td>
+                                <td style="text-align:center;">${genderDisplay}</td>
+                                <td>${st}</td>
+                                <td>${a.metode}</td>
+                             </tr>`; 
                 });
                 html += `</tbody></table></div>`;
             }
-            container.innerHTML = html; areaCetak.style.display = "block";
+            container.innerHTML = html; 
+            areaCetak.style.display = "block";
         }
         if(langsungPrint) window.print();
     }
@@ -584,6 +796,7 @@
     function renderTabelRekapSemuaSistem() {
         let container = document.getElementById('print-table-container');
         let areaCetak = document.getElementById('print-area');
+        
         let dataTerfilter = [...dataAktifRekap];
         ['jk', 'kelompok', 'desa', 'status'].forEach(kolom => {
             if (filterSemuaTerpilih[kolom] && filterSemuaTerpilih[kolom].length > 0) {
@@ -669,11 +882,20 @@
             dataTerfilter.forEach((d, i) => { 
                 let labelStatusText = d.metode === 'Izin' ? '<span style="color:var(--accent); font-weight:600;">IZIN</span>' : '<span style="color:var(--primary); font-weight:600;">HADIR</span>';
                 html += `<tr>
-                    <td style="text-align:center;">${i+1}</td><td style="font-weight:600;">${d.name}</td><td style="text-align:center;">${d.jk.includes('P')?'P':'L'}</td><td>${d.kelompok}</td><td>${d.desa}</td><td>${d.status}</td><td>${labelStatusText} (${d.waktu})</td>
+                    <td style="text-align:center;">${i+1}</td>
+                    <td style="font-weight:600;">${d.name}</td>
+                    <td style="text-align:center;">${d.jk.includes('P')?'P':'L'}</td>
+                    <td>${d.kelompok}</td>
+                    <td>${d.desa}</td>
+                    <td>${d.status}</td>
+                    <td>${labelStatusText} (${d.waktu})</td>
                 </tr>`; 
             });
         }
-        html += `</tbody></table>`; container.innerHTML = html; areaCetak.style.display = "block";
+
+        html += `</tbody></table>`;
+        container.innerHTML = html;
+        areaCetak.style.display = "block";
     }
 
     function toggleDropdownSemua(event, kolom) {
@@ -683,9 +905,12 @@
         tutupSemuaDropdownAman();
         
         if(!terbukanNow) {
-            menu.style.display = 'block'; globalOverlay.style.display = 'block';
+            menu.style.display = 'block';
+            globalOverlay.style.display = 'block';
+            
             let listDataUnik = [...new Set(dataAktifRekap.map(d => d[kolom]))].sort();
-            let containerOpsi = document.getElementById(`list-semua-${kolom}`); containerOpsi.innerHTML = '';
+            let containerOpsi = document.getElementById(`list-semua-${kolom}`);
+            containerOpsi.innerHTML = '';
             
             listDataUnik.forEach(val => {
                 let tercentang = filterSemuaTerpilih[kolom] && filterSemuaTerpilih[kolom].includes(val) ? 'checked' : '';
@@ -712,46 +937,19 @@
         tutupSemuaDropdownAman(); renderTabelRekapSemuaSistem();
     }
 
-    // =========================================================================
-    // PERBAIKAN & PENYESUAIAN PINTAR: BALIK KEMBALI KE METODE REKAP DETEKSI OTOMATIS
-    // =========================================================================
-    async function tarikRekapTahunanMatriks() {
+    async function tarikRekapTahunanMatriks(statusPilihan) {
         let namaKegiatan = document.getElementById('kegiatan').value.toUpperCase();
-        if(!namaKegiatan) { return alert("Harap isi Nama Agenda terlebih dahulu!"); }
+        if(!namaKegiatan) { document.getElementById('tahunan-dropdown').value = ""; return tampilkanNotifKustom('error', 'Gagal', 'Harap isi Nama Agenda terlebih dahulu!'); }
         
-        let tahunTerpilih = document.getElementById('tahun-rekap-select').value;
-        let tMulai = `${tahunTerpilih}-01-01T00:00:00.000Z`;
-        let tSelesai = `${tahunTerpilih}-12-31T23:59:59.999Z`;
+        let { data: logAbsen, error } = await _supabase.from('absensi_kegiatan').select('*').eq('nama_kegiatan', namaKegiatan.trim().toUpperCase());
+        if (error || !logAbsen) return tampilkanNotifKustom('error', 'Gagal', 'Gagal memuat data log presensi.');
 
-        tampilkanToast(`🔄 Memproses matriks tahun ${tahunTerpilih}...`);
-        
-        let { data: logAbsen, error } = await _supabase.from('absensi_kegiatan')
-            .select('*')
-            .eq('nama_kegiatan', namaKegiatan.trim().toUpperCase())
-            .gte('waktu_absen', tMulai)
-            .lte('waktu_absen', tSelesai);
-            
-        if (error || !logAbsen) return alert("Gagal memuat data log presensi.");
         dataMentahTahunanLog = logAbsen;
-
-        // PERUBAHAN 1 & 2: DETEKSI OTOMATIS & KEGIATAN RUTIN UMUM AKTIF KEMBALI
-        if (namaKegiatan.includes("KMM")) {
-            dataMasterTahunanOrang = semuaDataGenerus.filter(g => g.status && g.status.toUpperCase().includes("KMM"));
-            tampilkanToast("💡 Terdeteksi: Otomatis menyaring jajaran bidang KMM");
-        } 
-        else if (namaKegiatan.includes("PPG")) {
-            dataMasterTahunanOrang = todos = semuaDataGenerus.filter(g => g.status && g.status.toUpperCase().includes("PPG"));
-            tampilkanToast("💡 Terdeteksi: Otomatis menyaring jajaran bidang PPG");
-        } 
-        else {
-            // KEGIATAN RUTIN / UMUM DIKEMBALIKAN (Menampilkan semua tanpa filter status)
-            dataMasterTahunanOrang = semuaDataGenerus;
-            tampilkanToast("💡 Terdeteksi: Agenda rutin/umum, memuat semua data anggota");
-        }
-
+        dataMasterTahunanOrang = semuaDataGenerus.filter(g => g.status && g.status.toUpperCase() === statusPilihan.toUpperCase());
         filterTerpilih = {}; 
+
         document.getElementById('cetak-judul-kegiatan').innerText = `REKAP MATRIKS TAHUNAN: ${namaKegiatan}`;
-        document.getElementById('cetak-waktu').innerText = `Tahun Rekap: ${tahunTerpilih} | Jumlah Anggota: ${dataMasterTahunanOrang.length} Orang`;
+        document.getElementById('cetak-waktu').innerText = `Kategori: ${statusPilihan} | Tahun: ${new Date().getFullYear()}`;
         document.getElementById('resume-kehadiran-container').innerHTML = ""; 
 
         renderTabelMatriksTahunanSistem();
@@ -760,6 +958,7 @@
     function renderTabelMatriksTahunanSistem() {
         let container = document.getElementById('print-table-container');
         let areaCetak = document.getElementById('print-area');
+        
         let dataOrangTerfilter = [...dataMasterTahunanOrang];
         if (filterTerpilih['kelompok'] && filterTerpilih['kelompok'].length > 0) {
             dataOrangTerfilter = dataOrangTerfilter.filter(o => filterTerpilih['kelompok'].includes((o.kelompok || "-").toUpperCase()));
@@ -799,9 +998,10 @@
                     <tbody>`;
 
         if(dataOrangTerfilter.length === 0) {
-            html += `<tr><td colspan="17" style="text-align:center; color:#ef4444; font-weight:600; padding:20px;">Tidak ada data cocok.</td></tr>`;
+            html += `<tr><td colspan="17" style="text-align:center; color:#ef4444; font-weight:600; padding:20px;">Tidak ada data yang cocok dengan filter kelompok terpilih.</td></tr>`;
         } else {
-            let akumulasiHadirSemua = 0; let akumulasiIzinSemua = 0;
+            let akumulasiHadirSemua = 0;
+            let akumulasiIzinSemua = 0;
 
             dataOrangTerfilter.sort((a,b) => (a.nama_lengkap || '').localeCompare(b.nama_lengkap)).forEach((orang, idx) => {
                 let logOrang = dataMentahTahunanLog.filter(l => String(l.id_generus) === String(orang.id_generus));
@@ -810,7 +1010,8 @@
                             <td style="font-weight:600;">${orang.nama_lengkap}</td>
                             <td>${(orang.kelompok || "-").toUpperCase()}</td>`;
                 
-                let totalHadir = 0; let totalIzin = 0;
+                let totalHadir = 0;
+                let totalIzin = 0;
                 for (let m = 0; m < 12; m++) {
                     let hadir = logOrang.some(l => new Date(l.waktu_absen).getMonth() === m && l.metode_input !== 'Izin');
                     let izin = logOrang.some(l => new Date(l.waktu_absen).getMonth() === m && l.metode_input === 'Izin');
@@ -820,19 +1021,27 @@
                     else { html += `<td style="text-align:center; color:#cbd5e1;">-</td>`; }
                 }
                 
-                akumulasiHadirSemua += totalHadir; akumulasiIzinSemua += totalIzin;
-                html += `<td style="text-align:center; font-weight:700; background:#f8fafc; color:#047857;">${totalHadir}x</td>
-                         <td style="text-align:center; font-weight:700; background:#fff5f5; color:#b91c1c;">${totalIzin}x</td></tr>`;
+                akumulasiHadirSemua += totalHadir;
+                akumulasiIzinSemua += totalIzin;
+
+                html += `
+                    <td style="text-align:center; font-weight:700; background:#f8fafc; color:#047857;">${totalHadir}x</td>
+                    <td style="text-align:center; font-weight:700; background:#fff5f5; color:#b91c1c;">${totalIzin}x</td>
+                </tr>`;
             });
 
-            html += `<tr style="background: #f1f5f9; font-weight: 700;">
-                        <td colspan="15" style="text-align: right; padding: 8px;">TOTAL AKUMULASI KESELURUHAN:</td>
-                        <td style="text-align: center; color: #047857; background: #e6f4ea;">${akumulasiHadirSemua}x</td>
-                        <td style="text-align: center; color: #b91c1c; background: #fce8e6;">${akumulasiIzinSemua}x</td>
-                     </tr>`;
+            html += `
+                <tr style="background: #f1f5f9; font-weight: 700;">
+                    <td colspan="15" style="text-align: right; padding: 8px;">TOTAL AKUMULASI KESELURUHAN:</td>
+                    <td style="text-align: center; color: #047857; background: #e6f4ea;">${akumulasiHadirSemua}x</td>
+                    <td style="text-align: center; color: #b91c1c; background: #fce8e6;">${akumulasiIzinSemua}x</td>
+                </tr>`;
         }
 
-        html += `</tbody></table>`; container.innerHTML = html; areaCetak.style.display = "block";
+        html += `</tbody></table>`;
+        container.innerHTML = html;
+        areaCetak.style.display = "block";
+        document.getElementById('tahunan-dropdown').value = "";
     }
 
     function toggleDropdownKelompok(event) {
@@ -841,9 +1050,12 @@
         let terbukanNow = (menu.style.display === 'block');
         tutupSemuaDropdownAman();
         if(!terbukanNow) {
-            menu.style.display = 'block'; globalOverlay.style.display = 'block';
+            menu.style.display = 'block';
+            globalOverlay.style.display = 'block';
+            
             let listKlp = [...new Set(dataMasterTahunanOrang.map(o => (o.kelompok || "-").toUpperCase()))].sort();
-            let containerOpsi = document.getElementById('list-opsi-kelompok'); containerOpsi.innerHTML = '';
+            let containerOpsi = document.getElementById('list-opsi-kelompok');
+            containerOpsi.innerHTML = '';
             
             listKlp.forEach(klp => {
                 let tercentang = filterTerpilih['kelompok'] && filterTerpilih['kelompok'].includes(klp) ? 'checked' : '';
@@ -861,7 +1073,7 @@
         items.forEach(item => { item.style.display = item.textContent.toLowerCase().includes(val.toLowerCase()) ? 'flex' : 'none'; });
     }
 
-    function bersihkanFilterKelompok() { delete filterTerpilih['kelompok']; tutupSemuaDropdownAman(); renderTabelRekapMatriksTahunanSistem(); }
+    function bersihkanFilterKelompok() { delete filterTerpilih['kelompok']; tutupSemuaDropdownAman(); renderTabelMatriksTahunanSistem(); }
     
     function terapkanFilterKelompok() {
         let cbs = document.querySelectorAll('#list-opsi-kelompok input[type="checkbox"]');
@@ -871,18 +1083,20 @@
     }
 
     function tutupSemuaDropdownAman() {
-        document.querySelectorAll('.filter-dropdown-menu').forEach(m => m.style.display = 'none');
+        let menus = document.querySelectorAll('.filter-dropdown-menu');
+        menus.forEach(m => m.style.display = 'none');
         globalOverlay.style.display = 'none';
     }
 
     function eksekusiPrintKhusus(pilihan) {
         if(!pilihan) return;
-        if(pilihan === 'tahunan') { window.print(); } else { tarikDanCetakLaporan(pilihan, true); }
+        if(pilihan === 'tahunan') { window.print(); } 
+        else { tarikDanCetakLaporan(pilihan, true); }
         document.getElementById('print-dropdown').value = "";
     }
 
     async function eksporKeExcel() {
-        let namaKegiatan = document.getElementById('kegiatan').value.toUpperCase(); if(!namaKegiatan) return alert("Isi Agenda!");
+        let namaKegiatan = document.getElementById('kegiatan').value.toUpperCase(); if(!namaKegiatan) return tampilkanNotifKustom('error', 'Gagal', 'Isi nama agenda!');
         let dataMurni = await dapatkanDataGabungan(namaKegiatan);
         let csv = "No,Nama Lengkap,Kelompok,Desa,Status,Waktu\n";
         dataMurni.forEach((d, i) => { csv += `${i+1},"${d.name}","${d.kelompok}","${d.desa}","${d.status}","${d.waktu}"\n`; });
@@ -890,7 +1104,9 @@
         let link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `REKAP_${namaKegiatan}.csv`; link.click();
     }
 
-    async function sinkronisasiManual() { tampilkanToast("☁️ Sistem tersambung secara otomatis ke Cloud."); }
+    async function sinkronisasiManual() {
+        tampilkanNotifKustom('success', 'Sinkronisasi', 'Sistem tersambung secara otomatis ke Cloud.');
+    }
 </script>
 </body>
 </html>
