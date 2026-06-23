@@ -513,7 +513,6 @@
     let globalAudioCtx = null;
     let toastTimeout = null;
 
-    // Tambahan state untuk menyimpan pilihan sub-dapukan pengurus secara lokal
     let subDapukanPengurusTerpilih = "SEMUA";
 
     function bukaKunciAudioKonstruktor() {
@@ -976,7 +975,6 @@
         dataMentahTahunanLog = logAbsen;
         dataMasterTahunanOrang = semuaDataGenerus.filter(g => g.status && g.status.toUpperCase() === statusPilihan.toUpperCase());
         
-        // Reset sub filter setiap ganti kategori utama
         filterTerpilih = {}; 
         subDapukanPengurusTerpilih = "SEMUA";
 
@@ -987,14 +985,10 @@
         renderTabelMatriksTahunanSistem();
     }
 
-    /* =========================================================================
-       TAHAP 2: LOGIKA KONDISIONAL HEADER DINAMIS (KMM, PPG, DAERAH, PONDOK)
-       ========================================================================= */
     function renderTabelMatriksTahunanSistem() {
         let container = document.getElementById('print-table-container');
         let areaCetak = document.getElementById('print-area');
         
-        // Baca status aktif yang sedang dipilih (GENERUS / PENGURUS / MT)
         let statusKategoriAktif = "";
         if (dataMasterTahunanOrang.length > 0 && dataMasterTahunanOrang[0].status) {
             statusKategoriAktif = dataMasterTahunanOrang[0].status.toUpperCase();
@@ -1003,14 +997,11 @@
         let dataOrangTerfilter = [...dataMasterTahunanOrang];
         let headerDinamisKolom3Html = "";
 
-        // TAHAP 2 IMPLEMENTASI: Cek Jika GENERUS vs PENGURUS
         if (statusKategoriAktif === "PENGURUS") {
-            // Saring data lokal berdasarkan input dari dropdown inline kolom "usia/dapukan" (usia_dapukan)
             if (subDapukanPengurusTerpilih !== "SEMUA") {
                 dataOrangTerfilter = dataOrangTerfilter.filter(o => o.usia_dapukan && o.usia_dapukan.toUpperCase() === subDapukanPengurusTerpilih);
             }
 
-            // Render Header kolom 3 berupa Dropdown Select Fleksibel Langsung
             headerDinamisKolom3Html = `
                 <th style="min-width:130px; padding: 4px;">
                     <select id="filter-dapukan-pengurus-inline" onchange="saringDapukanPengurusLokal(this.value)" style="width:100%; padding:6px; border-radius:6px; font-family:inherit; font-size:11px; font-weight:700; background: var(--bg-card); color: var(--text-dark); border: 1px solid var(--border-color);">
@@ -1022,7 +1013,6 @@
                     </select>
                 </th>`;
         } else {
-            // Jika GENERUS atau MT, gunakan filter "Kelompok" standar beserta logo filter popup kustom
             if (filterTerpilih['kelompok'] && filterTerpilih['kelompok'].length > 0) {
                 dataOrangTerfilter = dataOrangTerfilter.filter(o => filterTerpilih['kelompok'].includes((o.kelompok || "-").toUpperCase()));
             }
@@ -1073,7 +1063,6 @@
             dataOrangTerfilter.sort((a,b) => (a.nama_lengkap || '').localeCompare(b.nama_lengkap)).forEach((orang, idx) => {
                 let logOrang = dataMentahTahunanLog.filter(l => String(l.id_generus) === String(orang.id_generus));
                 
-                // Tampilkan info kelompok/usia_dapukan di kolom ke-3 sesuai statusnya
                 let kolom3Isi = (statusKategoriAktif === "PENGURUS") ? (orang.usia_dapukan || "-").toUpperCase() : (orang.kelompok || "-").toUpperCase();
 
                 html += `<tr>
@@ -1114,7 +1103,6 @@
         areaCetak.style.display = "block";
     }
 
-    // Fungsi Trigger saat dropdown inline Pengurus diganti nilainya
     function saringDapukanPengurusLokal(nilaiPilihan) {
         subDapukanPengurusTerpilih = nilaiPilihan.toUpperCase();
         renderTabelMatriksTahunanSistem();
@@ -1167,7 +1155,8 @@
 
     function eksekusiPrintKhusus(pilihan) {
         if(!pilihan) return;
-        if(pilihan === 'tahunan') { window.print(); } \n        else { tarikDanCetakLaporan(pilihan, true); }
+        if(pilihan === 'tahunan') { window.print(); } 
+        else { tarikDanCetakLaporan(pilihan, true); }
         document.getElementById('print-dropdown').value = "";
     }
 
