@@ -88,6 +88,11 @@
         .form-group { margin-bottom: 20px; position: relative; }
         label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-dark); }
         
+        .agenda-input-wrapper {
+            display: flex;
+            gap: 8px;
+        }
+
         input, .btn-primary, .btn-warning { 
             width: 100%; padding: 14px 16px; 
             border: 1px solid var(--border-color); background: var(--bg-card);
@@ -169,7 +174,6 @@
         .select-wrapper:hover { background: var(--bg-main); border-color: var(--text-muted); }
         .select-wrapper:hover svg { stroke: var(--primary); transform: translateY(-1px); }
 
-        /* KUSTOMISASI NOTIFIKASI POPUP BARU */
         .scan-notif-modal {
             position: fixed;
             bottom: 30px;
@@ -379,7 +383,19 @@
     
     <div class="form-group">
         <label for="kegiatan">Nama Agenda Pertemuan</label>
-        <input type="text" id="kegiatan" placeholder="Masukkan nama kegiatan..." oninput="this.value = this.value.toUpperCase(); updateJudulCetak();">
+        <div class="agenda-input-wrapper">
+            <input type="text" id="kegiatan" placeholder="Ketik manual / Pilih template..." oninput="this.value = this.value.toUpperCase(); updateJudulCetak();">
+            <div class="select-wrapper" style="width: 100px; padding: 0; border-radius: 12px; height: 50px;">
+                <span style="font-size:11px; color:var(--primary); font-weight:700; display:flex; align-items:center; justify-content:center; height:100%;">📋 ROUTINE</span>
+                <select id="template-agenda-select" onchange="pilihTemplateAgenda(this.value)" style="height:100%;">
+                    <option value="" disabled selected hidden>Pilih</option>
+                    <option value="PENGAJIAN MUDA-MUDI DAERAH">1. PENGAJIAN MUDA-MUDI DAERAH</option>
+                    <option value="MUSYAWARAH KMM DAERAH">2. MUSYAWARAH KMM DAERAH</option>
+                    <option value="PENEROBOSAN KMM DAERAH">3. PENEROBOSAN KMM DAERAH</option>
+                    <option value="BERSIH">-- Tulis Manual Bebas --</option>
+                </select>
+            </div>
+        </div>
     </div>
 
     <div class="section-title">OPSI 1: SCAN BARCODE</div>
@@ -453,7 +469,6 @@
     </div>
 </div>
 
-<!-- CONTAINER POPUP NOTIFIKASI KUSTOM ELEGAN -->
 <div id="scan-modal" class="scan-notif-modal">
     <div id="scan-modal-icon" class="scan-notif-icon"></div>
     <div id="scan-modal-title" class="scan-notif-title"></div>
@@ -487,7 +502,6 @@
         if (globalAudioCtx.state === 'suspended') { globalAudioCtx.resume(); }
     }
 
-    // SUARA "TUT" (Frekuensi Tinggi - Sukses)
     function bunyikanSuaraSukses() {
         try {
             bukaKunciAudioKonstruktor();
@@ -500,7 +514,6 @@
         } catch (e) {}
     }
 
-    // SUARA "TOT" (Frekuensi Rendah Sawtooth - Gagal)
     function bunyikanSuaraGagal() {
         try {
             bukaKunciAudioKonstruktor();
@@ -513,7 +526,6 @@
         } catch (e) {}
     }
 
-    // FUNGSI POPUP NOTIFIKASI KUSTOM (PENGGANTI ALERT BROWSER)
     function tampilkanNotifKustom(status, judul, deskripsi) {
         const modal = document.getElementById('scan-modal');
         const iconContainer = document.getElementById('scan-modal-icon');
@@ -537,10 +549,19 @@
         descContainer.innerText = deskripsi;
         
         modal.classList.add('show');
+        toastTimeout = setTimeout(() => { modal.classList.remove('show'); }, 2500);
+    }
 
-        toastTimeout = setTimeout(() => {
-            modal.classList.remove('show');
-        }, 2500);
+    function pilihTemplateAgenda(nilai) {
+        const inputAgenda = document.getElementById('kegiatan');
+        if(nilai === 'BERSIH') {
+            inputAgenda.value = "";
+            inputAgenda.focus();
+        } else if(nilai) {
+            inputAgenda.value = nilai.toUpperCase();
+        }
+        updateJudulCetak();
+        document.getElementById('template-agenda-select').value = ""; 
     }
 
     function ubahTemaSistem() {
@@ -647,7 +668,6 @@
 
         } catch (err) {
             bunyikanSuaraGagal();
-            console.error(err);
             tampilkanNotifKustom('error', 'Sistem Error', 'Terjadi kesalahan pemrosesan database.');
         }
     }
