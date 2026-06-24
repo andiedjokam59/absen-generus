@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Admin - Operator Kelompok</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght=400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #047857;
+            --primary-hover: #065f46;
+            --danger: #dc2626;
+            --bg-main: #f8fafc;
+            --bg-card: #ffffff;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body { background-color: var(--bg-main); color: var(--text-dark); padding: 20px; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        header { margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; }
+        h1 { font-size: 24px; color: var(--primary); }
+        .grid { display: grid; grid-template-columns: 1fr 2fr; gap: 20px; }
+        @media(max-width: 768px) { .grid { grid-template-columns: 1fr; } }
+        .card { background: var(--bg-card); border: 1px solid var(--border-color); padding: 20px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        h2 { font-size: 18px; margin-bottom: 16px; color: var(--text-dark); }
+        .form-group { margin-bottom: 12px; }
+        label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 6px; color: var(--text-muted); }
+        input, select { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 14px; }
+        button { background: var(--primary); color: white; border: none; padding: 10px 16px; border-radius: 6px; font-weight: 6px; cursor: pointer; font-size: 14px; width: 100%; }
+        button:hover { background: var(--primary-hover); }
+        .btn-status { background: #d97706; color: white; border: none; padding: 6px 10px; font-size: 12px; border-radius: 4px; cursor: pointer; margin-right: 4px;}
+        .btn-status:hover { background: #b45309; }
+        .btn-danger { background: var(--danger); color: white; border: none; padding: 6px 10px; font-size: 12px; border-radius: 4px; cursor: pointer;}
+        .btn-danger:hover { background: #b91c1c; }
+        .search-box { margin-bottom: 16px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border-color); }
+        th { background: #f1f5f9; font-weight: 600; }
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; display: inline-block; }
+        .badge-aktif { background: #dcfce7; color: #15803d; }
+        .badge-wafat { background: #fee2e2; color: #b91c1c; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <div>
+            <h1>Panel Operator - Update Data</h1>
+            <p style="color: var(--text-muted); font-size: 14px;">Khusus pemutakhiran status pernikahan, jamaah meninggal/pindah, dan warga baru.</p>
+        </div>
+    </header>
+
+    <div class="grid">
+        <div class="card">
+            <h2>Input Warga Baru</h2>
+            <form id="form-tambah" onsubmit="tambahAnggotaBaru(event)">
+                <div class="form-group">
+                    <label>Nama Lengkap</label>
+                    <input type="text" id="add-nama" required placeholder="Contoh: AHMAD FAUZI">
+                </div>
+                <div class="form-group">
+                    <label>Kelompok</label>
+                    <input type="text" id="add-kelompok" required placeholder="Contoh: KELOMPOK A">
+                </div>
+                <div class="form-group">
+                    <label>Desa</label>
+                    <input type="text" id="add-desa" required placeholder="Contoh: DESA UTARA">
+                </div>
+                <div class="form-group">
+                    <label>Status Kategori</label>
+                    <select id="add-status" required>
+                        <option value="GENERUS">GENERUS</option>
+                        <option value="PENGURUS">PENGURUS</option>
+                        <option value="MT/MS">MT/MS</option>
+                        <option value="JAMA'AH UMUM">JAMA'AH UMUM</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Jenis Kelamin</label>
+                    <select id="add-jk" required>
+                        <option value="L">Laki-laki (L)</option>
+                        <option value="P">Perempuan (P)</option>
+                    </select>
+                </div>
+                <button type="submit" style="margin-top: 10px;">Simpan Data</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <h2>Daftar Pencarian Data</h2>
+            <div class="search-box">
+                <input type="text" id="input-cari" onkeyup="filterTabelAdmin()" placeholder="Ketik nama untuk mencari...">
+            </div>
+            <div style="overflow-x: auto; max-height: 500px;">
+                <table id="tabel-admin">
+                    <thead>
+                        <tr>
+                            <th>Nama / ID</th>
+                            <th>Status</th>
+                            <th>Kelompok / JK</th>
+                            <th>Kondisi</th>
+                            <th>Aksi Operator</th>
+                        </tr>
+                    </thead>
+                    <tbody id="body-tabel-admin">
+                        <tr><td colspan="5" style="text-align:center;">Memuat data dari Supabase...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const SUPABASE_URL = "https://gttavghryoadthnvwthd.supabase.co"; 
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0dGF2Z2hyeW9hZHRobnZ3dGhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA5MDI5NDQsImV4cCI6MjA5NjQ3ODk0NH0.0O7I9EqSaiQq8_LKMJS9U-XDuitY6sPfYQVtBsJAeas";
+    
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    let seluruhDataLokal = [];
+
+    async function muatDataMaster() {
+        // Diubah menggunakan urutan berdasarkan kolom 'nama_lengkap' sesuai file utama (index.html)
+        let { data, error } = await _supabase
+            .from('data_generus')
+            .select('*')
+            .order('nama_lengkap', { ascending: true });
+
+        if (error) {
+            console.error(error);
+            document.getElementById('body-tabel-admin').innerHTML = `<tr><td colspan="5" style="text-align:center; color:red;">Gagal memuat data. Periksa koneksi/API Key Anda.</td></tr>`;
+            return;
+        }
+        seluruhDataLokal = data || [];
+        renderTabelAdmin(seluruhDataLokal);
+    }
+
+    function renderTabelAdmin(dataArray) {
+        let html = "";
+        if(dataArray.length === 0) {
+            html = `<tr><td colspan="5" style="text-align:center;">Data tidak ditemukan.</td></tr>`;
+        } else {
+            dataArray.forEach(g => {
+                const statusAktif = g.kelompok_aktif !== false;
+                html += `
+                    <tr>
+                        <td><strong>${g.nama_lengkap || ''}</strong><br><small style="color:var(--text-muted)">${g.id_generus || '-'}</small></td>
+                        <td><span class="badge" style="background:#e2e8f0; color:#334155;">${g.status || 'GENERUS'}</span></td>
+                        <td>${g.kelompok || '-'}<br><small style="color:var(--text-muted)">JK: ${g.jenis_kelamin || '-'}</small></td>
+                        <td>
+                            <span class="badge ${statusAktif ? 'badge-aktif' : 'badge-wafat'}">
+                                ${statusAktif ? 'Aktif' : 'Non-Aktif / Wafat'}
+                            </span>
+                        </td>
+                        <td>
+                            ${g.status !== 'JAMA\'AH UMUM' && statusAktif ? `<button class="btn-status" onclick="mutasiMenikah('${g.id_generus}')">💍 Menikah</button>` : ''}
+                            ${statusAktif ? `<button class="btn-danger" onclick="mutasiMeninggalAtauPindah('${g.id_generus}', '${g.nama_lengkap}')">🕊️ Non-Aktif</button>` : `<button class="btn-status" style="background:#059669" onclick="aktifkanKembali('${g.id_generus}')">Aktifkan</button>`}
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+        document.getElementById('body-tabel-admin').innerHTML = html;
+    }
+
+    function filterTabelAdmin() {
+        let keyword = document.getElementById('input-cari').value.toLowerCase();
+        let hasilFilter = seluruhDataLokal.filter(g => (g.nama_lengkap && g.nama_lengkap.toLowerCase().includes(keyword)));
+        renderTabelAdmin(hasilFilter);
+    }
+
+    async function mutasiMenikah(id) {
+        if(!confirm("Ubah status anggota ini menjadi JAMA'AH UMUM karena sudah menikah?")) return;
+        const { error } = await _supabase.from('data_generus').update({ status: "JAMA'AH UMUM" }).eq('id_generus', id);
+        if(error) { alert("Gagal memperbarui status."); } else { alert("Berhasil diubah menjadi Jama'ah Umum."); muatDataMaster(); }
+    }
+
+    async function mutasiMeninggalAtauPindah(id, nama) {
+        if(!confirm(`Non-aktifkan ${nama}? (Riwayat absen lama di rekap tetap aman)`)) return;
+        const { error } = await _supabase.from('data_generus').update({ kelompok_aktif: false }).eq('id_generus', id);
+        if(error) { alert("Gagal menonaktifkan."); } else { alert("Berhasil di-nonaktifkan."); muatDataMaster(); }
+    }
+
+    async function aktifkanKembali(id) {
+        const { error } = await _supabase.from('data_generus').update({ kelompok_aktif: true }).eq('id_generus', id);
+        if(!error) muatDataMaster();
+    }
+
+    async function tambahAnggotaBaru(e) {
+        e.preventDefault();
+        const nama = document.getElementById('add-nama').value.toUpperCase();
+        const kelompok = document.getElementById('add-kelompok').value.toUpperCase();
+        const desa = document.getElementById('add-desa').value.toUpperCase();
+        const status = document.getElementById('add-status').value;
+        const jk = document.getElementById('add-jk').value;
+        const idOtomatis = "GEN-" + Math.floor(Date.now() / 10000);
+
+        // Menggunakan property 'nama_lengkap' menggantikan 'name' agar sinkron dengan index.html
+        const { error } = await _supabase.from('data_generus').insert([{ 
+            id_generus: idOtomatis, nama_lengkap: nama, kelompok: kelompok, desa: desa, status: status, jenis_kelamin: jk, kelompok_aktif: true 
+        }]);
+
+        if(error) { alert("Gagal menyimpan: " + error.message); } 
+        else { alert(`Berhasil! ID Baru: ${idOtomatis}`); document.getElementById('form-tambah').reset(); muatDataMaster(); }
+    }
+
+    window.onload = muatDataMaster;
+</script>
+</body>
+</html>
