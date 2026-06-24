@@ -524,7 +524,8 @@
                 <option value="" disabled selected hidden>Klik di sini untuk memilih Kategori Status Kegiatan</option>
                 <option value="GENERUS">GENERUS</option>
                 <option value="PENGURUS">PENGURUS</option>
-                <option value="MT">MT</option>
+                <option value="MT/MS">MT/MS</option>
+                <option value="JAMA'AH UMUM">JAMA'AH UMUM</option>
             </select>
         </div>
         
@@ -1081,9 +1082,18 @@
         const tahunPilihanMatriks = document.getElementById('filter-tahunan-tahun').value;
         dataMentahTahunanLog = logAbsen.filter(l => String(new Date(l.waktu_absen).getFullYear()) === tahunPilihanMatriks);
         
-        dataMasterTahunanOrang = semuaDataGenerus.filter(g => 
-            g.status && g.status.toUpperCase().includes(statusPilihan.toUpperCase())
-        );
+        // Perbaikan logika filter pengambilan data master orang sesuai instruksi
+        if (statusPilihan === "JAMA'AH UMUM") {
+            dataMasterTahunanOrang = semuaDataGenerus.filter(g => 
+                g.status && 
+                ["GENERUS", "PENGURUS", "MT/MS", "JAMA'AH UMUM"].includes(g.status.toUpperCase()) &&
+                g.kelompok_aktif !== false // Menghandle filter kelompok yang masih aktif
+            );
+        } else {
+            dataMasterTahunanOrang = semuaDataGenerus.filter(g => 
+                g.status && g.status.toUpperCase().includes(statusPilihan.toUpperCase())
+            );
+        }
         
         filterTerpilih = {};
         subDapukanPengurusTerpilih = []; // Default dikosongkan agar memunculkan semua dapukan
