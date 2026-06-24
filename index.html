@@ -573,9 +573,9 @@
     let globalAudioCtx = null;
     let toastTimeout = null;
 
-    let subDapukanPengurusTerpilih = "SEMUA";
+    // Diubah menjadi Array agar mendukung multi-select dapukan pengurus
+    let subDapukanPengurusTerpilih = []; 
 
-    // BARU: Fungsi Otomatis Inisialisasi Pilihan Tahun pada Dropdown Waktu
     function inisialisasiOpsiPilihanTahun() {
         const tahunSekarang = new Date().getFullYear();
         const selectRekapTahun = document.getElementById('filter-rekap-tahun');
@@ -584,7 +584,6 @@
         selectRekapTahun.innerHTML = '<option value="SEMUA">-- Semua Tahun --</option>';
         selectTahunanTahun.innerHTML = ''; 
 
-        // Generate rentang tahun dari 2 tahun lalu hingga 3 tahun mendatang
         for (let t = tahunSekarang - 2; t <= tahunSekarang + 3; t++) {
             let opsi1 = document.createElement('option');
             opsi1.value = t; opsi1.innerText = t;
@@ -791,7 +790,6 @@
         let { data: logAbsen, error } = await _supabase.from('absensi_kegiatan').select('*').eq('nama_kegiatan', namaKegiatan.toUpperCase());
         if (error || !logAbsen) return [];
 
-        // MODIFIKASI: Implementasi Filter Bulan & Tahun pada Log Data yang ditarik
         const filterBulan = document.getElementById('filter-rekap-bulan').value;
         const filterTahun = document.getElementById('filter-rekap-tahun').value;
 
@@ -832,7 +830,6 @@
         container.innerHTML = "";
         resumeContainer.innerHTML = "";
         
-        // Membaca Teks Filter Waktu untuk disematkan pada kop cetak laporan
         const txtBulan = document.getElementById('filter-rekap-bulan').options[document.getElementById('filter-rekap-bulan').selectedIndex].text;
         const txtTahun = document.getElementById('filter-rekap-tahun').options[document.getElementById('filter-rekap-tahun').selectedIndex].text;
         document.getElementById('cetak-waktu').innerText = `Periode: ${txtBulan} ${txtTahun} | Diunduh: ` + new Date().toLocaleString('id-ID');
@@ -1074,7 +1071,6 @@
             return tampilkanNotifKustom('error', 'Gagal', 'Harap isi Nama Agenda terlebih dahulu!');
         }
         
-        // MODIFIKASI: Mengambil data presensi dari database Supabase secara fleksibel menggunakan pencarian wildcard
         let { data: logAbsen, error } = await _supabase
             .from('absensi_kegiatan')
             .select('*')
@@ -1082,7 +1078,6 @@
             
         if (error || !logAbsen) return tampilkanNotifKustom('error', 'Gagal', 'Gagal memuat data log presensi.');
         
-        // MODIFIKASI: Menyaring logAbsen lokal berdasarkan tahun yang dipilih pada dropdown "filter-tahunan-tahun"
         const tahunPilihanMatriks = document.getElementById('filter-tahunan-tahun').value;
         dataMentahTahunanLog = logAbsen.filter(l => String(new Date(l.waktu_absen).getFullYear()) === tahunPilihanMatriks);
         
@@ -1091,14 +1086,13 @@
         );
         
         filterTerpilih = {};
-        subDapukanPengurusTerpilih = "SEMUA";
+        subDapukanPengurusTerpilih = []; // Default dikosongkan agar memunculkan semua dapukan
         document.getElementById('cetak-judul-kegiatan').innerText = `REKAP MATRIKS TAHUNAN: ${namaKegiatan}`;
         document.getElementById('cetak-waktu').innerText = `Kategori: ${statusPilihan} | Tahun: ${tahunPilihanMatriks}`;
         document.getElementById('resume-kehadiran-container').innerHTML = "";
         renderTabelMatriksTahunanSistem();
     }
 
-    // BARU: Fungsi untuk memicu hitung ulang matriks tahunan saat dropdown tahun diubah
     function pemicuUlangTahunanMatriks() {
         const dropdownKategori = document.getElementById('tahunan-dropdown').value;
         if(dropdownKategori) {
@@ -1118,25 +1112,31 @@
         let dataOrangTerfilter = [...dataMasterTahunanOrang];
         let headerDinamisKolom3Html = "";
 
+        // MODIFIKASI: Mengubah filter Dapukan Pengurus menjadi sistem Excel filter dropdown multi-select
         if (statusKategoriAktif === "PENGURUS") {
-            if (subDapukanPengurusTerpilih !== "SEMUA") {
+            if (subDapukanPengurusTerpilih.length > 0) {
                 dataOrangTerfilter = dataOrangTerfilter.filter(o => {
                     if (!o.usia_dapukan) return false;
                     let dbValue = o.usia_dapukan.toUpperCase().trim();
-                    let filterValue = subDapukanPengurusTerpilih.toUpperCase().trim();
-                    return dbValue.includes(filterValue) || filterValue.includes(dbValue);
+                    return subDapukanPengurusTerpilih.some(filterValue => dbValue.includes(filterValue));
                 });
             }
 
             headerDinamisKolom3Html = `
-                <th style="min-width:130px; padding: 4px;">
-                    <select id="filter-dapukan-pengurus-inline" onchange="saringDapukanPengurusLokal(this.value)" style="width:100%; padding:6px; border-radius:6px; font-family:inherit; font-size:11px; font-weight:700; background: var(--bg-card); color: var(--text-dark); border: 1px solid var(--border-color);">
-                        <option value="SEMUA" ${subDapukanPengurusTerpilih === 'SEMUA' ? 'selected' : ''}>DAPUKAN: SEMUA</option>
-                        <option value="KMM" ${subDapukanPengurusTerpilih === 'KMM' ? 'selected' : ''}>KMM</option>
-                        <option value="PPG" ${subDapukanPengurusTerpilih === 'PPG' ? 'selected' : ''}>PPG</option>
-                        <option value="DAERAH" ${subDapukanPengurusTerpilih === 'DAERAH' ? 'selected' : ''}>DAERAH</option>
-                        <option value="PONDOK" ${subDapukanPengurusTerpilih === 'PONDOK' ? 'selected' : ''}>PONDOK</option>
-                    </select>
+                <th style="min-width:130px;">
+                    <div class="th-filter-container">
+                        <span>Dapukan</span>
+                        <button class="excel-filter-btn ${subDapukanPengurusTerpilih.length > 0 ? 'active' : ''}" onclick="toggleDropdownDapukanPengurus(event)">
+                            <svg viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+                        </button>
+                        <div class="filter-dropdown-menu" id="dropdown-filter-dapukan" onclick="event.stopPropagation()">
+                            <div class="filter-options-list" id="list-opsi-dapukan"></div>
+                            <div class="filter-action-buttons">
+                                <button class="filter-btn-sub filter-btn-clear" onclick="bersihkanFilterDapukanPengurus()">Clear</button>
+                                <button class="filter-btn-sub filter-btn-ok" onclick="terapkanFilterDapukanPengurus()">OK</button>
+                            </div>
+                        </div>
+                    </div>
                 </th>`;
         } else {
             if (filterTerpilih['kelompok'] && filterTerpilih['kelompok'].length > 0) {
@@ -1228,9 +1228,49 @@
         areaCetak.style.display = "block";
     }
 
-    function saringDapukanPengurusLokal(nilaiPilihan) {
-        subDapukanPengurusTerpilih = nilaiPilihan.toUpperCase();
+    // BARU: Fungsi untuk memunculkan multi-select menu pada kolom dapukan pengurus + teks Kelompok dan Desa
+    function toggleDropdownDapukanPengurus(event) {
+        event.stopPropagation();
+        let menu = document.getElementById('dropdown-filter-dapukan');
+        if(!menu) return;
+        let terbukanNow = (menu.style.display === 'block');
+        tutupSemuaDropdownAman();
+        
+        if(!terbukanNow) {
+            menu.style.display = 'block';
+            globalOverlay.style.display = 'block';
+            
+            // Opsi sesuai permintaan dengan tambahan tulisan "KELOMPOK" dan "DESA"
+            let listDapukanMaster = ["KMM", "PPG", "DAERAH", "PONDOK", "KELOMPOK", "DESA"];
+            let containerOpsi = document.getElementById('list-opsi-dapukan');
+            containerOpsi.innerHTML = '';
+            
+            listDapukanMaster.forEach(dapukan => {
+                let tercentang = subDapukanPengurusTerpilih.includes(dapukan) ? 'checked' : '';
+                let div = document.createElement('div'); div.className = 'filter-option-item';
+                div.innerHTML = `<label style="display:flex; align-items:center; gap:8px; font-weight:normal; text-transform:none; cursor:pointer; width:100%;">
+                                    <input type="checkbox" value="${dapukan}" ${tercentang}> <span>${dapukan}</span>
+                                 </label>`;
+                containerOpsi.appendChild(div);
+            });
+        }
+    }
+
+    // BARU: Fungsi konfirmasi filter dapukan pengurus multi-select
+    function terapkanFilterDapukanPengurus() {
+        let cbs = document.querySelectorAll('#list-opsi-dapukan input[type="checkbox"]');
+        let terpilih = []; 
+        cbs.forEach(cb => { if(cb.checked) terpilih.push(cb.value); });
+        subDapukanPengurusTerpilih = terpilih;
+        tutupSemuaDropdownAman(); 
         renderTabelMatriksTahunanSistem();
+    }
+
+    // BARU: Fungsi pembersihan filter dapukan pengurus
+    function bersihkanFilterDapukanPengurus() { 
+        subDapukanPengurusTerpilih = []; 
+        tutupSemuaDropdownAman(); 
+        renderTabelMatriksTahunanSistem(); 
     }
 
     function toggleDropdownKelompok(event) {
