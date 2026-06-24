@@ -346,7 +346,7 @@
             border-top: 1px solid var(--border-color);
             padding-top: 10px;
         }
-        .filter-btn-sub padding: 8px 12px; font-size: 12px; font-weight: 600; border-radius: 6px; border: none; cursor: pointer; }
+        .filter-btn-sub { padding: 8px 12px; font-size: 12px; font-weight: 600; border-radius: 6px; border: none; cursor: pointer; }
         .filter-btn-ok { background: var(--primary); color: white; }
         .filter-btn-clear { background: var(--border-color); color: var(--text-dark); }
 
@@ -366,6 +366,34 @@
         .resume-row {
             display: flex;
             gap: 16px;
+        }
+
+        /* Desain Bar Pemilih Waktu Fleksibel Baru */
+        .waktu-filter-row {
+            grid-column: span 6;
+            display: flex;
+            gap: 6px;
+            margin-bottom: 4px;
+            background: var(--bg-main);
+            padding: 6px;
+            border-radius: 12px;
+            border: 1px dashed var(--border-color);
+        }
+        .waktu-select {
+            flex: 1;
+            padding: 8px 10px;
+            font-size: 12px;
+            font-weight: 600;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-card);
+            color: var(--text-dark);
+            outline: none;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .waktu-select:focus {
+            border-color: var(--primary);
         }
 
         @media print {
@@ -431,6 +459,29 @@
 
     <div class="section-title">Menu Rekap & Penyimpanan</div>
     <div class="action-row">
+        
+        <!-- BARU: Elemen Filter Bulan & Tahun Utama untuk Rekap Semua, Desa & Klp -->
+        <div class="waktu-filter-row">
+            <select id="filter-rekap-bulan" class="waktu-select">
+                <option value="SEMUA">-- Semua Bulan --</option>
+                <option value="0">Januari</option>
+                <option value="1">Februari</option>
+                <option value="2">Maret</option>
+                <option value="3">April</option>
+                <option value="4">Mei</option>
+                <option value="5">Juni</option>
+                <option value="6">Juli</option>
+                <option value="7">Agustus</option>
+                <option value="8">September</option>
+                <option value="9">Oktober</option>
+                <option value="10">November</option>
+                <option value="11">Desember</option>
+            </select>
+            <select id="filter-rekap-tahun" class="waktu-select">
+                <!-- Diisi otomatis oleh JavaScript -->
+            </select>
+        </div>
+
         <button class="btn-icon" onclick="tarikDanCetakLaporan('semua')" title="Preview Semua">
             <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
             Semua
@@ -463,6 +514,7 @@
             Excel
         </button>
 
+        <!-- BARU: Elemen Rekap Tahunan Terintegrasi dengan Pilihan Tahun Khusus -->
         <div class="select-wrapper custom-dropdown-border" title="Rekap Tahunan" style="grid-column: span 6; margin-top: 12px; padding: 10px 0; min-height: 50px;">
             <div style="display:flex; align-items:center; gap:8px; justify-content:center; width:100%; padding:0 12px; box-sizing:border-box;">
                 <svg viewBox="0 0 24 24" style="stroke: var(--primary); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; width:18px; height:18px; flex-shrink:0;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
@@ -473,6 +525,14 @@
                 <option value="GENERUS">GENERUS</option>
                 <option value="PENGURUS">PENGURUS</option>
                 <option value="MT">MT</option>
+            </select>
+        </div>
+        
+        <!-- BARU: Pilihan Tahun khusus untuk Laporan Matriks Tahunan -->
+        <div style="grid-column: span 6; display:flex; align-items:center; gap:6px; margin-top:4px;">
+            <label style="margin:0; font-size:10px; color:var(--text-muted); white-space:nowrap;">SET TAHUN MATRIKS:</label>
+            <select id="filter-tahunan-tahun" class="waktu-select" style="padding:6px 10px;" onchange="pemicuUlangTahunanMatriks()">
+                <!-- Diisi otomatis oleh JavaScript -->
             </select>
         </div>
     </div>
@@ -515,6 +575,30 @@
 
     let subDapukanPengurusTerpilih = "SEMUA";
 
+    // BARU: Fungsi Otomatis Inisialisasi Pilihan Tahun pada Dropdown Waktu
+    function inisialisasiOpsiPilihanTahun() {
+        const tahunSekarang = new Date().getFullYear();
+        const selectRekapTahun = document.getElementById('filter-rekap-tahun');
+        const selectTahunanTahun = document.getElementById('filter-tahunan-tahun');
+        
+        selectRekapTahun.innerHTML = '<option value="SEMUA">-- Semua Tahun --</option>';
+        selectTahunanTahun.innerHTML = ''; 
+
+        // Generate rentang tahun dari 2 tahun lalu hingga 3 tahun mendatang
+        for (let t = tahunSekarang - 2; t <= tahunSekarang + 3; t++) {
+            let opsi1 = document.createElement('option');
+            opsi1.value = t; opsi1.innerText = t;
+            if(t === tahunSekarang) opsi1.selected = true;
+            selectRekapTahun.appendChild(opsi1);
+
+            let opsi2 = document.createElement('option');
+            opsi2.value = t; opsi2.innerText = t;
+            if(t === tahunSekarang) opsi2.selected = true;
+            selectTahunanTahun.appendChild(opsi2);
+        }
+    }
+    inisialisasiOpsiPilihanTahun();
+
     function bukaKunciAudioKonstruktor() {
         if (!globalAudioCtx) { globalAudioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
         if (globalAudioCtx.state === 'suspended') { globalAudioCtx.resume(); }
@@ -534,7 +618,7 @@
 
     function bunyikanSuaraGagal() {
         try {
-            bukaKunciAudioConstructur();
+            bukaKunciAudioKonstruktor();
             let ctx = globalAudioCtx || new (window.AudioContext || window.webkitAudioContext)();
             let osc1 = ctx.createOscillator(); let gain1 = ctx.createGain();
             osc1.connect(gain1); gain1.connect(ctx.destination);
@@ -706,8 +790,21 @@
     async function dapatkanDataGabungan(namaKegiatan) {
         let { data: logAbsen, error } = await _supabase.from('absensi_kegiatan').select('*').eq('nama_kegiatan', namaKegiatan.toUpperCase());
         if (error || !logAbsen) return [];
-        return logAbsen.map(absen => {
+
+        // MODIFIKASI: Implementasi Filter Bulan & Tahun pada Log Data yang ditarik
+        const filterBulan = document.getElementById('filter-rekap-bulan').value;
+        const filterTahun = document.getElementById('filter-rekap-tahun').value;
+
+        let logTerfilter = logAbsen.filter(absen => {
+            let tgl = new Date(absen.waktu_absen);
+            let lulusBulan = (filterBulan === "SEMUA" || String(tgl.getMonth()) === filterBulan);
+            let lulusTahun = (filterTahun === "SEMUA" || String(tgl.getFullYear()) === filterTahun);
+            return lulusBulan && lulusTahun;
+        });
+
+        return logTerfilter.map(absen => {
             let detail = semuaDataGenerus.find(g => String(g.id_generus) === String(absen.id_generus));
+            let tanggalObj = new Date(absen.waktu_absen);
             return {
                 id: absen.id_generus, name: detail ? detail.nama_lengkap : "ID Terhapus",
                 kelompok: detail ? (detail.kelompok || "-").toUpperCase() : "-",
@@ -715,7 +812,8 @@
                 jk: detail ? (detail.jenis_kelamin || "-").toUpperCase() : "-", 
                 status: detail ? (detail.status || "-").toUpperCase() : "-",
                 metode: absen.metode_input,
-                waktu: new Date(absen.waktu_absen).toLocaleTimeString('id-ID')
+                waktu: tanggalObj.toLocaleTimeString('id-ID'),
+                tanggalLengkap: tanggalObj.toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'})
             }
         });
     }
@@ -725,7 +823,7 @@
         if(!namaKegiatan) return tampilkanNotifKustom('error', 'Gagal', 'Harap masukkan Nama Agenda!');
         
         dataAktifRekap = await dapatkanDataGabungan(namaKegiatan);
-        if(dataAktifRekap.length === 0) return tampilkanNotifKustom('error', 'Kosong', 'Tidak ada data presensi pada agenda ini.');
+        if(dataAktifRekap.length === 0) return tampilkanNotifKustom('error', 'Kosong', 'Tidak ada data presensi pada rentang waktu/agenda ini.');
         
         let container = document.getElementById('print-table-container');
         let resumeContainer = document.getElementById('resume-kehadiran-container');
@@ -733,7 +831,11 @@
         
         container.innerHTML = "";
         resumeContainer.innerHTML = "";
-        document.getElementById('cetak-waktu').innerText = "Waktu Rekap: " + new Date().toLocaleString('id-ID');
+        
+        // Membaca Teks Filter Waktu untuk disematkan pada kop cetak laporan
+        const txtBulan = document.getElementById('filter-rekap-bulan').options[document.getElementById('filter-rekap-bulan').selectedIndex].text;
+        const txtTahun = document.getElementById('filter-rekap-tahun').options[document.getElementById('filter-rekap-tahun').selectedIndex].text;
+        document.getElementById('cetak-waktu').innerText = `Periode: ${txtBulan} ${txtTahun} | Diunduh: ` + new Date().toLocaleString('id-ID');
 
         let totalHadir = dataAktifRekap.filter(d => d.metode !== 'Izin').length;
         let totalIzin = dataAktifRekap.filter(d => d.metode === 'Izin').length;
@@ -798,7 +900,7 @@
                                         <th>Nama Lengkap</th>
                                         <th style="width:50px; text-align:center;">L/P</th>
                                         <th>Status Absen</th>
-                                        <th>Metode</th>
+                                        <th>Tanggal & Waktu</th>
                                     </tr>
                                 </thead>
                                 <tbody>`;
@@ -809,8 +911,8 @@
                                 <td style="text-align:center;">${i+1}</td>
                                 <td style="font-weight:600;">${a.name}</td>
                                 <td style="text-align:center;">${genderDisplay}</td>
-                                <td>${st}</td>
-                                <td>${a.metode}</td>
+                                <td>${st} (${a.metode})</td>
+                                <td>${a.tanggalLengkap} - ${a.waktu}</td>
                              </tr>`; 
                 });
                 html += `</tbody></table></div>`;
@@ -899,7 +1001,7 @@
                                     </div>
                                 </div>
                             </th>
-                            <th>Keterangan</th>
+                            <th>Keterangan Absen</th>
                         </tr>
                     </thead>
                     <tbody>`;
@@ -916,7 +1018,7 @@
                     <td>${d.kelompok}</td>
                     <td>${d.desa}</td>
                     <td>${d.status}</td>
-                    <td>${labelStatusText} (${d.waktu})</td>
+                    <td>${labelStatusText} (${d.tanggalLengkap} - ${d.waktu})</td>
                 </tr>`; 
             });
         }
@@ -965,164 +1067,166 @@
         tutupSemuaDropdownAman(); renderTabelRekapSemuaSistem();
     }
 
-async function tarikRekapTahunanMatriks(statusPilihan) {
-    let namaKegiatan = document.getElementById('kegiatan').value.toUpperCase();
-    if(!namaKegiatan) {
-        document.getElementById('tahunan-dropdown').value = "";
-        return tampilkanNotifKustom('error', 'Gagal', 'Harap isi Nama Agenda terlebih dahulu!');
-    }
-    
-    // BARU: Menggunakan .ilike() dengan wildcard % supaya fleksibel mendeteksi text/kata kunci
-    let { data: logAbsen, error } = await _supabase
-        .from('absensi_kegiatan')
-        .select('*')
-        .ilike('nama_kegiatan', `%${namaKegiatan.trim()}%`);
+    async function tarikRekapTahunanMatriks(statusPilihan) {
+        let namaKegiatan = document.getElementById('kegiatan').value.toUpperCase();
+        if(!namaKegiatan) {
+            document.getElementById('tahunan-dropdown').value = "";
+            return tampilkanNotifKustom('error', 'Gagal', 'Harap isi Nama Agenda terlebih dahulu!');
+        }
         
-    if (error || !logAbsen) return tampilkanNotifKustom('error', 'Gagal', 'Gagal memuat data log presensi.');
-    
-    dataMentahTahunanLog = logAbsen;
-    
-    // BARU pada filter lokal: Menggunakan .includes() agar anggota dengan dapukan ganda (misal: "PENGURUS, KMM") tetap lolos sensor pencarian
-    dataMasterTahunanOrang = semuaDataGenerus.filter(g => 
-        g.status && g.status.toUpperCase().includes(statusPilihan.toUpperCase())
-    );
-    
-    filterTerpilih = {};
-    subDapukanPengurusTerpilih = "SEMUA";
-    document.getElementById('cetak-judul-kegiatan').innerText = `REKAP MATRIKS TAHUNAN: ${namaKegiatan}`;
-    document.getElementById('cetak-waktu').innerText = `Kategori: ${statusPilihan} | Tahun: ${new Date().getFullYear()}`;
-    document.getElementById('resume-kehadiran-container').innerHTML = "";
-    renderTabelMatriksTahunanSistem();
-}
-
-function renderTabelMatriksTahunanSistem() {
-    let container = document.getElementById('print-table-container');
-    let areaCetak = document.getElementById('print-area');
-    
-    let statusKategoriAktif = "";
-    if (dataMasterTahunanOrang.length > 0 && dataMasterTahunanOrang[0].status) {
-        statusKategoriAktif = dataMasterTahunanOrang[0].status.toUpperCase();
+        // MODIFIKASI: Mengambil data presensi dari database Supabase secara fleksibel menggunakan pencarian wildcard
+        let { data: logAbsen, error } = await _supabase
+            .from('absensi_kegiatan')
+            .select('*')
+            .ilike('nama_kegiatan', `%${namaKegiatan.trim()}%`);
+            
+        if (error || !logAbsen) return tampilkanNotifKustom('error', 'Gagal', 'Gagal memuat data log presensi.');
+        
+        // MODIFIKASI: Menyaring logAbsen lokal berdasarkan tahun yang dipilih pada dropdown "filter-tahunan-tahun"
+        const tahunPilihanMatriks = document.getElementById('filter-tahunan-tahun').value;
+        dataMentahTahunanLog = logAbsen.filter(l => String(new Date(l.waktu_absen).getFullYear()) === tahunPilihanMatriks);
+        
+        dataMasterTahunanOrang = semuaDataGenerus.filter(g => 
+            g.status && g.status.toUpperCase().includes(statusPilihan.toUpperCase())
+        );
+        
+        filterTerpilih = {};
+        subDapukanPengurusTerpilih = "SEMUA";
+        document.getElementById('cetak-judul-kegiatan').innerText = `REKAP MATRIKS TAHUNAN: ${namaKegiatan}`;
+        document.getElementById('cetak-waktu').innerText = `Kategori: ${statusPilihan} | Tahun: ${tahunPilihanMatriks}`;
+        document.getElementById('resume-kehadiran-container').innerHTML = "";
+        renderTabelMatriksTahunanSistem();
     }
 
-    let dataOrangTerfilter = [...dataMasterTahunanOrang];
-    let headerDinamisKolom3Html = "";
+    // BARU: Fungsi untuk memicu hitung ulang matriks tahunan saat dropdown tahun diubah
+    function pemicuUlangTahunanMatriks() {
+        const dropdownKategori = document.getElementById('tahunan-dropdown').value;
+        if(dropdownKategori) {
+            tarikRekapTahunanMatriks(dropdownKategori);
+        }
+    }
 
-    if (statusKategoriAktif === "PENGURUS") {
-        // SOLUSI PINTAR: Deteksi kata kunci fleksibel untuk KMM, PPG, DAERAH, PONDOK
-        if (subDapukanPengurusTerpilih !== "SEMUA") {
-            dataOrangTerfilter = dataOrangTerfilter.filter(o => {
-                if (!o.usia_dapukan) return false;
-                
-                // Normalisasi teks agar tidak sensitif huruf besar/kecil dan menghapus spasi liar
-                let dbValue = o.usia_dapukan.toUpperCase().trim();
-                let filterValue = subDapukanPengurusTerpilih.toUpperCase().trim();
-                
-                // Pencarian dua arah: 
-                // 1. dbValue.includes(filterValue) -> Menangani jika di DB "KETUA KMM" dan filter "KMM"
-                // 2. filterValue.includes(dbValue) -> Menangani jika di DB "KMM" dan filter "KETUA KMM"
-                return dbValue.includes(filterValue) || filterValue.includes(dbValue);
-            });
+    function renderTabelMatriksTahunanSistem() {
+        let container = document.getElementById('print-table-container');
+        let areaCetak = document.getElementById('print-area');
+        
+        let statusKategoriAktif = "";
+        if (dataMasterTahunanOrang.length > 0 && dataMasterTahunanOrang[0].status) {
+            statusKategoriAktif = dataMasterTahunanOrang[0].status.toUpperCase();
         }
 
-        headerDinamisKolom3Html = `
-            <th style="min-width:130px; padding: 4px;">
-                <select id="filter-dapukan-pengurus-inline" onchange="saringDapukanPengurusLokal(this.value)" style="width:100%; padding:6px; border-radius:6px; font-family:inherit; font-size:11px; font-weight:700; background: var(--bg-card); color: var(--text-dark); border: 1px solid var(--border-color);">
-                    <option value="SEMUA" ${subDapukanPengurusTerpilih === 'SEMUA' ? 'selected' : ''}>DAPUKAN: SEMUA</option>
-                    <option value="KMM" ${subDapukanPengurusTerpilih === 'KMM' ? 'selected' : ''}>KMM</option>
-                    <option value="PPG" ${subDapukanPengurusTerpilih === 'PPG' ? 'selected' : ''}>PPG</option>
-                    <option value="DAERAH" ${subDapukanPengurusTerpilih === 'DAERAH' ? 'selected' : ''}>DAERAH</option>
-                    <option value="PONDOK" ${subDapukanPengurusTerpilih === 'PONDOK' ? 'selected' : ''}>PONDOK</option>
-                </select>
-            </th>`;
-    } else {
-        if (filterTerpilih['kelompok'] && filterTerpilih['kelompok'].length > 0) {
-            dataOrangTerfilter = dataOrangTerfilter.filter(o => filterTerpilih['kelompok'].includes((o.kelompok || "-").toUpperCase()));
-        }
+        let dataOrangTerfilter = [...dataMasterTahunanOrang];
+        let headerDinamisKolom3Html = "";
 
-        headerDinamisKolom3Html = `
-            <th style="min-width:110px;">
-                <div class="th-filter-container">
-                    <span>Kelompok</span>
-                    <button class="excel-filter-btn ${filterTerpilih['kelompok'] ? 'active' : ''}" onclick="toggleDropdownKelompok(event)">
-                        <svg viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
-                    </button>
-                    <div class="filter-dropdown-menu" id="dropdown-filter-kelompok" onclick="event.stopPropagation()">
-                        <input type="text" class="filter-search-box" placeholder="Cari Kelompok..." oninput="cariOpsiKelompok(this.value)">
-                        <div class="filter-options-list" id="list-opsi-kelompok"></div>
-                        <div class="filter-action-buttons">
-                            <button class="filter-btn-sub filter-btn-clear" onclick="bersihkanFilterKelompok()">Clear</button>
-                            <button class="filter-btn-sub filter-btn-ok" onclick="terapkanFilterKelompok()">OK</button>
+        if (statusKategoriAktif === "PENGURUS") {
+            if (subDapukanPengurusTerpilih !== "SEMUA") {
+                dataOrangTerfilter = dataOrangTerfilter.filter(o => {
+                    if (!o.usia_dapukan) return false;
+                    let dbValue = o.usia_dapukan.toUpperCase().trim();
+                    let filterValue = subDapukanPengurusTerpilih.toUpperCase().trim();
+                    return dbValue.includes(filterValue) || filterValue.includes(dbValue);
+                });
+            }
+
+            headerDinamisKolom3Html = `
+                <th style="min-width:130px; padding: 4px;">
+                    <select id="filter-dapukan-pengurus-inline" onchange="saringDapukanPengurusLokal(this.value)" style="width:100%; padding:6px; border-radius:6px; font-family:inherit; font-size:11px; font-weight:700; background: var(--bg-card); color: var(--text-dark); border: 1px solid var(--border-color);">
+                        <option value="SEMUA" ${subDapukanPengurusTerpilih === 'SEMUA' ? 'selected' : ''}>DAPUKAN: SEMUA</option>
+                        <option value="KMM" ${subDapukanPengurusTerpilih === 'KMM' ? 'selected' : ''}>KMM</option>
+                        <option value="PPG" ${subDapukanPengurusTerpilih === 'PPG' ? 'selected' : ''}>PPG</option>
+                        <option value="DAERAH" ${subDapukanPengurusTerpilih === 'DAERAH' ? 'selected' : ''}>DAERAH</option>
+                        <option value="PONDOK" ${subDapukanPengurusTerpilih === 'PONDOK' ? 'selected' : ''}>PONDOK</option>
+                    </select>
+                </th>`;
+        } else {
+            if (filterTerpilih['kelompok'] && filterTerpilih['kelompok'].length > 0) {
+                dataOrangTerfilter = dataOrangTerfilter.filter(o => filterTerpilih['kelompok'].includes((o.kelompok || "-").toUpperCase()));
+            }
+
+            headerDinamisKolom3Html = `
+                <th style="min-width:110px;">
+                    <div class="th-filter-container">
+                        <span>Kelompok</span>
+                        <button class="excel-filter-btn ${filterTerpilih['kelompok'] ? 'active' : ''}" onclick="toggleDropdownKelompok(event)">
+                            <svg viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+                        </button>
+                        <div class="filter-dropdown-menu" id="dropdown-filter-kelompok" onclick="event.stopPropagation()">
+                            <input type="text" class="filter-search-box" placeholder="Cari Kelompok..." oninput="cariOpsiKelompok(this.value)">
+                            <div class="filter-options-list" id="list-opsi-kelompok"></div>
+                            <div class="filter-action-buttons">
+                                <button class="filter-btn-sub filter-btn-clear" onclick="bersihkanFilterKelompok()">Clear</button>
+                                <button class="filter-btn-sub filter-btn-ok" onclick="terapkanFilterKelompok()">OK</button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </th>`;
-    }
+                </th>`;
+        }
 
-    let html = `<table class="print-table">
-                <thead>
-                    <tr>
-                        <th style="width:30px; text-align:center;">No</th>
-                        <th>Nama Lengkap</th>
-                        ${headerDinamisKolom3Html}
-                        <th style="text-align:center; width:20px;">Jan</th><th style="text-align:center; width:20px;">Feb</th>
-                        <th style="text-align:center; width:20px;">Mar</th><th style="text-align:center; width:20px;">Apr</th>
-                        <th style="text-align:center; width:20px;">Mei</th><th style="text-align:center; width:20px;">Jun</th>
-                        <th style="text-align:center; width:20px;">Jul</th><th style="text-align:center; width:20px;">Agu</th>
-                        <th style="text-align:center; width:20px;">Sep</th><th style="text-align:center; width:20px;">Okt</th>
-                        <th style="text-align:center; width:20px;">Nov</th><th style="text-align:center; width:20px;">Des</th>
-                        <th style="text-align:center; width:45px; background:#f1f5f9; font-weight:700;">Hadir</th>
-                        <th style="text-align:center; width:45px; background:#ffe4e6; font-weight:700;">Izin</th>
-                    </tr>
-                </thead>
-                <tbody>`;
+        let html = `<table class="print-table">
+                    <thead>
+                        <tr>
+                            <th style="width:30px; text-align:center;">No</th>
+                            <th>Nama Lengkap</th>
+                            ${headerDinamisKolom3Html}
+                            <th style="text-align:center; width:20px;">Jan</th><th style="text-align:center; width:20px;">Feb</th>
+                            <th style="text-align:center; width:20px;">Mar</th><th style="text-align:center; width:20px;">Apr</th>
+                            <th style="text-align:center; width:20px;">Mei</th><th style="text-align:center; width:20px;">Jun</th>
+                            <th style="text-align:center; width:20px;">Jul</th><th style="text-align:center; width:20px;">Agu</th>
+                            <th style="text-align:center; width:20px;">Sep</th><th style="text-align:center; width:20px;">Okt</th>
+                            <th style="text-align:center; width:20px;">Nov</th><th style="text-align:center; width:20px;">Des</th>
+                            <th style="text-align:center; width:45px; background:#f1f5f9; font-weight:700;">Hadir</th>
+                            <th style="text-align:center; width:45px; background:#ffe4e6; font-weight:700;">Izin</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
 
-    if(dataOrangTerfilter.length === 0) {
-        html += `<tr><td colspan="17" style="text-align:center; color:#ef4444; font-weight:600; padding:20px;">Tidak ada data anggota yang cocok.</td></tr>`;
-    } else {
-        let akumulasiHadirSemua = 0;
-        let akumulasiIzinSemua = 0;
+        if(dataOrangTerfilter.length === 0) {
+            html += `<tr><td colspan="17" style="text-align:center; color:#ef4444; font-weight:600; padding:20px;">Tidak ada data anggota yang cocok.</td></tr>`;
+        } else {
+            let akumulasiHadirSemua = 0;
+            let akumulasiIzinSemua = 0;
 
-        dataOrangTerfilter.sort((a,b) => (a.nama_lengkap || '').localeCompare(b.nama_lengkap)).forEach((orang, idx) => {
-            let logOrang = dataMentahTahunanLog.filter(l => String(l.id_generus) === String(orang.id_generus));
-            let kolom3Isi = (statusKategoriAktif === "PENGURUS") ? (orang.usia_dapukan || "-").toUpperCase() : (orang.kelompok || "-").toUpperCase();
+            dataOrangTerfilter.sort((a,b) => (a.nama_lengkap || '').localeCompare(b.nama_lengkap)).forEach((orang, idx) => {
+                let logOrang = dataMentahTahunanLog.filter(l => String(l.id_generus) === String(orang.id_generus));
+                let kolom3Isi = (statusKategoriAktif === "PENGURUS") ? (orang.usia_dapukan || "-").toUpperCase() : (orang.kelompok || "-").toUpperCase();
 
-            html += `<tr>
-                        <td style="text-align:center;">${idx + 1}</td>
-                        <td style="font-weight:600;">${orang.nama_lengkap}</td>
-                        <td>${kolom3Isi}</td>`;
-            
-            let totalHadir = 0;
-            let totalIzin = 0;
-            for (let m = 0; m < 12; m++) {
-                let hadir = logOrang.some(l => new Date(l.waktu_absen).getMonth() === m && l.metode_input !== 'Izin');
-                let izin = logOrang.some(l => new Date(l.waktu_absen).getMonth() === m && l.metode_input === 'Izin');
+                html += `<tr>
+                            <td style="text-align:center;">${idx + 1}</td>
+                            <td style="font-weight:600;">${orang.nama_lengkap}</td>
+                            <td>${kolom3Isi}</td>`;
                 
-                if (hadir) { html += `<td style="text-align:center; color:#10b981; font-weight:700;">✔</td>`; totalHadir++; }
-                else if (izin) { html += `<td style="text-align:center; color:#eab308; font-weight:700; font-size:9px;">IZN</td>`; totalIzin++; }
-                else { html += `<td style="text-align:center; color:#cbd5e1;">-</td>`; }
-            }
-            
-            akumulasiHadirSemua += totalHadir;
-            akumulasiIzinSemua += totalIzin;
+                let totalHadir = 0;
+                let totalIzin = 0;
+                for (let m = 0; m < 12; m++) {
+                    let hadir = logOrang.some(l => new Date(l.waktu_absen).getMonth() === m && l.metode_input !== 'Izin');
+                    let izin = logOrang.some(l => new Date(l.waktu_absen).getMonth() === m && l.metode_input === 'Izin');
+                    
+                    if (hadir) { html += `<td style="text-align:center; color:#10b981; font-weight:700;">✔</td>`; totalHadir++; }
+                    else if (izin) { html += `<td style="text-align:center; color:#eab308; font-weight:700; font-size:9px;">IZN</td>`; totalIzin++; }
+                    else { html += `<td style="text-align:center; color:#cbd5e1;">-</td>`; }
+                }
+                
+                akumulasiHadirSemua += totalHadir;
+                akumulasiIzinSemua += totalIzin;
+
+                html += `
+                    <td style="text-align:center; font-weight:700; background:#f8fafc; color:#047857;">${totalHadir}x</td>
+                    <td style="text-align:center; font-weight:700; background:#fff5f5; color:#b91c1c;">${totalIzin}x</td>
+                </tr>`;
+            });
 
             html += `
-                <td style="text-align:center; font-weight:700; background:#f8fafc; color:#047857;">${totalHadir}x</td>
-                <td style="text-align:center; font-weight:700; background:#fff5f5; color:#b91c1c;">${totalIzin}x</td>
-            </tr>`;
-        });
+                <tr style="background: #f1f5f9; font-weight: 700;">
+                    <td colspan="15" style="text-align: right; padding: 8px;">TOTAL AKUMULASI KESELURUHAN:</td>
+                    <td style="text-align: center; color: #047857; background: #e6f4ea;">${akumulasiHadirSemua}x</td>
+                    <td style="text-align: center; color: #b91c1c; background: #fce8e6;">${akumulasiIzinSemua}x</td>
+                </tr>`;
+        }
 
-        html += `
-            <tr style="background: #f1f5f9; font-weight: 700;">
-                <td colspan="15" style="text-align: right; padding: 8px;">TOTAL AKUMULASI KESELURUHAN:</td>
-                <td style="text-align: center; color: #047857; background: #e6f4ea;">${akumulasiHadirSemua}x</td>
-                <td style="text-align: center; color: #b91c1c; background: #fce8e6;">${akumulasiIzinSemua}x</td>
-            </tr>`;
+        html += `</tbody></table>`;
+        container.innerHTML = html;
+        areaCetak.style.display = "block";
     }
-
-    html += `</tbody></table>`;
-    container.innerHTML = html;
-    areaCetak.style.display = "block";
-}
 
     function saringDapukanPengurusLokal(nilaiPilihan) {
         subDapukanPengurusTerpilih = nilaiPilihan.toUpperCase();
@@ -1184,8 +1288,8 @@ function renderTabelMatriksTahunanSistem() {
     async function eksporKeExcel() {
         let namaKegiatan = document.getElementById('kegiatan').value.toUpperCase(); if(!namaKegiatan) return tampilkanNotifKustom('error', 'Gagal', 'Isi nama agenda!');
         let dataMurni = await dapatkanDataGabungan(namaKegiatan);
-        let csv = "No,Nama Lengkap,Kelompok,Desa,Status,Waktu\n";
-        dataMurni.forEach((d, i) => { csv += `${i+1},"${d.name}","${d.kelompok}","${d.desa}","${d.status}","${d.waktu}"\n`; });
+        let csv = "No,Nama Lengkap,Kelompok,Desa,Status,Tanggal & Waktu,Metode\n";
+        dataMurni.forEach((d, i) => { csv += `${i+1},"${d.name}","${d.kelompok}","${d.desa}","${d.status}","${d.tanggalLengkap} - ${d.waktu}","${d.metode}"\n`; });
         let blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
         let link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `REKAP_${namaKegiatan}.csv`; link.click();
     }
