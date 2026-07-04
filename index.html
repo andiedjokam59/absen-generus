@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sistem Presensi Kegiatan</title>
+    <title>Sistem Presensi Kegiatan (Offline Ready)</title>
     <link rel="manifest" href="manifest.json">
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -368,7 +368,6 @@
             gap: 16px;
         }
 
-        /* Desain Bar Pemilih Waktu Fleksibel Baru */
         .waktu-filter-row {
             grid-column: span 6;
             display: flex;
@@ -457,7 +456,6 @@
     <div class="section-title">Menu Rekap & Penyimpanan</div>
     <div class="action-row">
         
-        <!-- BARU: Elemen Filter Bulan & Tahun Utama untuk Rekap Semua, Desa & Klp -->
         <div class="waktu-filter-row">
             <select id="filter-rekap-bulan" class="waktu-select">
                 <option value="SEMUA">-- Semua Bulan --</option>
@@ -511,7 +509,6 @@
             Excel
         </button>
 
-        <!-- BARU: Elemen Rekap Tahunan Terintegrasi dengan Pilihan Tahun Khusus -->
         <div class="select-wrapper custom-dropdown-border" title="Rekap Tahunan" style="grid-column: span 6; margin-top: 12px; padding: 10px 0; min-height: 50px;">
             <div style="display:flex; align-items:center; gap:8px; justify-content:center; width:100%; padding:0 12px; box-sizing:border-box;">
                 <svg viewBox="0 0 24 24" style="stroke: var(--primary); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; width:18px; height:18px; flex-shrink:0;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
@@ -526,7 +523,6 @@
             </select>
         </div>
         
-        <!-- BARU: Pilihan Tahun khusus untuk Laporan Matriks Tahunan -->
         <div style="grid-column: span 6; display:flex; align-items:center; gap:6px; margin-top:4px;">
             <label style="margin:0; font-size:10px; color:var(--text-muted); white-space:nowrap;">SET TAHUN MATRIKS:</label>
             <select id="filter-tahunan-tahun" class="waktu-select" style="padding:6px 10px;" onchange="pemicuUlangTahunanMatriks()">
@@ -570,8 +566,6 @@
     let pengunciScanAktif = false; 
     let globalAudioCtx = null;
     let toastTimeout = null;
-
-    // Diubah menjadi Array agar mendukung multi-select dapukan pengurus
     let subDapukanPengurusTerpilih = []; 
 
     function inisialisasiOpsiPilihanTahun() {
@@ -688,14 +682,40 @@
         document.getElementById('cetak-judul-kegiatan').innerText = agenda ? `Laporan Presensi: ${agenda}` : "Laporan Presensi Kegiatan";
     }
 
-    window.addEventListener('online', () => { netIndicator.innerText = "● Online"; netIndicator.className = "net-status online"; });
-    window.addEventListener('offline', () => { netIndicator.innerText = "● Offline"; netIndicator.className = "net-status offline"; });
+    // MANAJEMEN STATUS OFFLINE & ONLINE AUTOMATIC
+    function updateStatusInternet() {
+        if (navigator.onLine) {
+            netIndicator.innerText = "● Online";
+            netIndicator.className = "net-status online";
+            sinkronisasiDataOfflineKeCloud();
+        } else {
+            netIndicator.innerText = "● Offline";
+            netIndicator.className = "net-status offline";
+        }
+    }
+    window.addEventListener('online', updateStatusInternet);
+    window.addEventListener('offline', updateStatusInternet);
 
     async function muatSemuaGenerus() {
-        try {
-            let { data: generus, error } = await _supabase.from('data_generus').select('*');
-            if (!error) { semuaDataGenerus = generus; searchInput.placeholder = `Cari di antara ${generus.length} data...`; }
-        } catch (e) { searchInput.placeholder = "Gagal memuat data (Mode Offline)"; }
+        // Coba ambil cache lokal terlebih dahulu agar instan saat dibuka
+        const lokalGenerus = localStorage.getItem('cache_data_generus');
+        if (lokalGenerus) {
+            semuaDataGenerus = JSON.parse(lokalGenerus);
+            searchInput.placeholder = `Cari di antara ${semuaDataGenerus.length} data (Lokal)...`;
+        }
+
+        if (navigator.onLine) {
+            try {
+                let { data: generus, error } = await _supabase.from('data_generus').select('*');
+                if (!error && generus) { 
+                    semuaDataGenerus = generus; 
+                    localStorage.setItem('cache_data_generus', JSON.stringify(generus));
+                    searchInput.placeholder = `Cari di antara ${generus.length} data...`; 
+                }
+            } catch (e) {
+                console.log("Gagal sinkron data master dari cloud, menggunakan cadangan lokal.");
+            }
+        }
     }
     muatSemuaGenerus();
 
@@ -726,79 +746,117 @@
     let html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 220 });
     html5QrcodeScanner.render(onScanSuccess);
 
+    // SISTEM PENCATATAN OFFLINE & DUPILKASI CHECKER LOKAL
     async function prosesAbsensi(idGenerus, metode) {
         let namaKegiatan = document.getElementById('kegiatan').value.toUpperCase();
         if(!namaKegiatan) { 
             bunyikanSuaraGagal(); 
-            tampilkanNotifKustom('error', 'Gagal Scan', 'Harap isi Nama Agenda terlebih dahulu!'); 
+            tampilkanNotifKustom('error', 'Gagal Presensi', 'Harap isi Nama Agenda terlebih dahulu!'); 
             return; 
         }
         
         let profil = semuaDataGenerus.find(g => g.id_generus == idGenerus) || { nama_lengkap: "ID: " + idGenerus };
+        let waktuSekarang = new Date();
         
-        try {
-            let { data: logTerakhir, error: errorCek } = await _supabase
-                .from('absensi_kegiatan')
-                .select('waktu_absen')
-                .eq('nama_kegiatan', namaKegiatan.trim())
-                .eq('id_generus', idGenerus)
-                .order('waktu_absen', { ascending: false })
-                .limit(1);
-
-            if (errorCek) throw errorCek;
-
-            if (logTerakhir && logTerakhir.length > 0) {
-                let waktuAbsenTerakhir = new Date(logTerakhir[0].waktu_absen);
-                let waktuSekarang = new Date();
-                let selisihJam = (waktuSekarang - waktuAbsenTerakhir) / (1000 * 60 * 60);
-
-                if (selisihJam < 3) {
-                    bunyikanSuaraGagal(); 
-                    let sisaMenit = Math.ceil((3 - selisihJam) * 60);
-                    tampilkanNotifKustom('error', 'Sudah Absen', `${profil.nama_lengkap} kembali ${sisaMenit} menit lagi.`);
-                    return; 
-                }
-            }
-
-            const dataAbsen = { 
-                nama_kegiatan: namaKegiatan.trim(), 
-                id_generus: idGenerus, 
-                metode_input: metode, 
-                waktu_absen: new Date().toISOString() 
-            };
-            
-            let { error: errorInsert } = await _supabase.from('absensi_kegiatan').insert([dataAbsen]);
-            if (!errorInsert) { 
-                bunyikanSuaraSukses(); 
-                tampilkanNotifKustom('success', 'Scan Berhasil', profil.nama_lengkap);
-            } else {
-                throw errorInsert;
-            }
-
-        } catch (err) {
-            bunyikanSuaraGagal();
-            tampilkanNotifKustom('error', 'Sistem Error', 'Terjadi kesalahan pemrosesan database.');
+        // Ambil riwayat log lokal & cloud gabungan untuk proteksi double scan (3 jam)
+        let localLogs = JSON.parse(localStorage.getItem('absensi_kegiatan_lokal') || '[]');
+        let riwayatGabungan = [...localLogs];
+        
+        if (navigator.onLine) {
+            try {
+                let { data: cloudLogs } = await _supabase
+                    .from('absensi_kegiatan')
+                    .select('waktu_absen')
+                    .eq('nama_kegiatan', namaKegiatan.trim())
+                    .eq('id_generus', idGenerus);
+                if (cloudLogs) riwayatGabungan = riwayatGabungan.concat(cloudLogs);
+            } catch(e) {}
         }
+
+        let logTerakhirSama = riwayatGabungan
+            .filter(l => new Date(l.waktu_absen))
+            .sort((a,b) => new Date(b.waktu_absen) - new Date(a.waktu_absen))[0];
+
+        if (logTerakhirSama) {
+            let selisihJam = (waktuSekarang - new Date(logTerakhirSama.waktu_absen)) / (1000 * 60 * 60);
+            if (selisihJam < 3) {
+                bunyikanSuaraGagal(); 
+                let sisaMenit = Math.ceil((3 - selisihJam) * 60);
+                tampilkanNotifKustom('error', 'Sudah Absen', `${profil.nama_lengkap} kembali ${sisaMenit} menit lagi.`);
+                return; 
+            }
+        }
+
+        const dataAbsenBaru = { 
+            nama_kegiatan: namaKegiatan.trim(), 
+            id_generus: idGenerus, 
+            metode_input: metode, 
+            waktu_absen: waktuSekarang.toISOString() 
+        };
+
+        // Selalu amankan data di LocalStorage terlebih dahulu (Sebagai buffer Offline)
+        localLogs.push(dataAbsenBaru);
+        localStorage.setItem('absensi_kegiatan_lokal', JSON.stringify(localLogs));
+
+        bunyikanSuaraSukses();
+        
+        if (navigator.onLine) {
+            // Jika online, langsung coba upload ke cloud saat itu juga
+            try {
+                let { error } = await _supabase.from('absensi_kegiatan').insert([dataAbsenBaru]);
+                if (!error) {
+                    // Jika sukses dikirim, hapus dari antrean offline lokal yang barusan dimasukkan
+                    let logsSesudahUpload = JSON.parse(localStorage.getItem('absensi_kegiatan_lokal') || '[]');
+                    logsSesudahUpload.pop(); 
+                    localStorage.setItem('absensi_kegiatan_lokal', JSON.stringify(logsSesudahUpload));
+                    tampilkanNotifKustom('success', 'Berhasil (Cloud)', profil.nama_lengkap);
+                    return;
+                }
+            } catch (err) {}
+        }
+        
+        // Output notifikasi mode offline berhasil disimpan lokal
+        tampilkanNotifKustom('success', 'Berhasil (Offline)', profil.nama_lengkap + ' [Tersimpan Lokal]');
     }
 
     function inputManualKehadiran() { if(!selectedIdInput.value) return tampilkanNotifKustom('error', 'Gagal', 'Pilih nama terlebih dahulu!'); prosesAbsensi(selectedIdInput.value, "Manual"); searchInput.value=''; selectedIdInput.value=''; }
     function inputManualIziin() { if(!selectedIdInput.value) return tampilkanNotifKustom('error', 'Gagal', 'Pilih nama terlebih dahulu!'); prosesAbsensi(selectedIdInput.value, "Izin"); searchInput.value=''; selectedIdInput.value=''; }
 
+    // Dapatkan data komparatif offline + online secara transparan
     async function dapatkanDataGabungan(namaKegiatan) {
-        let { data: logAbsen, error } = await _supabase.from('absensi_kegiatan').select('*').eq('nama_kegiatan', namaKegiatan.toUpperCase());
-        if (error || !logAbsen) return [];
+        let logAbsen = [];
+        
+        if (navigator.onLine) {
+            try {
+                let { data: logs, error } = await _supabase.from('absensi_kegiatan').select('*').eq('nama_kegiatan', namaKegiatan.toUpperCase());
+                if (!error && logs) logAbsen = logs;
+            } catch(e) {}
+        }
+
+        // Gabungkan dengan antrean log lokal yang belum terupload agar hasil rekap real-time akurat
+        let localLogs = JSON.parse(localStorage.getItem('absensi_kegiatan_lokal') || '[]');
+        let localLogsFilter = localLogs.filter(l => l.nama_kegiatan.toUpperCase() === namaKegiatan.toUpperCase());
+        
+        // Kombinasikan data unik agar tidak duplikat saat ditarik
+        let gabunganSemua = [...logAbsen, ...localLogsFilter];
+        let mapUnik = new Map();
+        gabunganSemua.forEach(item => {
+            let key = item.id_generus + "_" + item.waktu_absen;
+            mapUnik.set(key, item);
+        });
+        let logTerfilterFix = Array.from(mapUnik.values());
 
         const filterBulan = document.getElementById('filter-rekap-bulan').value;
         const filterTahun = document.getElementById('filter-rekap-tahun').value;
 
-        let logTerfilter = logAbsen.filter(absen => {
+        let logTerfilterwaktu = logTerfilterFix.filter(absen => {
             let tgl = new Date(absen.waktu_absen);
             let lulusBulan = (filterBulan === "SEMUA" || String(tgl.getMonth()) === filterBulan);
             let lulusTahun = (filterTahun === "SEMUA" || String(tgl.getFullYear()) === filterTahun);
             return lulusBulan && lulusTahun;
         });
 
-        return logTerfilter.map(absen => {
+        return logTerfilterwaktu.map(absen => {
             let detail = semuaDataGenerus.find(g => String(g.id_generus) === String(absen.id_generus));
             let tanggalObj = new Date(absen.waktu_absen);
             return {
@@ -812,6 +870,48 @@
                 tanggalLengkap: tanggalObj.toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'})
             }
         });
+    }
+
+    // OTOMATIS BACKGROUND BACKGROUND SYNC DATA OFFLINE KE CLOUD
+    async function sinkronisasiDataOfflineKeCloud() {
+        if (!navigator.onLine) return;
+        let localLogs = JSON.parse(localStorage.getItem('absensi_kegiatan_lokal') || '[]');
+        if (localLogs.length === 0) return;
+
+        let berhasilUploadCount = 0;
+        let logsSisaGagal = [];
+
+        for (let i = 0; i < localLogs.length; i++) {
+            try {
+                let { error } = await _supabase.from('absensi_kegiatan').insert([localLogs[i]]);
+                if (!error) {
+                    berhasilUploadCount++;
+                } else {
+                    logsSisaGagal.push(localLogs[i]);
+                }
+            } catch (e) {
+                logsSisaGagal.push(localLogs[i]);
+            }
+        }
+
+        localStorage.setItem('absensi_kegiatan_lokal', JSON.stringify(logsSisaGagal));
+        if (berhasilUploadCount > 0) {
+            tampilkanNotifKustom('success', 'Backup Otomatis', `${berhasilUploadCount} data lokal berhasil disinkronkan ke Cloud!`);
+        }
+    }
+
+    // SINKRONISASI MANUAL TRIGGER BUTTON
+    async function sinkronisasiManual() {
+        if (!navigator.onLine) {
+            tampilkanNotifKustom('error', 'Gagal', 'Anda sedang offline. Tidak bisa memaksa sinkronisasi.');
+            return;
+        }
+        let localLogs = JSON.parse(localStorage.getItem('absensi_kegiatan_lokal') || '[]');
+        if(localLogs.length === 0) {
+            tampilkanNotifKustom('success', 'Sinkronisasi', 'Semua data lokal Anda sudah up-to-date di Cloud.');
+            return;
+        }
+        await sinkronisasiDataOfflineKeCloud();
     }
 
     async function tarikDanCetakLaporan(jenis, langsungPrint = false) {
@@ -1062,6 +1162,7 @@
         tutupSemuaDropdownAman(); renderTabelRekapSemuaSistem();
     }
 
+    // PENANGANAN REKAP MATRIKS TAHUNAN OFFLINE COMPATIBLE
     async function tarikRekapTahunanMatriks(statusPilihan) {
         let namaKegiatan = document.getElementById('kegiatan').value.toUpperCase();
         if(!namaKegiatan) {
@@ -1069,22 +1170,36 @@
             return tampilkanNotifKustom('error', 'Gagal', 'Harap isi Nama Agenda terlebih dahulu!');
         }
         
-        let { data: logAbsen, error } = await _supabase
-            .from('absensi_kegiatan')
-            .select('*')
-            .ilike('nama_kegiatan', `%${namaKegiatan.trim()}%`);
-            
-        if (error || !logAbsen) return tampilkanNotifKustom('error', 'Gagal', 'Gagal memuat data log presensi.');
+        let logAbsen = [];
+        if (navigator.onLine) {
+            try {
+                let { data: remoteLogs } = await _supabase
+                    .from('absensi_kegiatan')
+                    .select('*')
+                    .ilike('nama_kegiatan', `%${namaKegiatan.trim()}%`);
+                if (remoteLogs) logAbsen = remoteLogs;
+            } catch(e) {}
+        }
+        
+        // Gabungkan riwayat lokal offline buffer agar rekap tahunan up-to-date
+        let localLogs = JSON.parse(localStorage.getItem('absensi_kegiatan_lokal') || '[]');
+        let localLogsFilter = localLogs.filter(l => l.nama_kegiatan.toUpperCase().includes(namaKegiatan.trim()));
+        
+        let gabunganSemua = [...logAbsen, ...localLogsFilter];
+        let mapUnik = new Map();
+        gabunganSemua.forEach(item => {
+            let key = item.id_generus + "_" + item.waktu_absen;
+            mapUnik.set(key, item);
+        });
         
         const tahunPilihanMatriks = document.getElementById('filter-tahunan-tahun').value;
-        dataMentahTahunanLog = logAbsen.filter(l => String(new Date(l.waktu_absen).getFullYear()) === tahunPilihanMatriks);
+        dataMentahTahunanLog = Array.from(mapUnik.values()).filter(l => String(new Date(l.waktu_absen).getFullYear()) === tahunPilihanMatriks);
         
-        // Perbaikan logika filter pengambilan data master orang sesuai instruksi
         if (statusPilihan === "JAMA'AH UMUM") {
             dataMasterTahunanOrang = semuaDataGenerus.filter(g => 
                 g.status && 
                 ["GENERUS", "PENGURUS", "MT/MS", "JAMA'AH UMUM"].includes(g.status.toUpperCase()) &&
-                g.kelompok_aktif !== false // Menghandle filter kelompok yang masih aktif
+                g.kelompok_aktif !== false
             );
         } else {
             dataMasterTahunanOrang = semuaDataGenerus.filter(g => 
@@ -1093,7 +1208,7 @@
         }
         
         filterTerpilih = {};
-        subDapukanPengurusTerpilih = []; // Default dikosongkan agar memunculkan semua dapukan
+        subDapukanPengurusTerpilih = []; 
         document.getElementById('cetak-judul-kegiatan').innerText = `REKAP MATRIKS TAHUNAN: ${namaKegiatan}`;
         document.getElementById('cetak-waktu').innerText = `Kategori: ${statusPilihan} | Tahun: ${tahunPilihanMatriks}`;
         document.getElementById('resume-kehadiran-container').innerHTML = "";
@@ -1119,7 +1234,6 @@
         let dataOrangTerfilter = [...dataMasterTahunanOrang];
         let headerDinamisKolom3Html = "";
 
-        // MODIFIKASI: Mengubah filter Dapukan Pengurus menjadi sistem Excel filter dropdown multi-select
         if (statusKategoriAktif === "PENGURUS") {
             if (subDapukanPengurusTerpilih.length > 0) {
                 dataOrangTerfilter = dataOrangTerfilter.filter(o => {
@@ -1235,7 +1349,6 @@
         areaCetak.style.display = "block";
     }
 
-    // BARU: Fungsi untuk memunculkan multi-select menu pada kolom dapukan pengurus + teks Kelompok dan Desa
     function toggleDropdownDapukanPengurus(event) {
         event.stopPropagation();
         let menu = document.getElementById('dropdown-filter-dapukan');
@@ -1247,7 +1360,6 @@
             menu.style.display = 'block';
             globalOverlay.style.display = 'block';
             
-            // Opsi sesuai permintaan dengan tambahan tulisan "KELOMPOK" dan "DESA"
             let listDapukanMaster = ["KMM", "PPG", "DAERAH", "PONDOK", "KELOMPOK", "DESA"];
             let containerOpsi = document.getElementById('list-opsi-dapukan');
             containerOpsi.innerHTML = '';
@@ -1263,7 +1375,6 @@
         }
     }
 
-    // BARU: Fungsi konfirmasi filter dapukan pengurus multi-select
     function terapkanFilterDapukanPengurus() {
         let cbs = document.querySelectorAll('#list-opsi-dapukan input[type="checkbox"]');
         let terpilih = []; 
@@ -1273,7 +1384,6 @@
         renderTabelMatriksTahunanSistem();
     }
 
-    // BARU: Fungsi pembersihan filter dapukan pengurus
     function bersihkanFilterDapukanPengurus() { 
         subDapukanPengurusTerpilih = []; 
         tutupSemuaDropdownAman(); 
@@ -1341,9 +1451,8 @@
         let link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `REKAP_${namaKegiatan}.csv`; link.click();
     }
 
-    async function sinkronisasiManual() {
-        tampilkanNotifKustom('success', 'Sinkronisasi', 'Sistem tersambung secara otomatis ke Cloud.');
-    }
+    // Jalankan pengecekan koneksi awal saat aplikasi dimuat
+    updateStatusInternet();
 </script>  
 </body>
 </html>
