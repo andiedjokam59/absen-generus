@@ -5,18 +5,18 @@
   "scope": "./",
   "start_url": "./index.html",
   "name": "Presensi Kegiatan",
-  "short_name": "Presensi",
+  "short_name": "Presensi IQ",
   "description": "Aplikasi Presensi Insan Qur'any Tawangmangu",
   "icons": [
     {
-      "src": "logo insan qurany.jpg",
+      "src": "Logo remaja daerah.png",
       "sizes": "192x192",
       "type": "image/jpeg"
     },
     {
-      "src": "logo insan qurany.jpg",
+      "src": "Logo remaja daerah.png",
       "sizes": "512x512",
-      "type": "image/jpeg"
+      "type": "image/png"
     }
   ]
 }
