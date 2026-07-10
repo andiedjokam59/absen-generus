@@ -698,6 +698,7 @@
     window.addEventListener('offline', updateStatusInternet);
 
     async function muatSemuaGenerus() {
+        // Coba ambil cache lokal terlebih dahulu agar instan saat dibuka
         const lokalGenerus = localStorage.getItem('cache_data_generus');
         if (lokalGenerus) {
             semuaDataGenerus = JSON.parse(lokalGenerus);
@@ -746,9 +747,7 @@
     let html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 220 });
     html5QrcodeScanner.render(onScanSuccess);
 
-    // =================================================================
-    // FIXED: IMPLEMENTASI SOLUSI A (RESPONS INSTAN TANPA DELAY INTERNET)
-    // =================================================================
+    // SISTEM PENCATATAN OFFLINE & DUPILKASI CHECKER LOKAL
     async function prosesAbsensi(idGenerus, metode) {
         let namaKegiatan = document.getElementById('kegiatan').value.toUpperCase();
         if(!namaKegiatan) { 
@@ -760,14 +759,27 @@
         let profil = semuaDataGenerus.find(g => g.id_generus == idGenerus) || { nama_lengkap: "ID: " + idGenerus };
         let waktuSekarang = new Date();
         
-        // 1. Amankan pengecekan duplikasi secara lokal terlebih dahulu (supaya cepat)
+        // Ambil riwayat log lokal & cloud gabungan untuk proteksi double scan (3 jam)
         let localLogs = JSON.parse(localStorage.getItem('absensi_kegiatan_lokal') || '[]');
-        let logTerakhirSamaLokal = localLogs
-            .filter(l => l.id_generus == idGenerus && l.nama_kegiatan.toUpperCase() === namaKegiatan.toUpperCase())
+        let riwayatGabungan = [...localLogs];
+        
+        if (navigator.onLine) {
+            try {
+                let { data: cloudLogs } = await _supabase
+                    .from('absensi_kegiatan')
+                    .select('waktu_absen')
+                    .eq('nama_kegiatan', namaKegiatan.trim())
+                    .eq('id_generus', idGenerus);
+                if (cloudLogs) riwayatGabungan = riwayatGabungan.concat(cloudLogs);
+            } catch(e) {}
+        }
+
+        let logTerakhirSama = riwayatGabungan
+            .filter(l => new Date(l.waktu_absen))
             .sort((a,b) => new Date(b.waktu_absen) - new Date(a.waktu_absen))[0];
 
-        if (logTerakhirSamaLokal) {
-            let selisihJam = (waktuSekarang - new Date(logTerakhirSamaLokal.waktu_absen)) / (1000 * 60 * 60);
+        if (logTerakhirSama) {
+            let selisihJam = (waktuSekarang - new Date(logTerakhirSama.waktu_absen)) / (1000 * 60 * 60);
             if (selisihJam < 3) {
                 bunyikanSuaraGagal(); 
                 let sisaMenit = Math.ceil((3 - selisihJam) * 60);
@@ -783,62 +795,35 @@
             waktu_absen: waktuSekarang.toISOString() 
         };
 
-        // 2. 🔥 SOLUSI A: INSTAN - Langsung bunyikan suara & simpan lokal sebelum menyentuh cloud/Supabase
-        bunyikanSuaraSukses();
-        
+        // Selalu amankan data di LocalStorage terlebih dahulu (Sebagai buffer Offline)
         localLogs.push(dataAbsenBaru);
         localStorage.setItem('absensi_kegiatan_lokal', JSON.stringify(localLogs));
 
-        // Tampilkan feedback sukses instan kepada admin/user
+        bunyikanSuaraSukses();
+        
         if (navigator.onLine) {
-            tampilkanNotifKustom('success', 'Berhasil', profil.nama_lengkap + ' (Diproses)');
-        } else {
-            tampilkanNotifKustom('success', 'Berhasil (Offline)', profil.nama_lengkap + ' [Tersimpan Lokal]');
+            // Jika online, langsung coba upload ke cloud saat itu juga
+            try {
+                let { error } = await _supabase.from('absensi_kegiatan').insert([dataAbsenBaru]);
+                if (!error) {
+                    // Jika sukses dikirim, hapus dari antrean offline lokal yang barusan dimasukkan
+                    let logsSesudahUpload = JSON.parse(localStorage.getItem('absensi_kegiatan_lokal') || '[]');
+                    logsSesudahUpload.pop(); 
+                    localStorage.setItem('absensi_kegiatan_lokal', JSON.stringify(logsSesudahUpload));
+                    tampilkanNotifKustom('success', 'Berhasil (Cloud)', profil.nama_lengkap);
+                    return;
+                }
+            } catch (err) {}
         }
-
-        // 3. BACKGROUND PROCESS: Eksekusi pengunggahan dan validasi cloud berjalan di latar belakang tanpa menahan proses scan
-        if (navigator.onLine) {
-            // Jalankan proses Supabase secara asynchronous tanpa "await" yang menahan fungsi utama
-            _supabase.from('absensi_kegiatan').select('waktu_absen')
-                .eq('nama_kegiatan', namaKegiatan.trim())
-                .eq('id_generus', idGenerus)
-                .then(({ data: cloudLogs }) => {
-                    let doubleDiCloud = false;
-                    if (cloudLogs && cloudLogs.length > 0) {
-                        let logTerakhirCloud = cloudLogs.sort((a,b) => new Date(b.waktu_absen) - new Date(a.waktu_absen))[0];
-                        let selisihJamCloud = (waktuSekarang - new Date(logTerakhirCloud.waktu_absen)) / (1000 * 60 * 60);
-                        if (selisihJamCloud < 3) {
-                            doubleDiCloud = true;
-                        }
-                    }
-
-                    if (doubleDiCloud) {
-                        // Jika ternyata terdeteksi double scan di cloud, bersihkan log lokal terakhir yang barusan masuk
-                        let logsSesudahUpload = JSON.parse(localStorage.getItem('absensi_kegiatan_lokal') || '[]');
-                        logsSesudahUpload.pop();
-                        localStorage.setItem('absensi_kegiatan_lokal', JSON.stringify(logsSesudahUpload));
-                        console.log("Dibatalkan di cloud: Sudah melakukan presensi dalam 3 jam terakhir.");
-                    } else {
-                        // Jika cloud aman & unik, kirim datanya ke tabel Supabase
-                        _supabase.from('absensi_kegiatan').insert([dataAbsenBaru]).then(({ error }) => {
-                            if (!error) {
-                                // Jika sukses terupload ke cloud, hilangkan data antrean buffer lokal tersebut
-                                let logsSesudahUpload = JSON.parse(localStorage.getItem('absensi_kegiatan_lokal') || '[]');
-                                let indexHapus = logsSesudahUpload.findIndex(l => l.waktu_absen === dataAbsenBaru.waktu_absen && l.id_generus === dataAbsenBaru.id_generus);
-                                if (indexHapus !== -1) logsSesudahUpload.splice(indexHapus, 1);
-                                localStorage.setItem('absensi_kegiatan_lokal', JSON.stringify(logsSesudahUpload));
-                            }
-                        });
-                    }
-                }).catch(err => {
-                    console.log("Gagal sinkron latar belakang, data tetap aman di lokal.");
-                });
-        }
+        
+        // Output notifikasi mode offline berhasil disimpan lokal
+        tampilkanNotifKustom('success', 'Berhasil (Offline)', profil.nama_lengkap + ' [Tersimpan Lokal]');
     }
 
     function inputManualKehadiran() { if(!selectedIdInput.value) return tampilkanNotifKustom('error', 'Gagal', 'Pilih nama terlebih dahulu!'); prosesAbsensi(selectedIdInput.value, "Manual"); searchInput.value=''; selectedIdInput.value=''; }
     function inputManualIziin() { if(!selectedIdInput.value) return tampilkanNotifKustom('error', 'Gagal', 'Pilih nama terlebih dahulu!'); prosesAbsensi(selectedIdInput.value, "Izin"); searchInput.value=''; selectedIdInput.value=''; }
 
+    // Dapatkan data komparatif offline + online secara transparan
     async function dapatkanDataGabungan(namaKegiatan) {
         let logAbsen = [];
         
@@ -849,9 +834,11 @@
             } catch(e) {}
         }
 
+        // Gabungkan dengan antrean log lokal yang belum terupload agar hasil rekap real-time akurat
         let localLogs = JSON.parse(localStorage.getItem('absensi_kegiatan_lokal') || '[]');
         let localLogsFilter = localLogs.filter(l => l.nama_kegiatan.toUpperCase() === namaKegiatan.toUpperCase());
         
+        // Kombinasikan data unik agar tidak duplikat saat ditarik
         let gabunganSemua = [...logAbsen, ...localLogsFilter];
         let mapUnik = new Map();
         gabunganSemua.forEach(item => {
@@ -886,6 +873,7 @@
         });
     }
 
+    // OTOMATIS BACKGROUND BACKGROUND SYNC DATA OFFLINE KE CLOUD
     async function sinkronisasiDataOfflineKeCloud() {
         if (!navigator.onLine) return;
         let localLogs = JSON.parse(localStorage.getItem('absensi_kegiatan_lokal') || '[]');
@@ -913,6 +901,7 @@
         }
     }
 
+    // SINKRONISASI MANUAL TRIGGER BUTTON
     async function sinkronisasiManual() {
         if (!navigator.onLine) {
             tampilkanNotifKustom('error', 'Gagal', 'Anda sedang offline. Tidak bisa memaksa sinkronisasi.');
@@ -1174,6 +1163,7 @@
         tutupSemuaDropdownAman(); renderTabelRekapSemuaSistem();
     }
 
+    // PENANGANAN REKAP MATRIKS TAHUNAN OFFLINE COMPATIBLE
     async function tarikRekapTahunanMatriks(statusPilihan) {
         let namaKegiatan = document.getElementById('kegiatan').value.toUpperCase();
         if(!namaKegiatan) {
@@ -1192,6 +1182,7 @@
             } catch(e) {}
         }
         
+        // Gabungkan riwayat lokal offline buffer agar rekap tahunan up-to-date
         let localLogs = JSON.parse(localStorage.getItem('absensi_kegiatan_lokal') || '[]');
         let localLogsFilter = localLogs.filter(l => l.nama_kegiatan.toUpperCase().includes(namaKegiatan.trim()));
         
@@ -1461,6 +1452,7 @@
         let link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `REKAP_${namaKegiatan}.csv`; link.click();
     }
 
+    // Jalankan pengecekan koneksi awal saat aplikasi dimuat
     updateStatusInternet();
 </script>  
 </body>
