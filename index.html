@@ -797,31 +797,31 @@
         
             if (navigator.onLine) {
         // Jika online, langsung coba upload ke cloud saat itu juga
-        try {
-            let { error } = await _supabase.from('absensi_kegiatan').insert([dataAbsenBaru]);
-            if (!error) {
-                // Ambil data terbaru dari localStorage untuk memastikan sinkronisasi array yang aman
-                let logsSesudahUpload = JSON.parse(localStorage.getItem('absensi_kegiatan_lokal') || '[]');
-                // Cari index data yang persis sama dengan yang baru saja sukses diupload, lalu hapus
-                let indexHapus = logsSesudahUpload.findIndex(l => l.id_generus === dataAbsenBaru.id_generus && l.waktu_absen === dataAbsenBaru.waktu_absen);
-                if (indexHapus !== -1) {
-                    logsSesudahUpload.splice(indexHapus, 1);
+                try {
+                    let { error } = await _supabase.from('absensi_kegiatan').insert([dataAbsenBaru]);
+                    if (!error) {
+                        // Ambil data terbaru dari localStorage untuk memastikan sinkronisasi array yang aman
+                        let logsSesudahUpload = JSON.parse(localStorage.getItem('absensi_kegiatan_lokal') || '[]');
+                        // Cari index data yang persis sama dengan yang baru saja sukses diupload, lalu hapus
+                        let indexHapus = logsSesudahUpload.findIndex(l => l.id_generus === dataAbsenBaru.id_generus && l.waktu_absen === dataAbsenBaru.waktu_absen);
+                        if (indexHapus !== -1) {
+                            logsSesudahUpload.splice(indexHapus, 1);
+                        }
+                        localStorage.setItem('absensi_kegiatan_lokal', JSON.stringify(logsSesudahUpload));
+                        tampilkanNotifKustom('success', 'Berhasil (Cloud)', profil.nama_lengkap);
+                         return;
+                    } else {
+                        // Menampilkan error Supabase di console log untuk mempermudah debugging
+                        console.error("Supabase Insert Error:", error);
+                    }
+                } catch (err) {
+                    console.error("Catch Error:", err);
                 }
-                localStorage.setItem('absensi_kegiatan_lokal', JSON.stringify(logsSesudahUpload));
-                tampilkanNotifKustom('success', 'Berhasil (Cloud)', profil.nama_lengkap);
-                return;
-            } else {
-                // Menampilkan error Supabase di console log untuk mempermudah debugging
-                console.error("Supabase Insert Error:", error);
             }
-        } catch (err) {
-            console.error("Catch Error:", err);
-        }
-    }
     
-    // Output notifikasi jika gagal ke cloud / sedang offline, namun berhasil disimpan lokal
-    tampilkanNotifKustom('success', 'Berhasil (Offline)', profil.nama_lengkap + ' [Tersimpan Lokal]');
-}
+            // Output notifikasi jika gagal ke cloud / sedang offline, namun berhasil disimpan lokal
+            tampilkanNotifKustom('success', 'Berhasil (Offline)', profil.nama_lengkap + ' [Tersimpan Lokal]');
+        }
 
     function inputManualKehadiran() { if(!selectedIdInput.value) return tampilkanNotifKustom('error', 'Gagal', 'Pilih nama terlebih dahulu!'); prosesAbsensi(selectedIdInput.value, "Manual"); searchInput.value=''; selectedIdInput.value=''; }
     function inputManualIziin() { if(!selectedIdInput.value) return tampilkanNotifKustom('error', 'Gagal', 'Pilih nama terlebih dahulu!'); prosesAbsensi(selectedIdInput.value, "Izin"); searchInput.value=''; selectedIdInput.value=''; }
