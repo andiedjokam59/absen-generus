@@ -683,7 +683,6 @@
         document.getElementById('cetak-judul-kegiatan').innerText = agenda ? `Laporan Presensi: ${agenda}` : "Laporan Presensi Kegiatan";
     }
 
-    // MANAJEMEN STATUS OFFLINE & ONLINE AUTOMATIC
     function updateStatusInternet() {
         if (navigator.onLine) {
             netIndicator.innerText = "● Online";
@@ -698,7 +697,6 @@
     window.addEventListener('offline', updateStatusInternet);
 
     async function muatSemuaGenerus() {
-        // Coba ambil cache lokal terlebih dahulu agar instan saat dibuka
         const lokalGenerus = localStorage.getItem('cache_data_generus');
         if (lokalGenerus) {
             semuaDataGenerus = JSON.parse(lokalGenerus);
@@ -747,7 +745,7 @@
     let html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 220 });
     html5QrcodeScanner.render(onScanSuccess);
 
-    // SISTEM PENCATATAN OFFLINE & DUPILKASI CHECKER LOKAL
+    // FIX: LOGIKA PROTEKSI DOUBLE-SCAN HANYA BERLAKU DI HARI YANG SAMA
     async function prosesAbsensi(idGenerus, metode) {
         let namaKegiatan = document.getElementById('kegiatan').value.toUpperCase();
         if(!namaKegiatan) { 
@@ -759,7 +757,6 @@
         let profil = semuaDataGenerus.find(g => g.id_generus == idGenerus) || { nama_lengkap: "ID: " + idGenerus };
         let waktuSekarang = new Date();
         
-        // Ambil riwayat log lokal & cloud gabungan untuk proteksi double scan (3 jam)
         let localLogs = JSON.parse(localStorage.getItem('absensi_kegiatan_lokal') || '[]');
         let riwayatGabungan = [...localLogs];
         
@@ -774,17 +771,27 @@
             } catch(e) {}
         }
 
+        // Cari riwayat log terakhir dari orang tersebut untuk kegiatan ini
         let logTerakhirSama = riwayatGabungan
-            .filter(l => new Date(l.waktu_absen))
+            .filter(l => l.waktu_absen)
             .sort((a,b) => new Date(b.waktu_absen) - new Date(a.waktu_absen))[0];
 
         if (logTerakhirSama) {
-            let selisihJam = (waktuSekarang - new Date(logTerakhirSama.waktu_absen)) / (1000 * 60 * 60);
-            if (selisihJam < 3) {
-                bunyikanSuaraGagal(); 
-                let sisaMenit = Math.ceil((3 - selisihJam) * 60);
-                tampilkanNotifKustom('error', 'Sudah Absen', `${profil.nama_lengkap} kembali ${sisaMenit} menit lagi.`);
-                return; 
+            let tglLog = new Date(logTerakhirSama.waktu_absen);
+            
+            // Cek apakah log terakhir terjadi pada HARI, BULAN, dan TAHUN yang sama (Hari ini)
+            let apakahHariYangSama = tglLog.getDate() === waktuSekarang.getDate() &&
+                                     tglLog.getMonth() === waktuSekarang.getMonth() &&
+                                     tglLog.getFullYear() === waktuSekarang.getFullYear();
+
+            if (apakahHariYangSama) {
+                let selisihJam = (waktuSekarang - tglLog) / (1000 * 60 * 60);
+                if (selisihJam < 3) {
+                    bunyikanSuaraGagal(); 
+                    let sisaMenit = Math.ceil((3 - selisihJam) * 60);
+                    tampilkanNotifKustom('error', 'Sudah Absen', `${profil.nama_lengkap} baru saja absen. Silakan kembali dalam ${sisaMenit} menit lagi.`);
+                    return; 
+                }
             }
         }
 
@@ -795,18 +802,15 @@
             waktu_absen: waktuSekarang.toISOString() 
         };
 
-        // Selalu amankan data di LocalStorage terlebih dahulu (Sebagai buffer Offline)
         localLogs.push(dataAbsenBaru);
         localStorage.setItem('absensi_kegiatan_lokal', JSON.stringify(localLogs));
 
         bunyikanSuaraSukses();
         
         if (navigator.onLine) {
-            // Jika online, langsung coba upload ke cloud saat itu juga
             try {
                 let { error } = await _supabase.from('absensi_kegiatan').insert([dataAbsenBaru]);
                 if (!error) {
-                    // Jika sukses dikirim, hapus dari antrean offline lokal yang barusan dimasukkan
                     let logsSesudahUpload = JSON.parse(localStorage.getItem('absensi_kegiatan_lokal') || '[]');
                     logsSesudahUpload.pop(); 
                     localStorage.setItem('absensi_kegiatan_lokal', JSON.stringify(logsSesudahUpload));
@@ -816,14 +820,12 @@
             } catch (err) {}
         }
         
-        // Output notifikasi mode offline berhasil disimpan lokal
         tampilkanNotifKustom('success', 'Berhasil (Offline)', profil.nama_lengkap + ' [Tersimpan Lokal]');
     }
 
     function inputManualKehadiran() { if(!selectedIdInput.value) return tampilkanNotifKustom('error', 'Gagal', 'Pilih nama terlebih dahulu!'); prosesAbsensi(selectedIdInput.value, "Manual"); searchInput.value=''; selectedIdInput.value=''; }
     function inputManualIziin() { if(!selectedIdInput.value) return tampilkanNotifKustom('error', 'Gagal', 'Pilih nama terlebih dahulu!'); prosesAbsensi(selectedIdInput.value, "Izin"); searchInput.value=''; selectedIdInput.value=''; }
 
-    // Dapatkan data komparatif offline + online secara transparan
     async function dapatkanDataGabungan(namaKegiatan) {
         let logAbsen = [];
         
@@ -834,11 +836,9 @@
             } catch(e) {}
         }
 
-        // Gabungkan dengan antrean log lokal yang belum terupload agar hasil rekap real-time akurat
         let localLogs = JSON.parse(localStorage.getItem('absensi_kegiatan_lokal') || '[]');
         let localLogsFilter = localLogs.filter(l => l.nama_kegiatan.toUpperCase() === namaKegiatan.toUpperCase());
         
-        // Kombinasikan data unik agar tidak duplikat saat ditarik
         let gabunganSemua = [...logAbsen, ...localLogsFilter];
         let mapUnik = new Map();
         gabunganSemua.forEach(item => {
@@ -873,7 +873,6 @@
         });
     }
 
-    // OTOMATIS BACKGROUND BACKGROUND SYNC DATA OFFLINE KE CLOUD
     async function sinkronisasiDataOfflineKeCloud() {
         if (!navigator.onLine) return;
         let localLogs = JSON.parse(localStorage.getItem('absensi_kegiatan_lokal') || '[]');
@@ -886,7 +885,7 @@
             try {
                 let { error } = await _supabase.from('absensi_kegiatan').insert([localLogs[i]]);
                 if (!error) {
-                    berhasilUploadCount++;
+                    berforceUploadCount++;
                 } else {
                     logsSisaGagal.push(localLogs[i]);
                 }
@@ -901,7 +900,6 @@
         }
     }
 
-    // SINKRONISASI MANUAL TRIGGER BUTTON
     async function sinkronisasiManual() {
         if (!navigator.onLine) {
             tampilkanNotifKustom('error', 'Gagal', 'Anda sedang offline. Tidak bisa memaksa sinkronisasi.');
@@ -1163,7 +1161,6 @@
         tutupSemuaDropdownAman(); renderTabelRekapSemuaSistem();
     }
 
-    // PENANGANAN REKAP MATRIKS TAHUNAN OFFLINE COMPATIBLE
     async function tarikRekapTahunanMatriks(statusPilihan) {
         let namaKegiatan = document.getElementById('kegiatan').value.toUpperCase();
         if(!namaKegiatan) {
@@ -1182,7 +1179,6 @@
             } catch(e) {}
         }
         
-        // Gabungkan riwayat lokal offline buffer agar rekap tahunan up-to-date
         let localLogs = JSON.parse(localStorage.getItem('absensi_kegiatan_lokal') || '[]');
         let localLogsFilter = localLogs.filter(l => l.nama_kegiatan.toUpperCase().includes(namaKegiatan.trim()));
         
@@ -1452,7 +1448,6 @@
         let link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `REKAP_${namaKegiatan}.csv`; link.click();
     }
 
-    // Jalankan pengecekan koneksi awal saat aplikasi dimuat
     updateStatusInternet();
 </script>  
 </body>
