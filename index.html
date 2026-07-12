@@ -475,7 +475,8 @@
                 <option value="11">Desember</option>
             </select>
             <select id="filter-rekap-tahun" class="waktu-select">
-                </select>
+                <!-- Diisi otomatis oleh JavaScript -->
+            </select>
         </div>
 
         <button class="btn-icon" onclick="tarikDanCetakLaporan('semua')" title="Preview Semua">
@@ -518,14 +519,16 @@
             <select id="tahunan-dropdown" onchange="tarikRekapTahunanMatriks(this.value)" style="z-index: 5;">
                 <option value="" disabled selected hidden>Klik di sini untuk memilih Kategori Status Kegiatan</option>
                 <option value="GENERUS">GENERUS</option>
-                <option value="PENGURUS">PENGURUS</option> <option value="MT">MT</option>
+                <option value="PENGURUS">PENGURUS</option>
+                <option value="MT">MT</option>
             </select>
         </div>
         
         <div style="grid-column: span 6; display:flex; align-items:center; gap:6px; margin-top:4px;">
             <label style="margin:0; font-size:10px; color:var(--text-muted); white-space:nowrap;">SET TAHUN MATRIKS:</label>
             <select id="filter-tahunan-tahun" class="waktu-select" style="padding:6px 10px;" onchange="pemicuUlangTahunanMatriks()">
-                </select>
+                <!-- Diisi otomatis oleh JavaScript -->
+            </select>
         </div>
     </div>
 
@@ -638,22 +641,22 @@
 
         titleContainer.innerText = judul;
         descContainer.innerText = deskripsi;
+        
         modal.classList.add('show');
-
-        toastTimeout = setTimeout(() => {
-            modal.classList.remove('show');
-        }, 2500);
+        toastTimeout = setTimeout(() => { modal.classList.remove('show'); }, 2500);
     }
 
     function pilihTemplateAgenda(nilai) {
         const inputAgenda = document.getElementById('kegiatan');
         if(nilai === 'BERSIH') {
-            inputAgenda.value = ""; inputAgenda.focus();
+            inputAgenda.value = "";
+            inputAgenda.focus();
         } else if(nilai) {
             inputAgenda.value = nilai.toUpperCase();
         }
-        updateJudulCetak(); perbaruiTeksTombolTahunan(inputAgenda.value);
-        document.getElementById('template-agenda-select').value = "";
+        updateJudulCetak();
+        perbaruiTeksTombolTahunan(inputAgenda.value);
+        document.getElementById('template-agenda-select').value = ""; 
     }
 
     function perbaruiTeksTombolTahunan(nilaiInput) {
@@ -680,11 +683,11 @@
         document.getElementById('cetak-judul-kegiatan').innerText = agenda ? `Laporan Presensi: ${agenda}` : "Laporan Presensi Kegiatan";
     }
 
+    // MANAJEMEN STATUS OFFLINE & ONLINE AUTOMATIC
     function updateStatusInternet() {
         if (navigator.onLine) {
             netIndicator.innerText = "● Online";
             netIndicator.className = "net-status online";
-            // JIKA INTERNET KEMBALI ONLINE -> OTOMATIS SYNC
             sinkronisasiDataOfflineKeCloud();
         } else {
             netIndicator.innerText = "● Offline";
@@ -695,18 +698,20 @@
     window.addEventListener('offline', updateStatusInternet);
 
     async function muatSemuaGenerus() {
+        // Coba ambil cache lokal terlebih dahulu agar instan saat dibuka
         const lokalGenerus = localStorage.getItem('cache_data_generus');
         if (lokalGenerus) {
             semuaDataGenerus = JSON.parse(lokalGenerus);
             searchInput.placeholder = `Cari di antara ${semuaDataGenerus.length} data (Lokal)...`;
         }
+
         if (navigator.onLine) {
             try {
                 let { data: generus, error } = await _supabase.from('data_generus').select('*');
-                if (!error && generus) {
-                    semuaDataGenerus = generus;
+                if (!error && generus) { 
+                    semuaDataGenerus = generus; 
                     localStorage.setItem('cache_data_generus', JSON.stringify(generus));
-                    searchInput.placeholder = `Cari di antara ${generus.length} data...`;
+                    searchInput.placeholder = `Cari di antara ${generus.length} data...`; 
                 }
             } catch (e) {
                 console.log("Gagal sinkron data master dari cloud, menggunakan cadangan lokal.");
@@ -718,10 +723,7 @@
     function cariNamaPintar() {
         let keyword = searchInput.value.toLowerCase();
         resultsBox.innerHTML = '';
-        if (keyword.length < 2) {
-            resultsBox.style.display = 'none'; return;
-        }
-
+        if (keyword.length < 2) { resultsBox.style.display = 'none'; return; }
         let hasilFilter = semuaDataGenerus.filter(g => g.nama_lengkap && g.nama_lengkap.toLowerCase().includes(keyword)).slice(0, 8);
         if(hasilFilter.length > 0) {
             resultsBox.style.display = 'block';
@@ -729,540 +731,702 @@
                 let div = document.createElement('div'); div.className = 'search-item';
                 let infoTambahan = g.status ? ` — [${g.status}]` : '';
                 div.innerText = `${g.nama_lengkap}${infoTambahan} — ${g.kelompok || '-'} [${(g.desa || '').replace("DESA ", "").toUpperCase()}]`;
-                div.onclick = function() {
-                    searchInput.value = g.nama_lengkap;
-                    selectedIdInput.value = g.id_generus;
-                    resultsBox.style.display = 'none';
-                };
+                div.onclick = function() { searchInput.value = g.nama_lengkap; selectedIdInput.value = g.id_generus; resultsBox.style.display = 'none'; };
                 resultsBox.appendChild(div);
             });
         } else {
-            resultsBox.style.display = 'block';
-            resultsBox.innerHTML = '<div class="search-item" style="color:#ef4444;">Nama tidak ditemukan</div>';
+            resultsBox.style.display = 'block'; resultsBox.innerHTML = '<div class="search-item" style="color:#ef4444;">Nama tidak ditemukan</div>';
         }
     }
 
-    async function onScanSuccess(decodedText) {
-        if (pengunciScanAktif) return;
-        pengunciScanAktif = true;
+    async function onScanSuccess(decodedText) { 
+        if (pengunciScanAktif) return; pengunciScanAktif = true; 
         await prosesAbsensi(decodedText, "Scan Barcode");
-        setTimeout(() => { pengunciScanAktif = false; }, 1500);
+        setTimeout(() => { pengunciScanAktif = false; }, 1500); 
     }
     let html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 220 });
     html5QrcodeScanner.render(onScanSuccess);
 
+    // SISTEM PENCATATAN OFFLINE & DUPILKASI CHECKER LOKAL
     async function prosesAbsensi(idGenerus, metode) {
         let namaKegiatan = document.getElementById('kegiatan').value.toUpperCase();
-        if(!namaKegiatan) {
-            bunyikanSuaraGagal();
-            tampilkanNotifKustom('error', 'Gagal Presensi', 'Harap isi Nama Agenda terlebih dahulu!');
-            return;
+        if(!namaKegiatan) { 
+            bunyikanSuaraGagal(); 
+            tampilkanNotifKustom('error', 'Gagal Presensi', 'Harap isi Nama Agenda terlebih dahulu!'); 
+            return; 
         }
-
-        let profil = semuaDataGenerus.find(g => String(g.id_generus) === String(idGenerus)) || { nama_lengkap: "ID: " + idGenerus };
+        
+        let profil = semuaDataGenerus.find(g => g.id_generus == idGenerus) || { nama_lengkap: "ID: " + idGenerus };
         let waktuSekarang = new Date();
-        let stringTanggalSekarang = waktuSekarang.toDateString(); // Format Hari Bulan Tanggal Tahun
-
+        
+        // Ambil riwayat log lokal & cloud gabungan untuk proteksi double scan (3 jam)
         let localLogs = JSON.parse(localStorage.getItem('absensi_kegiatan_lokal') || '[]');
         let riwayatGabungan = [...localLogs];
-
+        
         if (navigator.onLine) {
             try {
                 let { data: cloudLogs } = await _supabase
                     .from('absensi_kegiatan')
-                    .select('waktu_absen, id_generus, nama_kegiatan')
+                    .select('waktu_absen')
                     .eq('nama_kegiatan', namaKegiatan.trim())
                     .eq('id_generus', idGenerus);
                 if (cloudLogs) riwayatGabungan = riwayatGabungan.concat(cloudLogs);
             } catch(e) {}
         }
 
-        // VALIDASI MULTI TANGGAL: Cari log absen di HARI YANG SAMA untuk agenda & orang ini
-        let sudahAbsenHariIni = riwayatGabungan.some(l => {
-            return l.waktu_absen && 
-                   String(l.id_generus) === String(idGenerus) && 
-                   String(l.nama_kegiatan).toUpperCase() === namaKegiatan.trim().toUpperCase() &&
-                   new Date(l.waktu_absen).toDateString() === stringTanggalSekarang;
-        });
+        let logTerakhirSama = riwayatGabungan
+            .filter(l => new Date(l.waktu_absen))
+            .sort((a,b) => new Date(b.waktu_absen) - new Date(a.waktu_absen))[0];
 
-        if (sudahAbsenHariIni) {
-            bunyikanSuaraGagal();
-            tampilkanNotifKustom('error', 'Sudah Absen', `${profil.nama_lengkap} sudah mengisi presensi agenda ini hari ini.`);
-            return;
+        if (logTerakhirSama) {
+            let selisihJam = (waktuSekarang - new Date(logTerakhirSama.waktu_absen)) / (1000 * 60 * 60);
+            if (selisihJam < 3) {
+                bunyikanSuaraGagal(); 
+                let sisaMenit = Math.ceil((3 - selisihJam) * 60);
+                tampilkanNotifKustom('error', 'Sudah Absen', `${profil.nama_lengkap} kembali ${sisaMenit} menit lagi.`);
+                return; 
+            }
         }
 
-        const dataAbsenBaru = {
-            nama_kegiatan: namaKegiatan.trim(),
-            id_generus: idGenerus,
-            metode_input: metode,
-            waktu_absen: waktuSekarang.toISOString()
+        const dataAbsenBaru = { 
+            nama_kegiatan: namaKegiatan.trim(), 
+            id_generus: idGenerus, 
+            metode_input: metode, 
+            waktu_absen: waktuSekarang.toISOString() 
         };
 
+        // Selalu amankan data di LocalStorage terlebih dahulu (Sebagai buffer Offline)
         localLogs.push(dataAbsenBaru);
         localStorage.setItem('absensi_kegiatan_lokal', JSON.stringify(localLogs));
-        bunyikanSuaraSukses();
 
+        bunyikanSuaraSukses();
+        
         if (navigator.onLine) {
+            // Jika online, langsung coba upload ke cloud saat itu juga
             try {
                 let { error } = await _supabase.from('absensi_kegiatan').insert([dataAbsenBaru]);
                 if (!error) {
+                    // Jika sukses dikirim, hapus dari antrean offline lokal yang barusan dimasukkan
                     let logsSesudahUpload = JSON.parse(localStorage.getItem('absensi_kegiatan_lokal') || '[]');
-                    logsSesudahUpload = logsSesudahUpload.filter(l => !(l.id_generus === idGenerus && l.waktu_absen === dataAbsenBaru.waktu_absen));
+                    logsSesudahUpload.pop(); 
                     localStorage.setItem('absensi_kegiatan_lokal', JSON.stringify(logsSesudahUpload));
-                    tampilkanNotifKustom('success', 'Berhasil (Cloud)', `${profil.nama_lengkap} berhasil diabsen.`);
+                    tampilkanNotifKustom('success', 'Berhasil (Cloud)', profil.nama_lengkap);
                     return;
                 }
-            } catch(err) {}
+            } catch (err) {}
         }
-        tampilkanNotifKustom('success', 'Berhasil (Lokal)', `${profil.nama_lengkap} disimpan di internal hp (Offline).`);
+        
+        // Output notifikasi mode offline berhasil disimpan lokal
+        tampilkanNotifKustom('success', 'Berhasil (Offline)', profil.nama_lengkap + ' [Tersimpan Lokal]');
     }
 
-    async function sinkronisasiDataOfflineKeCloud() {
-        if (!navigator.onLine) return false;
+    function inputManualKehadiran() { if(!selectedIdInput.value) return tampilkanNotifKustom('error', 'Gagal', 'Pilih nama terlebih dahulu!'); prosesAbsensi(selectedIdInput.value, "Manual"); searchInput.value=''; selectedIdInput.value=''; }
+    function inputManualIziin() { if(!selectedIdInput.value) return tampilkanNotifKustom('error', 'Gagal', 'Pilih nama terlebih dahulu!'); prosesAbsensi(selectedIdInput.value, "Izin"); searchInput.value=''; selectedIdInput.value=''; }
+
+    // Dapatkan data komparatif offline + online secara transparan
+    async function dapatkanDataGabungan(namaKegiatan) {
+        let logAbsen = [];
+        
+        if (navigator.onLine) {
+            try {
+                let { data: logs, error } = await _supabase.from('absensi_kegiatan').select('*').eq('nama_kegiatan', namaKegiatan.toUpperCase());
+                if (!error && logs) logAbsen = logs;
+            } catch(e) {}
+        }
+
+        // Gabungkan dengan antrean log lokal yang belum terupload agar hasil rekap real-time akurat
         let localLogs = JSON.parse(localStorage.getItem('absensi_kegiatan_lokal') || '[]');
-        if (localLogs.length === 0) return true;
+        let localLogsFilter = localLogs.filter(l => l.nama_kegiatan.toUpperCase() === namaKegiatan.toUpperCase());
+        
+        // Kombinasikan data unik agar tidak duplikat saat ditarik
+        let gabunganSemua = [...logAbsen, ...localLogsFilter];
+        let mapUnik = new Map();
+        gabunganSemua.forEach(item => {
+            let key = item.id_generus + "_" + item.waktu_absen;
+            mapUnik.set(key, item);
+        });
+        let logTerfilterFix = Array.from(mapUnik.values());
 
-        try {
-            let { error } = await _supabase.from('absensi_kegiatan').insert(localLogs);
-            if (!error) {
-                localStorage.setItem('absensi_kegiatan_lokal', '[]');
-                tampilkanNotifKustom('success', 'Sinkronisasi Otomatis', `${localLogs.length} data offline berhasil diunggah ke Cloud!`);
-                return true;
+        const filterBulan = document.getElementById('filter-rekap-bulan').value;
+        const filterTahun = document.getElementById('filter-rekap-tahun').value;
+
+        let logTerfilterwaktu = logTerfilterFix.filter(absen => {
+            let tgl = new Date(absen.waktu_absen);
+            let lulusBulan = (filterBulan === "SEMUA" || String(tgl.getMonth()) === filterBulan);
+            let lulusTahun = (filterTahun === "SEMUA" || String(tgl.getFullYear()) === filterTahun);
+            return lulusBulan && lulusTahun;
+        });
+
+        return logTerfilterwaktu.map(absen => {
+            let detail = semuaDataGenerus.find(g => String(g.id_generus) === String(absen.id_generus));
+            let tanggalObj = new Date(absen.waktu_absen);
+            return {
+                id: absen.id_generus, name: detail ? detail.nama_lengkap : "ID Terhapus",
+                kelompok: detail ? (detail.kelompok || "-").toUpperCase() : "-",
+                desa: detail ? (detail.desa || "-").toUpperCase().replace("DESA ", "") : "-",
+                jk: detail ? (detail.jenis_kelamin || "-").toUpperCase() : "-", 
+                status: detail ? (detail.status || "-").toUpperCase() : "-",
+                metode: absen.metode_input,
+                waktu: tanggalObj.toLocaleTimeString('id-ID'),
+                tanggalLengkap: tanggalObj.toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'})
             }
-        } catch (e) {
-            console.log("Koneksi gagal saat mengunggah data latar belakang.");
-        }
-        return false;
+        });
     }
 
+    // OTOMATIS BACKGROUND BACKGROUND SYNC DATA OFFLINE KE CLOUD
+    async function sinkronisasiDataOfflineKeCloud() {
+        if (!navigator.onLine) return;
+        let localLogs = JSON.parse(localStorage.getItem('absensi_kegiatan_lokal') || '[]');
+        if (localLogs.length === 0) return;
+
+        let berhasilUploadCount = 0;
+        let logsSisaGagal = [];
+
+        for (let i = 0; i < localLogs.length; i++) {
+            try {
+                let { error } = await _supabase.from('absensi_kegiatan').insert([localLogs[i]]);
+                if (!error) {
+                    berhasilUploadCount++;
+                } else {
+                    logsSisaGagal.push(localLogs[i]);
+                }
+            } catch (e) {
+                logsSisaGagal.push(localLogs[i]);
+            }
+        }
+
+        localStorage.setItem('absensi_kegiatan_lokal', JSON.stringify(logsSisaGagal));
+        if (berhasilUploadCount > 0) {
+            tampilkanNotifKustom('success', 'Backup Otomatis', `${berhasilUploadCount} data lokal berhasil disinkronkan ke Cloud!`);
+        }
+    }
+
+    // SINKRONISASI MANUAL TRIGGER BUTTON
     async function sinkronisasiManual() {
         if (!navigator.onLine) {
-            tampilkanNotifKustom('error', 'Gagal Sinkron', 'Perangkat masih offline! Sambungkan internet dahulu.');
+            tampilkanNotifKustom('error', 'Gagal', 'Anda sedang offline. Tidak bisa memaksa sinkronisasi.');
             return;
         }
         let localLogs = JSON.parse(localStorage.getItem('absensi_kegiatan_lokal') || '[]');
         if(localLogs.length === 0) {
-            tampilkanNotifKustom('success', 'Data Aman', 'Semua data lokal sudah tersinkronisasi ke cloud.');
+            tampilkanNotifKustom('success', 'Sinkronisasi', 'Semua data lokal Anda sudah up-to-date di Cloud.');
             return;
         }
-        let sukses = await sinkronisasiDataOfflineKeCloud();
-        if(!sukses) {
-            tampilkanNotifKustom('error', 'Gagal', 'Terjadi gangguan database saat mengunggah.');
-        }
+        await sinkronisasiDataOfflineKeCloud();
     }
 
-    function inputManualKehadiran() {
-        let idGen = selectedIdInput.value;
-        if(!idGen) return tampilkanNotifKustom('error', 'Pilih Nama', 'Silakan pilih nama anggota dari hasil pencarian!');
-        prosesAbsensi(idGen, "Manual Hadir");
-        searchInput.value = ""; selectedIdInput.value = "";
-    }
-
-    function inputManualIziin() {
-        let idGen = selectedIdInput.value;
-        if(!idGen) return tampilkanNotifKustom('error', 'Pilih Nama', 'Silakan pilih nama anggota dari hasil pencarian!');
-        prosesAbsensi(idGen, "Manual Izin");
-        searchInput.value = ""; selectedIdInput.value = "";
-    }
-
-    async function dapatkanDataGabungan(namaKegiatanSaring) {
-        let localLogs = JSON.parse(localStorage.getItem('absensi_kegiatan_lokal') || '[]');
-        let cloudLogs = [];
-        if (navigator.onLine) {
-            try {
-                let query = _supabase.from('absensi_kegiatan').select('waktu_absen, id_generus, nama_kegiatan, metode_input');
-                if (namaKegiatanSaring) query = query.eq('nama_kegiatan', namaKegiatanSaring.toUpperCase().trim());
-                let { data } = await query;
-                if (data) cloudLogs = data;
-            } catch (e) {}
-        }
-        
-        let gabunganLog = [...localLogs, ...cloudLogs];
-        if (namaKegiatanSaring) {
-            gabunganLog = gabunganLog.filter(l => String(l.nama_kegiatan).toUpperCase() === namaKegiatanSaring.toUpperCase().trim());
-        }
-
-        let petaUnik = {};
-        gabunganLog.forEach(l => {
-            let tglObj = new Date(l.waktu_absen);
-            let jamText = String(tglObj.getHours()).padStart(2,'0') + ":" + String(tglObj.getMinutes()).padStart(2,'0');
-            let tglText = String(tglObj.getDate()).padStart(2,'0') + "/" + String(tglObj.getMonth()+1).padStart(2,'0') + "/" + tglObj.getFullYear();
-            
-            let kunciUnik = `${l.id_generus}_${tglText}_${l.nama_kegiatan}`;
-            
-            let dataOrang = semuaDataGenerus.find(g => String(g.id_generus) === String(l.id_generus)) || {};
-            
-            petaUnik[kunciUnik] = {
-                id_generus: l.id_generus,
-                name: dataOrang.nama_lengkap || "ID: " + l.id_generus,
-                kelompok: dataOrang.kelompok || "-",
-                desa: dataOrang.desa || "-",
-                status: dataOrang.status || "GENERUS",
-                waktu: jamText,
-                tanggalLengkap: tglText,
-                metode: l.metode_input || "Scan",
-                objekTanggal: tglObj,
-                bulanAngka: tglObj.getMonth(),
-                tahunAngka: tglObj.getFullYear()
-            };
-        });
-
-        return Object.values(petaUnik).sort((a,b) => b.objekTanggal - a.objekTanggal);
-    }
-
-    async function tarikDanCetakLaporan(tiperekap, dariPrintPilihan = false) {
+    async function tarikDanCetakLaporan(jenis, langsungPrint = false) {
         let namaKegiatan = document.getElementById('kegiatan').value.toUpperCase();
-        if(!namaKegiatan) return tampilkanNotifKustom('error', 'Gagal Rekap', 'Isi nama agenda pertemuan yang ingin direkap!');
+        if(!namaKegiatan) return tampilkanNotifKustom('error', 'Gagal', 'Harap masukkan Nama Agenda!');
         
-        let dataSemua = await dapatkanDataGabungan(namaKegiatan);
-        
-        let filterBulan = document.getElementById('filter-rekap-bulan').value;
-        let filterTahun = document.getElementById('filter-rekap-tahun').value;
-
-        if (filterBulan !== "SEMUA") {
-            dataSemua = dataSemua.filter(d => String(d.bulanAngka) === String(filterBulan));
-        }
-        if (filterTahun !== "SEMUA") {
-            dataSemua = dataSemua.filter(d => String(d.tahunAngka) === String(filterTahun));
-        }
-
-        dataAktifRekap = dataSemua; 
-        document.getElementById('cetak-waktu').innerText = `Waktu Rekap: ${new Date().toLocaleString('id-ID')}`;
+        dataAktifRekap = await dapatkanDataGabungan(namaKegiatan);
+        if(dataAktifRekap.length === 0) return tampilkanNotifKustom('error', 'Kosong', 'Tidak ada data presensi pada rentang waktu/agenda ini.');
         
         let container = document.getElementById('print-table-container');
         let resumeContainer = document.getElementById('resume-kehadiran-container');
-        container.innerHTML = ""; resumeContainer.innerHTML = "";
+        let areaCetak = document.getElementById('print-area'); 
+        
+        container.innerHTML = "";
+        resumeContainer.innerHTML = "";
+        
+        const txtBulan = document.getElementById('filter-rekap-bulan').options[document.getElementById('filter-rekap-bulan').selectedIndex].text;
+        const txtTahun = document.getElementById('filter-rekap-tahun').options[document.getElementById('filter-rekap-tahun').selectedIndex].text;
+        document.getElementById('cetak-waktu').innerText = `Periode: ${txtBulan} ${txtTahun} | Diunduh: ` + new Date().toLocaleString('id-ID');
 
-        if(dataSemua.length === 0) {
-            container.innerHTML = "<p style='text-align:center; color:#ef4444; font-weight:700;'>Tidak ada data presensi cocok dengan filter waktu agenda ini.</p>";
-            if(!dariPrintPilihan) document.getElementById('print-area').style.display = 'block';
-            return;
-        }
-
-        let totalHadir = dataSemua.filter(d => !d.metode.toLowerCase().includes('izin')).length;
-        let totalIzin = dataSemua.length - totalHadir;
-
-        let resumeHtml = `
+        let totalHadir = dataAktifRekap.filter(d => d.metode !== 'Izin').length;
+        let totalIzin = dataAktifRekap.filter(d => d.metode === 'Izin').length;
+        let totalLaki = dataAktifRekap.filter(d => !d.jk.includes('P') && d.jk !== '-').length;
+        let totalPerempuan = dataAktifRekap.filter(d => d.jk.includes('P')).length;
+        
+        resumeContainer.innerHTML = `
             <div class="resume-kehadiran-box">
-                <div style="color:var(--primary); font-size:13px; border-bottom:1px solid var(--border-color); padding-bottom:4px; margin-bottom:4px; text-transform:uppercase;">Ringkasan Presensi Keseluruhan:</div>
                 <div class="resume-row">
-                    <div>TOTAL LOG MASUK: <span style="color:var(--primary); font-size:13px;">${dataSemua.length}</span></div>
-                    <div>HADIR: <span style="color:#10b981;">${totalHadir}</span></div>
-                    <div>IZIN: <span style="color:#d97706;">${totalIzin}</span></div>
+                    <span style="color: var(--primary);">🟢 Total Hadir: ${totalHadir} Orang</span>
+                    <span style="color: var(--accent);">🟡 Total Izin: ${totalIzin} Orang</span>
                 </div>
-            </div>
-        `;
-        resumeContainer.innerHTML = resumeHtml;
+                <div class="resume-row" style="border-top: 1px dashed var(--border-color); padding-top: 6px; font-weight: normal; color: var(--text-muted);">
+                    <span>♂️ Laki-laki: <b>${totalLaki}</b></span>
+                    <span>♀️ Perempuan: <b>${totalPerempuan}</b></span>
+                </div>
+            </div>`;
 
-        if(tiperekap === 'semua') {
-            let html = `<table class="print-table"><thead><tr><th>No</th><th>Nama Lengkap</th><th>Kelompok</th><th>Desa</th><th>Status</th><th>Tanggal & Jam</th><th>Metode</th></tr></thead><tbody>`;
-            dataSemua.forEach((d, i) => {
-                let warnaTeksStatus = d.metode.toLowerCase().includes('izin') ? 'color:#d97706; font-weight:600;' : '';
-                html += `<tr><td>${i+1}</td><td>${d.name}</td><td>${d.kelompok}</td><td>${d.desa}</td><td>${d.status}</td><td>${d.tanggalLengkap} — ${d.waktu}</td><td style="${warnaTeksStatus}">${d.metode}</td></tr>`;
+        if(jenis === 'semua') {
+            filterSemuaTerpilih = {}; 
+            renderTabelRekapSemuaSistem();
+        } 
+        else if(jenis === 'desa') {
+            let rekapDesa = {};
+            dataAktifRekap.forEach(d => {
+                if(!rekapDesa[d.desa]) rekapDesa[d.desa] = { hadir: 0, izin: 0 };
+                if(d.metode === 'Izin') rekapDesa[d.desa].izin++;
+                else rekapDesa[d.desa].hadir++;
             });
-            html += `</tbody></table>`;
-            container.innerHTML = html;
-        } 
-        else if(tiperekap === 'desa') {
-            let kelompokDesa = {};
-            dataSemua.forEach(d => { if(!kelompokDesa[d.desa]) kelompokDesa[d.desa] = []; kelompokDesa[d.desa].push(d); });
-            for(let desa in kelompokDesa) {
-                let subHadir = kelompokDesa[desa].filter(d => !d.metode.toLowerCase().includes('izin')).length;
-                let subIzin = kelompokDesa[desa].length - subHadir;
-                let html = `<div class="print-box-wilayah"><h4>${desa} (Hadir: ${subHadir}, Izin: ${subIzin})</h4><table class="print-table"><thead><tr><th>No</th><th>Nama Lengkap</th><th>Kelompok</th><th>Status</th><th>Tanggal & Jam</th><th>Metode</th></tr></thead><tbody>`;
-                kelompokDesa[desa].forEach((d, i) => {
-                    let warnaTeksStatus = d.metode.toLowerCase().includes('izin') ? 'color:#d97706; font-weight:600;' : '';
-                    html += `<tr><td>${i+1}</td><td>${d.name}</td><td>${d.kelompok}</td><td>${d.status}</td><td>${d.tanggalLengkap} — ${d.waktu}</td><td style="${warnaTeksStatus}">${d.metode}</td></tr>`;
+            
+            let html = `<table class="print-table"><thead><tr><th>No</th><th>Nama Desa</th><th style="text-align:center;">Hadir</th><th style="text-align:center;">Izin</th><th style="text-align:center;">Total</th></tr></thead><tbody>`;
+            let n=1; 
+            for(let d in rekapDesa) { 
+                let t = rekapDesa[d].hadir + rekapDesa[d].izin;
+                html += `<tr><td>${n++}</td><td style="font-weight:600;">DESA ${d}</td><td style="text-align:center; color:var(--primary); font-weight:700;">${rekapDesa[d].hadir}</td><td style="text-align:center; color:var(--accent); font-weight:700;">${rekapDesa[d].izin}</td><td style="text-align:center; font-weight:700; background:#f8fafc;">${t} Orang</td></tr>`; 
+            }
+            html += `</tbody></table>`; 
+            container.innerHTML = html; 
+            areaCetak.style.display = "block";
+        }
+        else if(jenis === 'kelompok') {
+            let rekapKlp = {}; 
+            dataAktifRekap.forEach(d => { 
+                if(!rekapKlp[d.kelompok]) rekapKlp[d.kelompok]=[]; 
+                rekapKlp[d.kelompok].push(d); 
+            });
+            
+            let html = ""; 
+            for(let k in rekapKlp) {
+                let hKlp = rekapKlp[k].filter(d => d.metode !== 'Izin').length;
+                let iKlp = rekapKlp[k].filter(d => d.metode === 'Izin').length;
+                
+                html += `<div class="print-box-wilayah">
+                            <h4 style="display:flex; justify-content:space-between; font-size:12px;">
+                                <span>KELOMPOK: ${k}</span>
+                                <span style="font-size:11px; text-transform:none; color:var(--text-muted);">Hadir: ${hKlp} | Izin: ${iKlp}</span>
+                            </h4>
+                            <table class="print-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width:30px; text-align:center;">No</th>
+                                        <th>Nama Lengkap</th>
+                                        <th style="width:50px; text-align:center;">L/P</th>
+                                        <th>Status Absen</th>
+                                        <th>Tanggal & Waktu</th>
+                                    </tr>
+                                </thead>
+                                <tbody>`;
+                rekapKlp[k].forEach((a, i) => { 
+                    let st = a.metode === 'Izin' ? '<span style="color:var(--accent); font-weight:700;">IZIN</span>' : '<span style="color:var(--primary); font-weight:700;">HADIR</span>';
+                    let genderDisplay = a.jk.includes('P') ? 'P' : 'L';
+                    html += `<tr>
+                                <td style="text-align:center;">${i+1}</td>
+                                <td style="font-weight:600;">${a.name}</td>
+                                <td style="text-align:center;">${genderDisplay}</td>
+                                <td>${st} (${a.metode})</td>
+                                <td>${a.tanggalLengkap} - ${a.waktu}</td>
+                             </tr>`; 
                 });
                 html += `</tbody></table></div>`;
-                container.innerHTML += html;
             }
-        } 
-        else if(tiperekap === 'kelompok') {
-            let kelompokKlp = {};
-            dataSemua.forEach(d => { if(!kelompokKlp[d.kelompok]) kelompokKlp[d.kelompok] = []; kelompokKlp[d.kelompok].push(d); });
-            for(let klp in kelompokKlp) {
-                let subHadir = kelompokKlp[klp].filter(d => !d.metode.toLowerCase().includes('izin')).length;
-                let subIzin = kelompokKlp[klp].length - subHadir;
-                let html = `<div class="print-box-wilayah"><h4>KELOMPOK ${klp} (Hadir: ${subHadir}, Izin: ${subIzin})</h4><table class="print-table"><thead><tr><th>No</th><th>Nama Lengkap</th><th>Desa</th><th>Status</th><th>Tanggal & Jam</th><th>Metode</th></tr></thead><tbody>`;
-                kelompokKlp[klp].forEach((d, i) => {
-                    let warnaTeksStatus = d.metode.toLowerCase().includes('izin') ? 'color:#d97706; font-weight:600;' : '';
-                    html += `<tr><td>${i+1}</td><td>${d.name}</td><td>${d.desa}</td><td>${d.status}</td><td>${d.tanggalLengkap} — ${d.waktu}</td><td style="${warnaTeksStatus}">${d.metode}</td></tr>`;
-                });
-                html += `</tbody></table></div>`;
-                container.innerHTML += html;
+            container.innerHTML = html; 
+            areaCetak.style.display = "block";
+        }
+        if(langsungPrint) window.print();
+    }
+
+    function renderTabelRekapSemuaSistem() {
+        let container = document.getElementById('print-table-container');
+        let areaCetak = document.getElementById('print-area');
+        
+        let dataTerfilter = [...dataAktifRekap];
+        ['jk', 'kelompok', 'desa', 'status'].forEach(kolom => {
+            if (filterSemuaTerpilih[kolom] && filterSemuaTerpilih[kolom].length > 0) {
+                dataTerfilter = dataTerfilter.filter(d => filterSemuaTerpilih[kolom].includes(d[kolom]));
             }
+        });
+
+        let html = `<table class="print-table">
+                    <thead>
+                        <tr>
+                            <th style="width:30px; text-align:center;">No</th>
+                            <th>Nama Lengkap</th>
+                            <th style="width:70px;">
+                                <div class="th-filter-container">
+                                    <span>L/P</span>
+                                    <button class="excel-filter-btn ${filterSemuaTerpilih['jk'] ? 'active' : ''}" onclick="toggleDropdownSemua(event, 'jk')">
+                                        <svg viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+                                    </button>
+                                    <div class="filter-dropdown-menu" id="dropdown-semua-jk" onclick="event.stopPropagation()">
+                                        <div class="filter-options-list" id="list-semua-jk"></div>
+                                        <div class="filter-action-buttons">
+                                            <button class="filter-btn-sub filter-btn-clear" onclick="bersihkanFilterSemua('jk')">Clear</button>
+                                            <button class="filter-btn-sub filter-btn-ok" onclick="terapkanFilterSemua('jk')">OK</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </th>
+                            <th>
+                                <div class="th-filter-container">
+                                    <span>Kelompok</span>
+                                    <button class="excel-filter-btn ${filterSemuaTerpilih['kelompok'] ? 'active' : ''}" onclick="toggleDropdownSemua(event, 'kelompok')">
+                                        <svg viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+                                    </button>
+                                    <div class="filter-dropdown-menu" id="dropdown-semua-kelompok" onclick="event.stopPropagation()">
+                                        <input type="text" class="filter-search-box" placeholder="Cari Kelompok..." oninput="cariOpsiSemua(this.value, 'kelompok')">
+                                        <div class="filter-options-list" id="list-semua-kelompok"></div>
+                                        <div class="filter-action-buttons">
+                                            <button class="filter-btn-sub filter-btn-clear" onclick="bersihkanFilterSemua('kelompok')">Clear</button>
+                                            <button class="filter-btn-sub filter-btn-ok" onclick="terapkanFilterSemua('kelompok')">OK</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </th>
+                            <th>
+                                <div class="th-filter-container">
+                                    <span>Desa</span>
+                                    <button class="excel-filter-btn ${filterSemuaTerpilih['desa'] ? 'active' : ''}" onclick="toggleDropdownSemua(event, 'desa')">
+                                        <svg viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+                                    </button>
+                                    <div class="filter-dropdown-menu" id="dropdown-semua-desa" onclick="event.stopPropagation()">
+                                        <input type="text" class="filter-search-box" placeholder="Cari Desa..." oninput="cariOpsiSemua(this.value, 'desa')">
+                                        <div class="filter-options-list" id="list-semua-desa"></div>
+                                        <div class="filter-action-buttons">
+                                            <button class="filter-btn-sub filter-btn-clear" onclick="bersihkanFilterSemua('desa')">Clear</button>
+                                            <button class="filter-btn-sub filter-btn-ok" onclick="terapkanFilterSemua('desa')">OK</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </th>
+                            <th>
+                                <div class="th-filter-container">
+                                    <span>Status</span>
+                                    <button class="excel-filter-btn ${filterSemuaTerpilih['status'] ? 'active' : ''}" onclick="toggleDropdownSemua(event, 'status')">
+                                        <svg viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+                                    </button>
+                                    <div class="filter-dropdown-menu" id="dropdown-semua-status" onclick="event.stopPropagation()">
+                                        <div class="filter-options-list" id="list-semua-status"></div>
+                                        <div class="filter-action-buttons">
+                                            <button class="filter-btn-sub filter-btn-clear" onclick="bersihkanFilterSemua('status')">Clear</button>
+                                            <button class="filter-btn-sub filter-btn-ok" onclick="terapkanFilterSemua('status')">OK</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </th>
+                            <th>Keterangan Absen</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+
+        if(dataTerfilter.length === 0) {
+            html += `<tr><td colspan="7" style="text-align:center; color:#ef4444; font-weight:600; padding:20px;">Tidak ada data yang cocok dengan kombinasi filter.</td></tr>`;
+        } else {
+            dataTerfilter.forEach((d, i) => { 
+                let labelStatusText = d.metode === 'Izin' ? '<span style="color:var(--accent); font-weight:600;">IZIN</span>' : '<span style="color:var(--primary); font-weight:600;">HADIR</span>';
+                html += `<tr>
+                    <td style="text-align:center;">${i+1}</td>
+                    <td style="font-weight:600;">${d.name}</td>
+                    <td style="text-align:center;">${d.jk.includes('P')?'P':'L'}</td>
+                    <td>${d.kelompok}</td>
+                    <td>${d.desa}</td>
+                    <td>${d.status}</td>
+                    <td>${labelStatusText} (${d.tanggalLengkap} - ${d.waktu})</td>
+                </tr>`; 
+            });
         }
 
-        if(!dariPrintPilihan) {
-            document.getElementById('print-area').style.display = 'block';
-            window.scrollTo({ top: document.getElementById('print-area').offsetTop, behavior: 'smooth' });
+        html += `</tbody></table>`;
+        container.innerHTML = html;
+        areaCetak.style.display = "block";
+    }
+
+    function toggleDropdownSemua(event, kolom) {
+        event.stopPropagation();
+        let menu = document.getElementById(`dropdown-semua-${kolom}`);
+        let terbukanNow = (menu.style.display === 'block');
+        tutupSemuaDropdownAman();
+        
+        if(!terbukanNow) {
+            menu.style.display = 'block';
+            globalOverlay.style.display = 'block';
+            
+            let listDataUnik = [...new Set(dataAktifRekap.map(d => d[kolom]))].sort();
+            let containerOpsi = document.getElementById(`list-semua-${kolom}`);
+            containerOpsi.innerHTML = '';
+            
+            listDataUnik.forEach(val => {
+                let tercentang = filterSemuaTerpilih[kolom] && filterSemuaTerpilih[kolom].includes(val) ? 'checked' : '';
+                let div = document.createElement('div'); div.className = 'filter-option-item';
+                div.innerHTML = `<label style="display:flex; align-items:center; gap:8px; font-weight:normal; text-transform:none; cursor:pointer; width:100%;">
+                                    <input type="checkbox" value="${val}" ${tercentang}> <span>${val}</span>
+                                 </label>`;
+                containerOpsi.appendChild(div);
+            });
         }
     }
 
-    async function AmbilLogTahunanMentahDariCloud(tahunSaring) {
-        let cloudLogs = [];
-        if(navigator.onLine) {
+    function cariOpsiSemua(val, kolom) {
+        let items = document.querySelectorAll(`#list-semua-${kolom} .filter-option-item`);
+        items.forEach(item => { item.style.display = item.textContent.toLowerCase().includes(val.toLowerCase()) ? 'flex' : 'none'; });
+    }
+
+    function bersihkanFilterSemua(kolom) { delete filterSemuaTerpilih[kolom]; tutupSemuaDropdownAman(); renderTabelRekapSemuaSistem(); }
+    
+    function terapkanFilterSemua(kolom) {
+        let cbs = document.querySelectorAll(`#list-semua-${kolom} input[type="checkbox"]`);
+        let terpilih = []; cbs.forEach(cb => { if(cb.checked) terpilih.push(cb.value); });
+        if(terpilih.length > 0) filterSemuaTerpilih[kolom] = terpilih; else delete filterSemuaTerpilih[kolom];
+        tutupSemuaDropdownAman(); renderTabelRekapSemuaSistem();
+    }
+
+    // PENANGANAN REKAP MATRIKS TAHUNAN OFFLINE COMPATIBLE
+    async function tarikRekapTahunanMatriks(statusPilihan) {
+        let namaKegiatan = document.getElementById('kegiatan').value.toUpperCase();
+        if(!namaKegiatan) {
+            document.getElementById('tahunan-dropdown').value = "";
+            return tampilkanNotifKustom('error', 'Gagal', 'Harap isi Nama Agenda terlebih dahulu!');
+        }
+        
+        let logAbsen = [];
+        if (navigator.onLine) {
             try {
-                let { data } = await _supabase
+                let { data: remoteLogs } = await _supabase
                     .from('absensi_kegiatan')
-                    .select('waktu_absen, id_generus, nama_kegiatan, metode_input');
-                if (data) cloudLogs = data;
+                    .select('*')
+                    .ilike('nama_kegiatan', `%${namaKegiatan.trim()}%`);
+                if (remoteLogs) logAbsen = remoteLogs;
             } catch(e) {}
         }
-        let localLogs = JSON.parse(localStorage.getItem('absensi_kegiatan_lokal') || '[]');
-        let gabung = [...localLogs, ...cloudLogs];
-
-        return gabung.filter(l => {
-            if(!l.waktu_absen) return false;
-            let thn = new Date(l.waktu_absen).getFullYear();
-            return String(thn) === String(tahunSaring);
-        });
-    }
-
-    async function tarikRekapTahunanMatriks(kategoriKunci) {
-        let tahunFilter = document.getElementById('filter-tahunan-tahun').value;
-        if(!tahunFilter) return tampilkanNotifKustom('error', 'Tahun Kosong', 'Set Tahun Matriks terlebih dahulu!');
-
-        dataMentahTahunanLog = await AmbilLogTahunanMentahDariCloud(tahunFilter);
         
-        let masterSaring = semuaDataGenerus.filter(g => {
-            if(!g.status) return false;
-            return g.status.toUpperCase() === kategoriKunci.toUpperCase().trim();
+        // Gabungkan riwayat lokal offline buffer agar rekap tahunan up-to-date
+        let localLogs = JSON.parse(localStorage.getItem('absensi_kegiatan_lokal') || '[]');
+        let localLogsFilter = localLogs.filter(l => l.nama_kegiatan.toUpperCase().includes(namaKegiatan.trim()));
+        
+        let gabunganSemua = [...logAbsen, ...localLogsFilter];
+        let mapUnik = new Map();
+        gabunganSemua.forEach(item => {
+            let key = item.id_generus + "_" + item.waktu_absen;
+            mapUnik.set(key, item);
         });
-
-        dataMasterTahunanOrang = masterSaring;
-        filterTerpilih = {}; 
-        filterSemuaTerpilih = {}; 
-
+        
+        const tahunPilihanMatriks = document.getElementById('filter-tahunan-tahun').value;
+        dataMentahTahunanLog = Array.from(mapUnik.values()).filter(l => String(new Date(l.waktu_absen).getFullYear()) === tahunPilihanMatriks);
+        
+        if (statusPilihan === "JAMA'AH UMUM") {
+            dataMasterTahunanOrang = semuaDataGenerus.filter(g => 
+                g.status && 
+                ["GENERUS", "PENGURUS", "MT/MS", "JAMA'AH UMUM"].includes(g.status.toUpperCase()) &&
+                g.kelompok_aktif !== false
+            );
+        } else {
+            dataMasterTahunanOrang = semuaDataGenerus.filter(g => 
+                g.status && g.status.toUpperCase().includes(statusPilihan.toUpperCase())
+            );
+        }
+        
+        filterTerpilih = {};
+        subDapukanPengurusTerpilih = []; 
+        document.getElementById('cetak-judul-kegiatan').innerText = `REKAP MATRIKS TAHUNAN: ${namaKegiatan}`;
+        document.getElementById('cetak-waktu').innerText = `Kategori: ${statusPilihan} | Tahun: ${tahunPilihanMatriks}`;
+        document.getElementById('resume-kehadiran-container').innerHTML = "";
         renderTabelMatriksTahunanSistem();
     }
 
     function pemicuUlangTahunanMatriks() {
-        let dropdown = document.getElementById('tahunan-dropdown').value;
-        if (dropdown) {
-            tarikRekapTahunanMatriks(dropdown);
+        const dropdownKategori = document.getElementById('tahunan-dropdown').value;
+        if(dropdownKategori) {
+            tarikRekapTahunanMatriks(dropdownKategori);
         }
     }
 
     function renderTabelMatriksTahunanSistem() {
         let container = document.getElementById('print-table-container');
-        let resumeContainer = document.getElementById('resume-kehadiran-container');
-        container.innerHTML = ""; resumeContainer.innerHTML = "";
+        let areaCetak = document.getElementById('print-area');
         
-        if(dataMasterTahunanOrang.length === 0) {
-            container.innerHTML = "<p style='text-align:center; color:#ef4444; font-weight:700;'>Tidak ada data orang dalam kategori ini.</p>";
-            document.getElementById('print-area').style.display = 'block';
-            return;
+        let statusKategoriAktif = "";
+        if (dataMasterTahunanOrang.length > 0 && dataMasterTahunanOrang[0].status) {
+            statusKategoriAktif = dataMasterTahunanOrang[0].status.toUpperCase();
         }
 
-        let daftarAgendaUnik = [];
-        dataMentahTahunanLog.forEach(l => {
-            let nKeg = String(l.nama_kegiatan).toUpperCase().trim();
-            if(!daftarAgendaUnik.includes(nKeg)) daftarAgendaUnik.push(nKeg);
-        });
-        daftarAgendaUnik.sort();
+        let dataOrangTerfilter = [...dataMasterTahunanOrang];
+        let headerDinamisKolom3Html = "";
 
-        let dataOrangTerfilter = dataMasterTahunanOrang.filter(p => {
-            if(filterTerpilih['desa'] && filterTerpilih['desa'].length > 0) {
-                if(!filterTerpilih['desa'].includes(p.desa)) return false;
-            }
-            if(filterTerpilih['kelompok'] && filterTerpilih['kelompok'].length > 0) {
-                if(!filterTerpilih['kelompok'].includes(p.kelompok)) return false;
-            }
-            return true;
-        });
-
-        let thDesaActive = (filterTerpilih['desa'] && filterTerpilih['desa'].length > 0) ? 'active' : '';
-        let thKlpActive = (filterTerpilih['kelompok'] && filterTerpilih['kelompok'].length > 0) ? 'active' : '';
-
-        let html = `
-            <div style="overflow-x:auto; width:100%; -webkit-overflow-scrolling:touch; overscroll-behavior:contain !important;">
-            <table class="print-table" id="tabel-matriks-tahunan-id">
-            <thead>
-                <tr>
-                    <th rowspan="2" style="text-align:center; vertical-align:middle;">No</th>
-                    <th rowspan="2" style="vertical-align:middle; min-width:140px;">Nama Lengkap</th>
-                    <th rowspan="2" style="vertical-align:middle; min-width:110px;">
-                        <div class="th-filter-container">
-                            <span>Desa</span>
-                            <button class="excel-filter-btn ${thDesaActive}" onclick="bukaDropdownFilterSistem(event, 'desa')">
-                                <svg viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
-                            </button>
-                            <div id="filter-menu-desa" class="filter-dropdown-menu"></div>
-                        </div>
-                    </th>
-                    <th rowspan="2" style="vertical-align:middle; min-width:90px;">
-                        <div class="th-filter-container">
-                            <span>Klp</span>
-                            <button class="excel-filter-btn ${thKlpActive}" onclick="bukaDropdownFilterSistem(event, 'kelompok')">
-                                <svg viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
-                            </button>
-                            <div id="filter-menu-kelompok" class="filter-dropdown-menu"></div>
-                        </div>
-                    </th>
-                    <th colspan="${daftarAgendaUnik.length || 1}" style="text-align:center;">Daftar Agenda Pertemuan</th>
-                    <th rowspan="2" style="text-align:center; vertical-align:middle; font-weight:700; background:#e2e8f0; color:#0f172a;">%</th>
-                </tr>
-                <tr>
-        `;
-
-        if(daftarAgendaUnik.length === 0) {
-            html += `<th style="font-size:9px; color:#64748b; font-weight:normal; text-align:center;">(Belum ada agenda)</th>`;
-        } else {
-            daftarAgendaUnik.forEach(ag => {
-                html += `<th style="font-size:9px; font-weight:700; text-align:center; writing-mode: vertical-lr; transform: rotate(180deg); padding:10px 4px 4px 4px; max-width:40px; white-space:nowrap;">${ag}</th>`;
-            });
-        }
-        html += `</tr></thead><tbody>`;
-
-        dataOrangTerfilter.forEach((p, index) => {
-            html += `<tr><td>${index+1}</td><td style="font-weight:500;">${p.nama_lengkap}</td><td>${p.desa || '-'}</td><td>${p.kelompok || '-'}</td>`;
-            
-            let hitungHadir = 0;
-            let hitungIzin = 0;
-
-            if(daftarAgendaUnik.length === 0) {
-                html += `<td style="text-align:center; color:#cbd5e1;">-</td>`;
-            } else {
-                daftarAgendaUnik.forEach(ag => {
-                    // Saring log presensi milik orang ini & agenda ini
-                    let logUserDiAgenda = dataMentahTahunanLog.filter(l => {
-                        return String(l.id_generus) === String(p.id_generus) &&
-                               String(l.nama_kegiatan).toUpperCase().trim() === ag;
-                    });
-
-                    if(logUserDiAgenda.length > 0) {
-                        let adaIzin = logUserDiAgenda.some(l => String(l.metode_input).toLowerCase().includes('izin'));
-                        if(adaIzin) {
-                            html += `<td style="text-align:center; color:#d97706; font-weight:700; background:rgba(217,119,6,0.05);">I</td>`;
-                            hitungIzin++;
-                        } else {
-                            html += `<td style="text-align:center; color:#10b981; font-weight:700; background:rgba(16,185,129,0.05);">✓</td>`;
-                            hitungHadir++;
-                        }
-                    } else {
-                        html += `<td style="text-align:center; color:#ef4444; font-weight:600; background:rgba(239,68,68,0.02);">A</td>`;
-                    }
+        if (statusKategoriAktif === "PENGURUS") {
+            if (subDapukanPengurusTerpilih.length > 0) {
+                dataOrangTerfilter = dataOrangTerfilter.filter(o => {
+                    if (!o.usia_dapukan) return false;
+                    let dbValue = o.usia_dapukan.toUpperCase().trim();
+                    return subDapukanPengurusTerpilih.some(filterValue => dbValue.includes(filterValue));
                 });
             }
 
-            let totalAgenda = daftarAgendaUnik.length;
-            let persentase = totalAgenda > 0 ? Math.round((hitungHadir / totalAgenda) * 100) : 0;
-            let warnaPersen = persentase >= 75 ? 'color:#10b981; font-weight:700;' : (persentase >= 50 ? 'color:#d97706; font-weight:700;' : 'color:#ef4444; font-weight:700;');
+            headerDinamisKolom3Html = `
+                <th style="min-width:130px;">
+                    <div class="th-filter-container">
+                        <span>Dapukan</span>
+                        <button class="excel-filter-btn ${subDapukanPengurusTerpilih.length > 0 ? 'active' : ''}" onclick="toggleDropdownDapukanPengurus(event)">
+                            <svg viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+                        </button>
+                        <div class="filter-dropdown-menu" id="dropdown-filter-dapukan" onclick="event.stopPropagation()">
+                            <div class="filter-options-list" id="list-opsi-dapukan"></div>
+                            <div class="filter-action-buttons">
+                                <button class="filter-btn-sub filter-btn-clear" onclick="bersihkanFilterDapukanPengurus()">Clear</button>
+                                <button class="filter-btn-sub filter-btn-ok" onclick="terapkanFilterDapukanPengurus()">OK</button>
+                            </div>
+                        </div>
+                    </div>
+                </th>`;
+        } else {
+            if (filterTerpilih['kelompok'] && filterTerpilih['kelompok'].length > 0) {
+                dataOrangTerfilter = dataOrangTerfilter.filter(o => filterTerpilih['kelompok'].includes((o.kelompok || "-").toUpperCase()));
+            }
 
-            html += `<td style="text-align:center; background:#f8fafc; ${warnaPersen}">${persentase}%</td></tr>`;
-        });
-
-        html += `</tbody></table></div>`;
-        container.innerHTML = html;
-        document.getElementById('print-area').style.display = 'block';
-    }
-
-    function bukaDropdownFilterSistem(e, jenisKolom) {
-        e.stopPropagation();
-        tutupSemuaDropdownAman();
-
-        let menuBox = document.getElementById(`filter-menu-${jenisKolom}`);
-        menuBox.innerHTML = "";
-
-        let itemSemuaPilihan = [];
-        dataMasterTahunanOrang.forEach(p => {
-            let nilai = p[jenisKolom] || "-";
-            if(!itemSemuaPilihan.includes(nilai)) itemSemuaPilihan.push(nilai);
-        });
-        itemSemuaPilihan.sort();
-
-        menuBox.style.display = "block";
-        globalOverlay.style.display = "block";
-
-        let posisiTombol = e.currentTarget.getBoundingClientRect();
-        let scrollAtasKontainer = window.scrollY || document.documentElement.scrollTop;
-        menuBox.style.top = (posisiTombol.bottom + scrollAtasKontainer) + "px";
-        menuBox.style.left = posisiTombol.left + "px";
-
-        let inputCari = document.createElement('input');
-        inputCari.className = "filter-search-box";
-        inputCari.placeholder = "Cari...";
-        inputCari.onclick = (ev) => ev.stopPropagation();
-        inputCari.oninput = function() {
-            let k = this.value.toLowerCase();
-            let items = menuBox.querySelectorAll('.filter-option-item');
-            items.forEach(it => {
-                let txt = it.innerText.toLowerCase();
-                it.style.display = txt.includes(k) ? "flex" : "none";
-            });
-        };
-        menuBox.appendChild(inputCari);
-
-        let listKontainer = document.createElement('div');
-        listKontainer.className = "filter-options-list";
-        listKontainer.onclick = (ev) => ev.stopPropagation();
-
-        let labelPilihSemua = document.createElement('label');
-        labelPilihSemua.className = "filter-option-item";
-        let isAllChecked = !filterTerpilih[jenisKolom] || filterTerpilih[jenisKolom].length === 0;
-        labelPilihSemua.innerHTML = `<input type="checkbox" id="all-chk-${jenisKolom}" ${isAllChecked ? 'checked' : ''}> <span><b>[PILIH SEMUA]</b></span>`;
-        labelPilihSemua.querySelector('input').onchange = function() {
-            let checkboxes = listKontainer.querySelectorAll('.chk-item-opsi');
-            checkboxes.forEach(cb => cb.checked = this.checked);
-        };
-        listKontainer.appendChild(labelPilihSemua);
-
-        itemSemuaPilihan.forEach(val => {
-            let lbl = document.createElement('label');
-            lbl.className = "filter-option-item";
-            let dicentang = filterTerpilih[jenisKolom] && filterTerpilih[jenisKolom].includes(val);
-            if(!filterTerpilih[jenisKolom] || filterTerpilih[jenisKolom].length === 0) dicentang = true;
-
-            lbl.innerHTML = `<input type="checkbox" class="chk-item-opsi" value="${val}" ${dicentang ? 'checked' : ''}> <span>${val}</span>`;
-            lbl.querySelector('input').onchange = function() {
-                if(!this.checked) {
-                    let allCb = menuBox.querySelector(`#all-chk-${jenisKolom}`);
-                    if(allCb) allCb.checked = false;
-                }
-            };
-            listKontainer.appendChild(lbl);
-        });
-        menuBox.appendChild(listKontainer);
-
-        let aksiRow = document.createElement('div');
-        aksiRow.className = "filter-action-buttons";
-        aksiRow.onclick = (ev) => ev.stopPropagation();
-
-        let btnClear = document.createElement('button');
-        btnClear.className = "filter-btn-sub filter-btn-clear";
-        btnClear.innerText = "Reset";
-        btnClear.onclick = function() {
-            delete filterTerpilih[jenisKolom];
-            tutupSemuaDropdownAman(); renderTabelMatriksTahunanSistem();
-        };
-
-        let btnOk = document.createElement('button');
-        btnOk.className = "filter-btn-sub filter-btn-ok";
-        btnOk.innerText = "OK";
-        btnOk.onclick = function() {
-            SimpanSetFilterSistem(jenisKolom, menuBox);
-        };
-
-        aksiRow.appendChild(btnClear);
-        aksiRow.appendChild(btnOk);
-        menuBox.appendChild(aksiRow);
-    }
-
-    function SimpanSetFilterSistem(jenisKolom, menuBox) {
-        let chkSemua = menuBox.querySelector(`#all-chk-${jenisKolom}`);
-        if(chkSemua && chkSemua.checked) {
-            delete filterTerpilih[jenisKolom];
-            tutupSemuaDropdownAman(); renderTabelMatriksTahunanSistem();
-            return;
+            headerDinamisKolom3Html = `
+                <th style="min-width:110px;">
+                    <div class="th-filter-container">
+                        <span>Kelompok</span>
+                        <button class="excel-filter-btn ${filterTerpilih['kelompok'] ? 'active' : ''}" onclick="toggleDropdownKelompok(event)">
+                            <svg viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+                        </button>
+                        <div class="filter-dropdown-menu" id="dropdown-filter-kelompok" onclick="event.stopPropagation()">
+                            <input type="text" class="filter-search-box" placeholder="Cari Kelompok..." oninput="cariOpsiKelompok(this.value)">
+                            <div class="filter-options-list" id="list-opsi-kelompok"></div>
+                            <div class="filter-action-buttons">
+                                <button class="filter-btn-sub filter-btn-clear" onclick="bersihkanFilterKelompok()">Clear</button>
+                                <button class="filter-btn-sub filter-btn-ok" onclick="terapkanFilterKelompok()">OK</button>
+                            </div>
+                        </div>
+                    </div>
+                </th>`;
         }
 
-        let terpilih = [];
-        let checkboxes = menuBox.querySelectorAll('.chk-item-opsi');
-        checkboxes.forEach(cb => { if(cb.checked) terpilih.push(cb.value); });
+        let html = `<table class="print-table">
+                    <thead>
+                        <tr>
+                            <th style="width:30px; text-align:center;">No</th>
+                            <th>Nama Lengkap</th>
+                            ${headerDinamisKolom3Html}
+                            <th style="text-align:center; width:20px;">Jan</th><th style="text-align:center; width:20px;">Feb</th>
+                            <th style="text-align:center; width:20px;">Mar</th><th style="text-align:center; width:20px;">Apr</th>
+                            <th style="text-align:center; width:20px;">Mei</th><th style="text-align:center; width:20px;">Jun</th>
+                            <th style="text-align:center; width:20px;">Jul</th><th style="text-align:center; width:20px;">Agu</th>
+                            <th style="text-align:center; width:20px;">Sep</th><th style="text-align:center; width:20px;">Okt</th>
+                            <th style="text-align:center; width:20px;">Nov</th><th style="text-align:center; width:20px;">Des</th>
+                            <th style="text-align:center; width:45px; background:#f1f5f9; font-weight:700;">Hadir</th>
+                            <th style="text-align:center; width:45px; background:#ffe4e6; font-weight:700;">Izin</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
 
-        if(terpilih.length > 0) filterTerpilih[jenisKolom] = terpilih; else delete filterTerpilih[jenisKolom];
+        if(dataOrangTerfilter.length === 0) {
+            html += `<tr><td colspan="17" style="text-align:center; color:#ef4444; font-weight:600; padding:20px;">Tidak ada data anggota yang cocok.</td></tr>`;
+        } else {
+            let akumulasiHadirSemua = 0;
+            let akumulasiIzinSemua = 0;
+
+            dataOrangTerfilter.sort((a,b) => (a.nama_lengkap || '').localeCompare(b.nama_lengkap)).forEach((orang, idx) => {
+                let logOrang = dataMentahTahunanLog.filter(l => String(l.id_generus) === String(orang.id_generus));
+                let kolom3Isi = (statusKategoriAktif === "PENGURUS") ? (orang.usia_dapukan || "-").toUpperCase() : (orang.kelompok || "-").toUpperCase();
+
+                html += `<tr>
+                            <td style="text-align:center;">${idx + 1}</td>
+                            <td style="font-weight:600;">${orang.nama_lengkap}</td>
+                            <td>${kolom3Isi}</td>`;
+                
+                let totalHadir = 0;
+                let totalIzin = 0;
+                for (let m = 0; m < 12; m++) {
+                    let hadir = logOrang.some(l => new Date(l.waktu_absen).getMonth() === m && l.metode_input !== 'Izin');
+                    let izin = logOrang.some(l => new Date(l.waktu_absen).getMonth() === m && l.metode_input === 'Izin');
+                    
+                    if (hadir) { html += `<td style="text-align:center; color:#10b981; font-weight:700;">✔</td>`; totalHadir++; }
+                    else if (izin) { html += `<td style="text-align:center; color:#eab308; font-weight:700; font-size:9px;">IZN</td>`; totalIzin++; }
+                    else { html += `<td style="text-align:center; color:#cbd5e1;">-</td>`; }
+                }
+                
+                akumulasiHadirSemua += totalHadir;
+                akumulasiIzinSemua += totalIzin;
+
+                html += `
+                    <td style="text-align:center; font-weight:700; background:#f8fafc; color:#047857;">${totalHadir}x</td>
+                    <td style="text-align:center; font-weight:700; background:#fff5f5; color:#b91c1c;">${totalIzin}x</td>
+                </tr>`;
+            });
+
+            html += `
+                <tr style="background: #f1f5f9; font-weight: 700;">
+                    <td colspan="15" style="text-align: right; padding: 8px;">TOTAL AKUMULASI KESELURUHAN:</td>
+                    <td style="text-align: center; color: #047857; background: #e6f4ea;">${akumulasiHadirSemua}x</td>
+                    <td style="text-align: center; color: #b91c1c; background: #fce8e6;">${akumulasiIzinSemua}x</td>
+                </tr>`;
+        }
+
+        html += `</tbody></table>`;
+        container.innerHTML = html;
+        areaCetak.style.display = "block";
+    }
+
+    function toggleDropdownDapukanPengurus(event) {
+        event.stopPropagation();
+        let menu = document.getElementById('dropdown-filter-dapukan');
+        if(!menu) return;
+        let terbukanNow = (menu.style.display === 'block');
+        tutupSemuaDropdownAman();
+        
+        if(!terbukanNow) {
+            menu.style.display = 'block';
+            globalOverlay.style.display = 'block';
+            
+            let listDapukanMaster = ["KMM", "PPG", "DAERAH", "PONDOK", "KELOMPOK", "DESA"];
+            let containerOpsi = document.getElementById('list-opsi-dapukan');
+            containerOpsi.innerHTML = '';
+            
+            listDapukanMaster.forEach(dapukan => {
+                let tercentang = subDapukanPengurusTerpilih.includes(dapukan) ? 'checked' : '';
+                let div = document.createElement('div'); div.className = 'filter-option-item';
+                div.innerHTML = `<label style="display:flex; align-items:center; gap:8px; font-weight:normal; text-transform:none; cursor:pointer; width:100%;">
+                                    <input type="checkbox" value="${dapukan}" ${tercentang}> <span>${dapukan}</span>
+                                 </label>`;
+                containerOpsi.appendChild(div);
+            });
+        }
+    }
+
+    function terapkanFilterDapukanPengurus() {
+        let cbs = document.querySelectorAll('#list-opsi-dapukan input[type="checkbox"]');
+        let terpilih = []; 
+        cbs.forEach(cb => { if(cb.checked) terpilih.push(cb.value); });
+        subDapukanPengurusTerpilih = terpilih;
+        tutupSemuaDropdownAman(); 
+        renderTabelMatriksTahunanSistem();
+    }
+
+    function bersihkanFilterDapukanPengurus() { 
+        subDapukanPengurusTerpilih = []; 
+        tutupSemuaDropdownAman(); 
+        renderTabelMatriksTahunanSistem(); 
+    }
+
+    function toggleDropdownKelompok(event) {
+        event.stopPropagation();
+        let menu = document.getElementById('dropdown-filter-kelompok');
+        if(!menu) return;
+        let terbukanNow = (menu.style.display === 'block');
+        tutupSemuaDropdownAman();
+        if(!terbukanNow) {
+            menu.style.display = 'block';
+            globalOverlay.style.display = 'block';
+            
+            let listKlp = [...new Set(dataMasterTahunanOrang.map(o => (o.kelompok || "-").toUpperCase()))].sort();
+            let containerOpsi = document.getElementById('list-opsi-kelompok');
+            containerOpsi.innerHTML = '';
+            
+            listKlp.forEach(klp => {
+                let tercentang = filterTerpilih['kelompok'] && filterTerpilih['kelompok'].includes(klp) ? 'checked' : '';
+                let div = document.createElement('div'); div.className = 'filter-option-item';
+                div.innerHTML = `<label style="display:flex; align-items:center; gap:8px; font-weight:normal; text-transform:none; cursor:pointer; width:100%;">
+                                    <input type="checkbox" value="${klp}" ${tercentang}> <span>${klp}</span>
+                                 </label>`;
+                containerOpsi.appendChild(div);
+            });
+        }
+    }
+
+    function cariOpsiKelompok(val) {
+        let items = document.querySelectorAll('#list-opsi-kelompok .filter-option-item');
+        items.forEach(item => { item.style.display = item.textContent.toLowerCase().includes(val.toLowerCase()) ? 'flex' : 'none'; });
+    }
+
+    function bersihkanFilterKelompok() { delete filterTerpilih['kelompok']; tutupSemuaDropdownAman(); renderTabelMatriksTahunanSistem(); }
+    
+    function terapkanFilterKelompok() {
+        let cbs = document.querySelectorAll('#list-opsi-kelompok input[type="checkbox"]');
+        let terpilih = []; cbs.forEach(cb => { if(cb.checked) terpilih.push(cb.value); });
+        if(terpilih.length > 0) filterTerpilih['kelompok'] = terpilih; else delete filterTerpilih['kelompok'];
         tutupSemuaDropdownAman(); renderTabelMatriksTahunanSistem();
     }
 
@@ -1275,7 +1439,7 @@
     function eksekusiPrintKhusus(pilihan) {
         if(!pilihan) return;
         if(pilihan === 'tahunan') { window.print(); } 
-        else { tarikDanCetakLaporan(pilihan, true); window.print(); }
+        else { tarikDanCetakLaporan(pilihan, true); }
         document.getElementById('print-dropdown').value = "";
     }
 
@@ -1284,11 +1448,12 @@
         let dataMurni = await dapatkanDataGabungan(namaKegiatan);
         let csv = "No,Nama Lengkap,Kelompok,Desa,Status,Tanggal & Waktu,Metode\n";
         dataMurni.forEach((d, i) => { csv += `${i+1},"${d.name}","${d.kelompok}","${d.desa}","${d.status}","${d.tanggalLengkap} - ${d.waktu}","${d.metode}"\n`; });
-        let blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-        let link = document.createElement("a"); link.href = URL.createObjectURL(blob);
-        link.setAttribute("download", `PRE_SENS_REKAP_${namaKegiatan.replace(/ /g, "_")}.csv`);
-        document.body.appendChild(link); link.click(); document.body.removeChild(link);
+        let blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
+        let link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `REKAP_${namaKegiatan}.csv`; link.click();
     }
-</script>
+
+    // Jalankan pengecekan koneksi awal saat aplikasi dimuat
+    updateStatusInternet();
+</script>  
 </body>
 </html>
