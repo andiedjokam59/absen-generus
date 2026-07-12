@@ -758,32 +758,39 @@
         let profil = semuaDataGenerus.find(g => g.id_generus == idGenerus) || { nama_lengkap: "ID: " + idGenerus };
         let waktuSekarang = new Date();
         
-        // Membuat string penanda rentang tanggal hari ini (Format Lokal: YYYY-MM-DD)
-        let hariIniString = waktuSekarang.toLocaleDateString('fr-CA'); // Hasil format pasti: YYYY-MM-DD
+        // Membuat string penanda rentang tanggal hari ini secara konsisten (Format Lokal Indonesia: YYYY-MM-DD)
+        let hariIniString = waktuSekarang.toLocaleDateString('fr-CA'); // Hasil pasti format: YYYY-MM-DD
         
-        // Ambil riwayat log lokal
+        // Set rentang pencarian murni string tanggal agar aman dari masalah selisih jam UTC+7
+        let awalHariIni = `${hariIniString}T00:00:00.000Z`;
+        let akhirHariIni = `${hariIniString}T23:59:59.999Z`;
+
+        // 1. Ambil riwayat log lokal khusus HARI INI saja
         let localLogs = JSON.parse(localStorage.getItem('absensi_kegiatan_lokal') || '[]');
-        let riwayatGabungan = [...localLogs];
+        let riwayatHariIni = localLogs.filter(l => new Date(l.waktu_absen).toLocaleDateString('fr-CA') === hariIniString);
         
+        // 2. Ambil data dari Cloud Supabase KHUSUS yang dilakukan HARI INI saja
         if (navigator.onLine) {
             try {
-                // Ambil data absen KHUSUS id_generus ini dari cloud
                 let { data: cloudLogs } = await _supabase
                     .from('absensi_kegiatan')
                     .select('waktu_absen, nama_kegiatan')
-                    .eq('id_generus', idGenerus);
-                if (cloudLogs) riwayatGabungan = riwayatGabungan.concat(cloudLogs);
+                    .eq('id_generus', idGenerus)
+                    .gte('waktu_absen', awalHariIni)  // Mulai dari jam 00:00:00 Hari Ini murni
+                    .lte('waktu_absen', akhirHariIni); // Sampai dengan jam 23:59:59 Hari Ini murni
+                
+                if (cloudLogs) {
+                    riwayatHariIni = riwayatHariIni.concat(cloudLogs);
+                }
             } catch(e) {}
         }
 
-        // Cek secara presisi apakah user sudah absen di HARI YANG SAMA dengan ACARA YANG SAMA
-        let sudahAbsenAcaraSamaHariIni = riwayatGabungan.some(l => {
-            // Pastikan format pembanding tanggal sama-sama menggunakan format lokal YYYY-MM-DD
-            let tglLog = new Date(l.waktu_absen).toLocaleDateString('fr-CA');
-            return tglLog === hariIniString && l.nama_kegiatan.toUpperCase().trim() === namaKegiatan;
+        // 3. Cek apakah di HARI INI sudah ada nama kegiatan yang persis sama
+        let sudahAbsenAcaraSamaHariIni = riwayatHariIni.some(l => {
+            return l.nama_kegiatan.toUpperCase().trim() === namaKegiatan;
         });
 
-        // Jika terdeteksi melakukan dobel absen di hari dan acara yang sama, kunci/tolak
+        // Jika terdeteksi ganda DI HARI YANG SAMA untuk ACARA YANG SAMA, baru kita tolak
         if (sudahAbsenAcaraSamaHariIni) {
             bunyikanSuaraGagal(); 
             tampilkanNotifKustom('error', 'Sudah Absen', `${profil.nama_lengkap} sudah mengisi presensi ${namaKegiatan} hari ini.`);
@@ -797,19 +804,19 @@
             waktu_absen: waktuSekarang.toISOString() 
         };
 
-        // Jalur Eksekusi Pengiriman Langsung jika Online
+        // 4. JALUR UTAMA: Jika online langsung tembak ke Supabase
         if (navigator.onLine) {
             try {
                 let { error } = await _supabase.from('absensi_kegiatan').insert([dataAbsenBaru]);
                 if (!error) {
                     bunyikanSuaraSukses();
                     tampilkanNotifKustom('success', 'Berhasil (Cloud)', profil.nama_lengkap);
-                    return;
+                    return; 
                 }
             } catch (err) {}
         }
         
-        // Jalur Cadangan (Jika gagal kirim ke cloud atau sedang offline)
+        // 5. JALUR CADANGAN: Masuk lokal jika jaringan bermasalah / offline
         localLogs.push(dataAbsenBaru);
         localStorage.setItem('absensi_kegiatan_lokal', JSON.stringify(localLogs));
         bunyikanSuaraSukses();
