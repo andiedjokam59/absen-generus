@@ -748,78 +748,69 @@
     // FIX: LOGIKA PROTEKSI DOUBLE-SCAN HANYA BERLAKU DI HARI YANG SAMA
     async function prosesAbsensi(idGenerus, metode) {
         let namaKegiatan = document.getElementById('kegiatan').value.toUpperCase();
-        if(!namaKegiatan) { 
-            bunyikanSuaraGagal(); 
-            tampilkanNotifKustom('error', 'Gagal Presensi', 'Harap isi Nama Agenda terlebih dahulu!'); 
-            return; 
-        }
-        
-        let profil = semuaDataGenerus.find(g => g.id_generus == idGenerus) || { nama_lengkap: "ID: " + idGenerus };
+        if(!namaKegiatan) { bunyikanSuaraGagal(); tampilkanNotifKustom('error', 'Gagal Presensi', 'Harap isi Nama Agenda terlebih dahulu!'); return; }
+        let profil = semuaDataGenerus.find(g => String(g.id_generus) === String(idGenerus)) || { nama_lengkap: "ID: " + idGenerus };
         let waktuSekarang = new Date();
-        
         let localLogs = JSON.parse(localStorage.getItem('absensi_kegiatan_lokal') || '[]');
         let riwayatGabungan = [...localLogs];
         
         if (navigator.onLine) {
             try {
+                // PERBAIKAN 1: Tarik kolom id_generus & nama_kegiatan dari cloud agar bisa disaring secara akurat
                 let { data: cloudLogs } = await _supabase
                     .from('absensi_kegiatan')
-                    .select('waktu_absen')
+                    .select('waktu_absen, id_generus, nama_kegiatan')
                     .eq('nama_kegiatan', namaKegiatan.trim())
                     .eq('id_generus', idGenerus);
                 if (cloudLogs) riwayatGabungan = riwayatGabungan.concat(cloudLogs);
             } catch(e) {}
         }
-
-        // Cari riwayat log terakhir dari orang tersebut untuk kegiatan ini
+        
+        // PERBAIKAN 2: Saring secara ketat log yang HANYA milik ID orang ini DAN untuk nama kegiatan ini saja
         let logTerakhirSama = riwayatGabungan
-            .filter(l => l.waktu_absen)
+            .filter(l => l.waktu_absen && 
+                         String(l.id_generus) === String(idGenerus) && 
+                         String(l.nama_kegiatan).toUpperCase() === namaKegiatan.trim().toUpperCase())
             .sort((a,b) => new Date(b.waktu_absen) - new Date(a.waktu_absen))[0];
-
-        if (logTerakhirSama) {
-            let tglLog = new Date(logTerakhirSama.waktu_absen);
             
-            // Cek apakah log terakhir terjadi pada HARI, BULAN, dan TAHUN yang sama (Hari ini)
-            let apakahHariYangSama = tglLog.getDate() === waktuSekarang.getDate() &&
-                                     tglLog.getMonth() === waktuSekarang.getMonth() &&
-                                     tglLog.getFullYear() === waktuSekarang.getFullYear();
-
-            if (apakahHariYangSama) {
-                let selisihJam = (waktuSekarang - tglLog) / (1000 * 60 * 60);
-                if (selisihJam < 3) {
-                    bunyikanSuaraGagal(); 
-                    let sisaMenit = Math.ceil((3 - selisihJam) * 60);
-                    tampilkanNotifKustom('error', 'Sudah Absen', `${profil.nama_lengkap} baru saja absen. Silakan kembali dalam ${sisaMenit} menit lagi.`);
-                    return; 
-                }
+        if (logTerakhirSama) {
+            let selisihJam = (waktuSekarang - new Date(logTerakhirSama.waktu_absen)) / (1000 * 60 * 60);
+            if (selisihJam < 3) {
+                bunyikanSuaraGagal();
+                let sisaMenit = Math.ceil((3 - selisihJam) * 60);
+                tampilkanNotifKustom('error', 'Sudah Absen', `${profil.nama_lengkap} kembali ${sisaMenit} menit lagi.`);
+                return;
             }
         }
-
+        
         const dataAbsenBaru = { 
             nama_kegiatan: namaKegiatan.trim(), 
             id_generus: idGenerus, 
             metode_input: metode, 
             waktu_absen: waktuSekarang.toISOString() 
         };
-
+        
+        // Selalu amankan data di LocalStorage terlebih dahulu (Sebagai buffer Offline)
         localLogs.push(dataAbsenBaru);
         localStorage.setItem('absensi_kegiatan_lokal', JSON.stringify(localLogs));
-
         bunyikanSuaraSukses();
         
         if (navigator.onLine) {
+            // Jika online, langsung coba upload ke cloud saat itu juga
             try {
                 let { error } = await _supabase.from('absensi_kegiatan').insert([dataAbsenBaru]);
                 if (!error) {
+                    // PERBAIKAN 3: Hapus data spesifik berdasarkan kecocokan ID dan waktu 
+                    // (Jangan pakai .pop() agar antrean scan yang cepat tidak salah hapus data)
                     let logsSesudahUpload = JSON.parse(localStorage.getItem('absensi_kegiatan_lokal') || '[]');
-                    logsSesudahUpload.pop(); 
+                    logsSesudahUpload = logsSesudahUpload.filter(l => !(String(l.id_generus) === String(idGenerus) && l.waktu_absen === dataAbsenBaru.waktu_absen));
                     localStorage.setItem('absensi_kegiatan_lokal', JSON.stringify(logsSesudahUpload));
                     tampilkanNotifKustom('success', 'Berhasil (Cloud)', profil.nama_lengkap);
                     return;
                 }
             } catch (err) {}
         }
-        
+        // Output notifikasi mode offline berhasil disimpan lokal
         tampilkanNotifKustom('success', 'Berhasil (Offline)', profil.nama_lengkap + ' [Tersimpan Lokal]');
     }
 
