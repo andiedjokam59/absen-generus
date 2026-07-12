@@ -885,8 +885,9 @@
             try {
                 let { error } = await _supabase.from('absensi_kegiatan').insert([localLogs[i]]);
                 if (!error) {
-                    berforceUploadCount++;
+                    berhasilUploadCount++;
                 } else {
+                    console.error("Gagal sinkron baris data:", localLogs[i], error.message);
                     logsSisaGagal.push(localLogs[i]);
                 }
             } catch (e) {
@@ -895,8 +896,9 @@
         }
 
         localStorage.setItem('absensi_kegiatan_lokal', JSON.stringify(logsSisaGagal));
+
         if (berhasilUploadCount > 0) {
-            tampilkanNotifKustom('success', 'Backup Otomatis', `${berhasilUploadCount} data lokal berhasil disinkronkan ke Cloud!`);
+            tampilkanNotifKustom('success', 'Backup Berhasil', `${berhasilUploadCount} data untuk acara berhasil disinkronkan ke Cloud!`);
         }
     }
 
