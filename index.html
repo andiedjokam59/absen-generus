@@ -441,7 +441,12 @@
     </div>
 
     <div class="section-title">OPSI 1: SCAN BARCODE</div>
-    <div id="reader"></div>
+
+	<!-- Tombol Pengontrol Kamera -->
+	<button id="btn-hidupkan" class="btn-primary" type="button" onclick="hidupkanKamera()">Hidupkan Kamera</button>
+	<button id="btn-matikan" class="btn-warning" type="button" style="display: none;" onclick="matikanKamera()">Matikan Kamera</button>
+
+	<div id="reader" style="margin-top: 15px;"></div>
 
     <div class="divider">— ATAU —</div>
 
@@ -743,8 +748,35 @@
         await prosesAbsensi(decodedText, "Scan Barcode");
         setTimeout(() => { pengunciScanAktif = false; }, 1500); 
     }
-    let html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 220 });
-    html5QrcodeScanner.render(onScanSuccess);
+    let html5QrcodeScanner = null;
+
+    // Fungsi untuk menghidupkan kamera
+    function hidupkanKamera() {
+        if (!html5QrcodeScanner) {
+            html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 220 });
+            html5QrcodeScanner.render(onScanSuccess);
+            
+            // Atur tampilan tombol
+            document.getElementById('btn-hidupkan').style.display = 'none';
+            document.getElementById('btn-matikan').style.display = 'block';
+        }
+    }
+
+    // Fungsi untuk mematikan kamera
+    function matikanKamera() {
+        if (html5QrcodeScanner) {
+            html5QrcodeScanner.clear().then(() => {
+                html5QrcodeScanner = null; // Reset scanner
+                
+                // Atur tampilan tombol kembali seperti semula
+                document.getElementById('btn-hidupkan').style.display = 'block';
+                document.getElementById('btn-matikan').style.display = 'none';
+            }).catch(error => {
+                console.error("Gagal mematikan kamera", error);
+                tampilkanNotifKustom('error', 'Gagal', 'Tidak dapat mematikan kamera.');
+            });
+        }
+    }
 
     // SISTEM PENCATATAN DAN DUPLIKASI CHECKER BERDASARKAN RENTANG TANGGAL SAMA & ACARA SAMA
     async function prosesAbsensi(idGenerus, metode) {
