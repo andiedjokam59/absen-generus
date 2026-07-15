@@ -12,6 +12,51 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght=400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
+        /* ========================================= */
+        /* TAMBAHAN CSS UNTUK ANIMASI SPLASH SCREEN  */
+        /* ========================================= */
+        #splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            /* Menggunakan var(--bg-main) agar splash screen beradaptasi dengan mode gelap/terang otomatis */
+            background-color: var(--bg-main); 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 99999; /* Memastikan layar ini berada di lapisan paling atas menutupi semuanya */
+            transition: opacity 0.6s ease-in-out, visibility 0.6s ease-in-out;
+        }
+
+        .logo-animasi {
+            width: 140px; 
+            /* Animasi denyut berulang setiap 1.2 detik */
+            animation: pulse-splash 1.2s infinite alternate ease-in-out; 
+            /* Sedikit efek bayangan agar logo lebih hidup */
+            filter: drop-shadow(0 10px 15px rgba(4, 120, 87, 0.2)); 
+        }
+
+        @keyframes pulse-splash {
+            0% { 
+                transform: scale(0.85); 
+                opacity: 0.8; 
+            }
+            100% { 
+                transform: scale(1.1); 
+                opacity: 1; 
+            }
+        }
+
+        .splash-sembunyi {
+            opacity: 0 !important;
+            visibility: hidden !important;
+            pointer-events: none;
+        }
+        /* ========================================= */
+
+
         :root {
             --primary: #047857;
             --primary-hover: #065f46;
@@ -408,6 +453,15 @@
 </head>
 <body onclick="bukaKunciAudioKonstruktor()">
 
+<!-- ==================================================== -->
+<!-- TAMBAHAN HTML CUSTOM SPLASH SCREEN DI AWAL BODY      -->
+<!-- ==================================================== -->
+<div id="splash-screen">
+  <img src="Logo remaja daerah.png" alt="Logo Presensi" class="logo-animasi">
+</div>
+<!-- ==================================================== -->
+
+
 <div id="global-filter-overlay" class="filter-backdrop-overlay" onclick="tutupSemuaDropdownAman()"></div>
 
 <div class="app-container">
@@ -552,6 +606,21 @@
 </div>
 
 <script>
+    // ====================================================
+    // TAMBAHAN JAVASCRIPT UNTUK MENGHILANGKAN SPLASH SCREEN
+    // ====================================================
+    window.addEventListener('load', () => {
+        const splashScreen = document.getElementById('splash-screen');
+        if(splashScreen) {
+            // Beri jeda 1.8 detik (1800 ms) agar pengguna bisa melihat logo beranimasi
+            // Angka 1800 bisa Anda sesuaikan jika ingin lebih lama/sebentar
+            setTimeout(() => {
+                splashScreen.classList.add('splash-sembunyi');
+            }, 1800); 
+        }
+    });
+    // ====================================================
+
     const SUPABASE_URL = "https://gttavghryoadthnvwthd.supabase.co"; 
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0dGF2Z2hyeW9hZHRobnZ3dGhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA5MDI5NDQsImV4cCI6MjA5NjQ3ODk0NH0.0O7I9EqSaiQq8_LKMJS9U-XDuitY6sPfYQVtBsJAeas";
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
