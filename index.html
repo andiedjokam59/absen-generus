@@ -12,116 +12,50 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght=400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
-        /* ========================================= */
-        /* TAMBAHAN CSS UNTUK ANIMASI SPLASH SCREEN  */
-        /* ========================================= */
         #splash-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            /* Menggunakan var(--bg-main) agar splash screen beradaptasi dengan mode gelap/terang otomatis */
-            background-color: var(--bg-main); 
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 99999; /* Memastikan layar ini berada di lapisan paling atas menutupi semuanya */
-            transition: opacity 0.6s ease-in-out, visibility 0.6s ease-in-out;
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background-color: var(--bg-main); display: flex; justify-content: center; align-items: center;
+            z-index: 99999; transition: opacity 0.6s ease-in-out, visibility 0.6s ease-in-out;
         }
-
         .logo-animasi {
-            width: 140px; 
-            /* Animasi denyut berulang setiap 1.2 detik */
-            animation: pulse-splash 1.2s infinite alternate ease-in-out; 
-            /* Sedikit efek bayangan agar logo lebih hidup */
-            filter: drop-shadow(0 10px 15px rgba(4, 120, 87, 0.2)); 
+            width: 140px; animation: pulse-splash 1.2s infinite alternate ease-in-out;
+            filter: drop-shadow(0 10px 15px rgba(4, 120, 87, 0.2));
         }
-
-        @keyframes pulse-splash {
-            0% { 
-                transform: scale(0.85); 
-                opacity: 0.8; 
-            }
-            100% { 
-                transform: scale(1.1); 
-                opacity: 1; 
-            }
-        }
-
-        .splash-sembunyi {
-            opacity: 0 !important;
-            visibility: hidden !important;
-            pointer-events: none;
-        }
-        /* ========================================= */
-
+        @keyframes pulse-splash { 0% { transform: scale(0.85); opacity: 0.8; } 100% { transform: scale(1.1); opacity: 1; } }
+        .splash-sembunyi { opacity: 0 !important; visibility: hidden !important; pointer-events: none; }
 
         :root {
-            --primary: #047857;
-            --primary-hover: #065f46;
-            --accent: #d97706;
-            --bg-main: #f8fafc; 
-            --bg-card: #ffffff;
-            --text-dark: #0f172a; 
-            --text-muted: #64748b;
-            --border-color: #e2e8f0;
-            --success: #10b981;
-            --shadow: rgba(15, 23, 42, 0.04);
-            --icon-color: #475569;
-            --warning: #eab308;
-            --warning-hover: #ca8a04;
+            --primary: #047857; --primary-hover: #065f46; --accent: #d97706; --bg-main: #f8fafc; 
+            --bg-card: #ffffff; --text-dark: #0f172a; --text-muted: #64748b; --border-color: #e2e8f0;
+            --success: #10b981; --shadow: rgba(15, 23, 42, 0.04); --icon-color: #475569;
+            --warning: #eab308; --warning-hover: #ca8a04;
         }
-
         [data-theme="dark"] {
-            --bg-main: #0f172a; 
-            --bg-card: #1e293b; 
-            --text-dark: #f8fafc; 
-            --text-muted: #94a3b8;
-            --border-color: #334155;
-            --shadow: rgba(0, 0, 0, 0.2);
-            --icon-color: #94a3b8;
+            --bg-main: #0f172a; --bg-card: #1e293b; --text-dark: #f8fafc; --text-muted: #94a3b8;
+            --border-color: #334155; --shadow: rgba(0, 0, 0, 0.2); --icon-color: #94a3b8;
         }
 
         body { 
-            font-family: 'Inter', sans-serif; 
-            margin: 0; padding: 0; 
-            background-color: var(--bg-main); 
-            color: var(--text-dark);
-            display: flex; justify-content: center; align-items: center;
-            min-height: 100vh;
-            transition: all 0.3s ease;
-            overscroll-behavior-y: auto; 
+            font-family: 'Inter', sans-serif; margin: 0; padding: 0; 
+            background-color: var(--bg-main); color: var(--text-dark);
+            display: flex; justify-content: center; align-items: center; min-height: 100vh;
+            transition: all 0.3s ease; overscroll-behavior-y: auto; 
         }
 
         .app-container { 
-            width: 100%; max-width: 440px; 
-            background: var(--bg-card); 
+            width: 100%; max-width: 440px; background: var(--bg-card); 
             padding: 32px 24px; border-radius: 24px; 
             box-shadow: 0 10px 25px -5px var(--shadow), 0 8px 10px -6px var(--shadow);
-            box-sizing: border-box; margin: 16px;
-            position: relative;
+            box-sizing: border-box; margin: 16px; position: relative;
         }
 
-        .top-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            width: 100%;
-        }
-
+        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; width: 100%; }
         .theme-toggle-btn {
-            background: var(--bg-main); border: 1px solid var(--border-color);
-            color: var(--text-dark); padding: 8px 14px; border-radius: 20px;
-            font-size: 12px; font-weight: 600; cursor: pointer;
-            transition: all 0.2s ease;
-            width: auto;
+            background: var(--bg-main); border: 1px solid var(--border-color); color: var(--text-dark);
+            padding: 8px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;
         }
-
         .net-status { 
-            font-weight: 700; font-size: 11px; padding: 6px 14px; 
-            border-radius: 20px; display: inline-block;
+            font-weight: 700; font-size: 11px; padding: 6px 14px; border-radius: 20px; display: inline-block;
             text-transform: uppercase; letter-spacing: 0.5px;
         }
         .online { background: rgba(16, 185, 129, 0.12); color: #10b981 !important; }
@@ -135,23 +69,14 @@
         .form-group { margin-bottom: 20px; position: relative; }
         label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-dark); }
         
-        .agenda-input-wrapper {
-            display: flex;
-            gap: 8px;
-        }
+        .agenda-input-wrapper { display: flex; gap: 8px; }
 
         input, .btn-primary, .btn-warning { 
-            width: 100%; padding: 14px 16px; 
-            border: 1px solid var(--border-color); background: var(--bg-card);
-            color: var(--text-dark); border-radius: 12px; 
-            box-sizing: border-box; font-size: 15px; font-family: inherit;
-            transition: all 0.2s;
-            -webkit-user-select: text !important;
-            user-select: text !important;
-            -webkit-tap-highlight-color: transparent;
+            width: 100%; padding: 14px 16px; border: 1px solid var(--border-color); background: var(--bg-card);
+            color: var(--text-dark); border-radius: 12px; box-sizing: border-box; font-size: 15px; font-family: inherit;
+            transition: all 0.2s; -webkit-user-select: text !important; user-select: text !important; -webkit-tap-highlight-color: transparent;
         }
         input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(4, 120, 87, 0.15); }
-
         #kegiatan { text-transform: uppercase; }
 
         .btn-primary { background: var(--primary); color: #fff; border: none; font-weight: 600; cursor: pointer; margin-top: 8px; box-shadow: 0 4px 12px rgba(4, 120, 87, 0.2); text-align: center; }
@@ -164,18 +89,10 @@
         
         #reader { width: 100%; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: none !important; background: var(--bg-card); }
         #reader button {
-            background-color: var(--primary) !important;
-            color: #ffffff !important;
-            border: none !important;
-            padding: 12px 20px !important;
-            font-size: 14px !important;
-            font-weight: 600 !important;
-            border-radius: 12px !important;
-            cursor: pointer !important;
-            transition: background-color 0.2s ease, transform 0.1s ease !important;
-            box-shadow: 0 4px 12px rgba(4, 120, 87, 0.15) !important;
-            margin: 10px 0 !important;
-            font-family: inherit !important;
+            background-color: var(--primary) !important; color: #ffffff !important; border: none !important;
+            padding: 12px 20px !important; font-size: 14px !important; font-weight: 600 !important;
+            border-radius: 12px !important; cursor: pointer !important; transition: background-color 0.2s ease, transform 0.1s ease !important;
+            box-shadow: 0 4px 12px rgba(4, 120, 87, 0.15) !important; margin: 10px 0 !important; font-family: inherit !important;
         }
         #reader button:hover { background-color: var(--primary-hover) !important; }
         #reader button:active { transform: scale(0.98) !important; }
@@ -186,109 +103,45 @@
         .search-results { 
             position: absolute; width: 100%; background: var(--bg-card); border: 1px solid var(--border-color); 
             max-height: 220px; overflow-y: auto !important; z-index: 999; border-radius: 12px; margin-top: 2px;
-            box-shadow: 0 10px 15px -3px var(--shadow); display: none;
-            -webkit-overflow-scrolling: touch;
-            overscroll-behavior: contain;
+            box-shadow: 0 10px 15px -3px var(--shadow); display: none; -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
         }
         .search-item { padding: 12px 16px; cursor: pointer; border-bottom: 1px solid var(--border-color); font-size: 14px; min-height: 44px; box-sizing: border-box; }
         .search-item:hover { background: var(--bg-main); color: var(--primary); }
 
         .action-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; margin-top: 10px; position: relative; }
         .btn-icon, .select-wrapper { 
-            background: transparent; border: 1px solid var(--border-color); 
-            color: var(--text-dark); padding: 10px 0; border-radius: 12px; 
-            cursor: pointer; display: flex; flex-direction: column; align-items: center; 
-            justify-content: center; gap: 4px; font-size: 9px; font-weight: 600;
+            background: transparent; border: 1px solid var(--border-color); color: var(--text-dark);
+            padding: 10px 0; border-radius: 12px; cursor: pointer; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; gap: 4px; font-size: 9px; font-weight: 600;
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); width: 100%; box-sizing: border-box;
         }
         
-        .btn-icon svg { 
-            width: 16px; height: 16px; 
-            fill: none; stroke: var(--icon-color); 
-            stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
-            transition: all 0.2s ease;
-        }
-        
+        .btn-icon svg { width: 16px; height: 16px; fill: none; stroke: var(--icon-color); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: all 0.2s ease; }
         .btn-icon:hover { background: var(--bg-main); border-color: var(--text-muted); }
         .btn-icon:hover svg { stroke: var(--primary); transform: translateY(-1px); }
         .btn-icon:active { transform: scale(0.95); }
 
         .select-wrapper { position: relative; padding: 0; }
-        .select-wrapper select {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            opacity: 0; cursor: pointer; font-family: inherit; z-index: 2;
-        }
+        .select-wrapper select { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; font-family: inherit; z-index: 2; }
         .select-wrapper:hover { background: var(--bg-main); border-color: var(--text-muted); }
         .select-wrapper:hover svg { stroke: var(--primary); transform: translateY(-1px); }
 
-        .custom-dropdown-border {
-            border: 1.5px solid var(--primary) !important;
-            border-radius: 12px;
-            box-shadow: 0 2px 6px rgba(4, 120, 87, 0.08);
-            background: var(--bg-card);
-            transition: all 0.2s ease-in-out;
-        }
-        .custom-dropdown-border:hover {
-            border-color: var(--primary-hover) !important;
-            box-shadow: 0 4px 12px rgba(4, 120, 87, 0.15);
-        }
+        .custom-dropdown-border { border: 1.5px solid var(--primary) !important; border-radius: 12px; box-shadow: 0 2px 6px rgba(4, 120, 87, 0.08); background: var(--bg-card); transition: all 0.2s ease-in-out; }
+        .custom-dropdown-border:hover { border-color: var(--primary-hover) !important; box-shadow: 0 4px 12px rgba(4, 120, 87, 0.15); }
 
         .scan-notif-modal {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%) translateY(20px);
-            background: var(--bg-card);
-            border: 2px solid var(--border-color);
-            color: var(--text-dark);
-            padding: 20px 32px;
-            border-radius: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            z-index: 10005;
-            text-align: center;
-            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.15), 0 10px 10px -5px rgba(0,0,0,0.1);
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            min-width: 260px;
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(20px);
+            background: var(--bg-card); border: 2px solid var(--border-color); color: var(--text-dark);
+            padding: 20px 32px; border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+            z-index: 10005; text-align: center; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.15), 0 10px 10px -5px rgba(0,0,0,0.1);
+            opacity: 0; visibility: hidden; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); min-width: 260px;
         }
-        .scan-notif-modal.show {
-            opacity: 1;
-            visibility: visible;
-            transform: translateX(-50%) translateY(0);
-        }
-        .scan-notif-icon {
-            width: 56px;
-            height: 56px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-        }
-        .scan-notif-modal.success-status .scan-notif-icon {
-            background: rgba(16, 185, 129, 0.15);
-            color: #10b981;
-        }
-        .scan-notif-modal.error-status .scan-notif-icon {
-            background: rgba(239, 68, 68, 0.15);
-            color: #ef4444;
-        }
-        .scan-notif-title {
-            font-size: 18px;
-            font-weight: 800;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-        }
-        .scan-notif-desc {
-            font-size: 13px;
-            color: var(--text-muted);
-            margin: 0;
-            font-weight: 500;
-        }
+        .scan-notif-modal.show { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0); }
+        .scan-notif-icon { width: 56px; height: 56px; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
+        .scan-notif-modal.success-status .scan-notif-icon { background: rgba(16, 185, 129, 0.15); color: #10b981; }
+        .scan-notif-modal.error-status .scan-notif-icon { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+        .scan-notif-title { font-size: 18px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; }
+        .scan-notif-desc { font-size: 13px; color: var(--text-muted); margin: 0; font-weight: 500; }
         
         #print-area { display: none; width: 100%; margin-top: 30px; }
         .print-box-wilayah { margin-bottom: 25px; page-break-inside: avoid; }
@@ -298,149 +151,31 @@
         .print-table th, .print-table td { border: 1px solid #94a3b8; padding: 6px 8px; text-align: left; }
         .print-table th { background: #f1f5f9; color: #0f172a; font-weight: 600; position: relative; }
 
-        .th-filter-container {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 4px;
-        }
-        .excel-filter-btn {
-            background: none;
-            border: none;
-            padding: 4px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 4px;
-            min-width: 20px;
-            min-height: 20px;
-        }
+        .th-filter-container { display: flex; align-items: center; justify-content: space-between; gap: 4px; }
+        .excel-filter-btn { background: none; border: none; padding: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 4px; min-width: 20px; min-height: 20px; }
         .excel-filter-btn:hover { background: rgba(0,0,0,0.1); }
         [data-theme="dark"] .excel-filter-btn:hover { background: rgba(255,255,255,0.1); }
         .excel-filter-btn svg { width: 12px; height: 12px; fill: var(--icon-color); }
         .excel-filter-btn.active svg { fill: var(--primary); }
 
-        .filter-backdrop-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100vw; height: 100vh;
-            background: transparent;
-            z-index: 1999;
-        }
-        
-        .filter-dropdown-menu {
-            display: none;
-            position: absolute;
-            top: 100%; left: 0;
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            border-radius: 12px;
-            z-index: 2000;
-            min-width: 180px;
-            max-height: 280px;
-            overflow: hidden;
-            padding: 12px;
-            box-sizing: border-box;
-            font-weight: normal;
-            text-transform: none;
-            overscroll-behavior: contain !important;
-        }
-        
-        .filter-search-box {
-            width: 100%;
-            padding: 8px 10px;
-            font-size: 13px;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            margin-bottom: 8px;
-            box-sizing: border-box;
-            background: var(--bg-main);
-            color: var(--text-dark);
-        }
-        
-        .filter-options-list {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            max-height: 140px;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-            padding-right: 4px;
-            overscroll-behavior: contain !important;
-        }
-        
-        .filter-option-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 13px;
-            cursor: pointer;
-            padding: 6px 4px;
-            border-radius: 6px;
-            min-height: 32px;
-            box-sizing: border-box;
-        }
+        .filter-backdrop-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: transparent; z-index: 1999; }
+        .filter-dropdown-menu { display: none; position: absolute; top: 100%; left: 0; background: var(--bg-card); border: 1px solid var(--border-color); box-shadow: 0 10px 25px rgba(0,0,0,0.2); border-radius: 12px; z-index: 2000; min-width: 180px; max-height: 280px; overflow: hidden; padding: 12px; box-sizing: border-box; font-weight: normal; text-transform: none; overscroll-behavior: contain !important; }
+        .filter-search-box { width: 100%; padding: 8px 10px; font-size: 13px; border: 1px solid var(--border-color); border-radius: 6px; margin-bottom: 8px; box-sizing: border-box; background: var(--bg-main); color: var(--text-dark); }
+        .filter-options-list { display: flex; flex-direction: column; gap: 4px; max-height: 140px; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-right: 4px; overscroll-behavior: contain !important; }
+        .filter-option-item { display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; padding: 6px 4px; border-radius: 6px; min-height: 32px; box-sizing: border-box; }
         .filter-option-item:hover { background: var(--bg-main); }
         .filter-option-item input { width: 18px !important; height: 18px !important; margin: 0; padding: 0; cursor: pointer; }
-        
-        .filter-action-buttons {
-            display: flex;
-            justify-content: flex-end;
-            gap: 8px;
-            margin-top: 10px;
-            border-top: 1px solid var(--border-color);
-            padding-top: 10px;
-        }
+        .filter-action-buttons { display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px; border-top: 1px solid var(--border-color); padding-top: 10px; }
         .filter-btn-sub { padding: 8px 12px; font-size: 12px; font-weight: 600; border-radius: 6px; border: none; cursor: pointer; }
         .filter-btn-ok { background: var(--primary); color: white; }
         .filter-btn-clear { background: var(--border-color); color: var(--text-dark); }
 
-        .resume-kehadiran-box {
-            background: var(--bg-main);
-            border: 1px solid var(--border-color);
-            padding: 12px 16px;
-            border-radius: 12px;
-            margin-bottom: 15px;
-            font-size: 12px;
-            font-weight: 600;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            color: var(--text-dark);
-        }
-        .resume-row {
-            display: flex;
-            gap: 16px;
-        }
+        .resume-kehadiran-box { background: var(--bg-main); border: 1px solid var(--border-color); padding: 12px 16px; border-radius: 12px; margin-bottom: 15px; font-size: 12px; font-weight: 600; display: flex; flex-direction: column; gap: 6px; color: var(--text-dark); }
+        .resume-row { display: flex; gap: 16px; }
 
-        .waktu-filter-row {
-            grid-column: span 6;
-            display: flex;
-            gap: 6px;
-            margin-bottom: 4px;
-            background: var(--bg-main);
-            padding: 6px;
-            border-radius: 12px;
-            border: 1px dashed var(--border-color);
-        }
-        .waktu-select {
-            flex: 1;
-            padding: 8px 10px;
-            font-size: 12px;
-            font-weight: 600;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-            background: var(--bg-card);
-            color: var(--text-dark);
-            outline: none;
-            cursor: pointer;
-            font-family: inherit;
-        }
-        .waktu-select:focus {
-            border-color: var(--primary);
-        }
+        .waktu-filter-row { grid-column: span 6; display: flex; gap: 6px; margin-bottom: 4px; background: var(--bg-main); padding: 6px; border-radius: 12px; border: 1px dashed var(--border-color); }
+        .waktu-select { flex: 1; padding: 8px 10px; font-size: 12px; font-weight: 600; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-dark); outline: none; cursor: pointer; font-family: inherit; }
+        .waktu-select:focus { border-color: var(--primary); }
 
         @media print {
             body { background: #fff!important; color: #000!important; display: block; padding: 0; margin: 0; position: static !important; overflow: auto !important; }
@@ -453,14 +188,9 @@
 </head>
 <body onclick="bukaKunciAudioKonstruktor()">
 
-<!-- ==================================================== -->
-<!-- TAMBAHAN HTML CUSTOM SPLASH SCREEN DI AWAL BODY      -->
-<!-- ==================================================== -->
 <div id="splash-screen">
   <img src="Logo remaja daerah.png" alt="Logo Presensi" class="logo-animasi">
 </div>
-<!-- ==================================================== -->
-
 
 <div id="global-filter-overlay" class="filter-backdrop-overlay" onclick="tutupSemuaDropdownAman()"></div>
 
@@ -496,7 +226,6 @@
 
     <div class="section-title">OPSI 1: SCAN BARCODE</div>
 
-	<!-- Tombol Pengontrol Kamera -->
 	<button id="btn-hidupkan" class="btn-primary" type="button" onclick="hidupkanKamera()">Hidupkan Kamera</button>
 	<button id="btn-matikan" class="btn-warning" type="button" style="display: none;" onclick="matikanKamera()">Matikan Kamera</button>
 
@@ -533,9 +262,7 @@
                 <option value="10">November</option>
                 <option value="11">Desember</option>
             </select>
-            <select id="filter-rekap-tahun" class="waktu-select">
-                <!-- Diisi otomatis oleh JavaScript -->
-            </select>
+            <select id="filter-rekap-tahun" class="waktu-select"></select>
         </div>
 
         <button class="btn-icon" onclick="tarikDanCetakLaporan('semua')" title="Preview Semua">
@@ -585,9 +312,7 @@
         
         <div style="grid-column: span 6; display:flex; align-items:center; gap:6px; margin-top:4px;">
             <label style="margin:0; font-size:10px; color:var(--text-muted); white-space:nowrap;">SET TAHUN MATRIKS:</label>
-            <select id="filter-tahunan-tahun" class="waktu-select" style="padding:6px 10px;" onchange="pemicuUlangTahunanMatriks()">
-                <!-- Diisi otomatis oleh JavaScript -->
-            </select>
+            <select id="filter-tahunan-tahun" class="waktu-select" style="padding:6px 10px;" onchange="pemicuUlangTahunanMatriks()"></select>
         </div>
     </div>
 
@@ -607,19 +332,31 @@
 
 <script>
     // ====================================================
-    // TAMBAHAN JAVASCRIPT UNTUK MENGHILANGKAN SPLASH SCREEN
+    // REGISTRASI SERVICE WORKER & AUTO REFRESH DENGAN SW BARU
     // ====================================================
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('./sw.js').then(reg => {
+                reg.addEventListener('updatefound', () => {
+                    const newWorker = reg.installing;
+                    newWorker.addEventListener('statechange', () => {
+                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            // Service Worker baru ditemukan dan di-install, otomatis muat ulang halaman
+                            window.location.reload();
+                        }
+                    });
+                });
+            });
+        });
+    }
+
+    // SPLASH SCREEN DISMISSAL
     window.addEventListener('load', () => {
         const splashScreen = document.getElementById('splash-screen');
         if(splashScreen) {
-            // Beri jeda 1.8 detik (1800 ms) agar pengguna bisa melihat logo beranimasi
-            // Angka 1800 bisa Anda sesuaikan jika ingin lebih lama/sebentar
-            setTimeout(() => {
-                splashScreen.classList.add('splash-sembunyi');
-            }, 1800); 
+            setTimeout(() => { splashScreen.classList.add('splash-sembunyi'); }, 1800); 
         }
     });
-    // ====================================================
 
     const SUPABASE_URL = "https://gttavghryoadthnvwthd.supabase.co"; 
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0dGF2Z2hyeW9hZHRobnZ3dGhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA5MDI5NDQsImV4cCI6MjA5NjQ3ODk0NH0.0O7I9EqSaiQq8_LKMJS9U-XDuitY6sPfYQVtBsJAeas";
@@ -757,7 +494,7 @@
         document.getElementById('cetak-judul-kegiatan').innerText = agenda ? `Laporan Presensi: ${agenda}` : "Laporan Presensi Kegiatan";
     }
 
-    // MANAJEMEN STATUS OFFLINE & ONLINE AUTOMATIC
+    // MANAGEMENT KONEKSI INTERNET & AUTO SYNC
     function updateStatusInternet() {
         if (navigator.onLine) {
             netIndicator.innerText = "● Online";
@@ -819,35 +556,28 @@
     }
     let html5QrcodeScanner = null;
 
-    // Fungsi untuk menghidupkan kamera
     function hidupkanKamera() {
         if (!html5QrcodeScanner) {
             html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 220 });
             html5QrcodeScanner.render(onScanSuccess);
             
-            // Atur tampilan tombol
             document.getElementById('btn-hidupkan').style.display = 'none';
             document.getElementById('btn-matikan').style.display = 'block';
         }
     }
 
-    // Fungsi untuk mematikan kamera
     function matikanKamera() {
         if (html5QrcodeScanner) {
             html5QrcodeScanner.clear().then(() => {
-                html5QrcodeScanner = null; // Reset scanner
-                
-                // Atur tampilan tombol kembali seperti semula
+                html5QrcodeScanner = null;
                 document.getElementById('btn-hidupkan').style.display = 'block';
                 document.getElementById('btn-matikan').style.display = 'none';
             }).catch(error => {
-                console.error("Gagal mematikan kamera", error);
                 tampilkanNotifKustom('error', 'Gagal', 'Tidak dapat mematikan kamera.');
             });
         }
     }
 
-    // SISTEM PENCATATAN DAN DUPLIKASI CHECKER BERDASARKAN RENTANG TANGGAL SAMA & ACARA SAMA
     async function prosesAbsensi(idGenerus, metode) {
         let namaKegiatan = document.getElementById('kegiatan').value.toUpperCase().trim();
         if(!namaKegiatan) { 
@@ -856,29 +586,24 @@
             return; 
         }
         
-        let profil = semuaDataGenerus.find(g => g.id_generus == idGenerus) || { nama_lengkap: "ID: " + idGenerus };
+        let profil = semuaDataGenerus.find(g => String(g.id_generus) === String(idGenerus)) || { nama_lengkap: "ID: " + idGenerus };
         let waktuSekarang = new Date();
+        let hariIniString = waktuSekarang.toLocaleDateString('fr-CA');
         
-        // Membuat string penanda rentang tanggal hari ini secara konsisten (Format Lokal Indonesia: YYYY-MM-DD)
-        let hariIniString = waktuSekarang.toLocaleDateString('fr-CA'); // Hasil pasti format: YYYY-MM-DD
-        
-        // Set rentang pencarian murni string tanggal agar aman dari masalah selisih jam UTC+7
         let awalHariIni = `${hariIniString}T00:00:00.000Z`;
         let akhirHariIni = `${hariIniString}T23:59:59.999Z`;
 
-        // 1. Ambil riwayat log lokal khusus HARI INI saja
         let localLogs = JSON.parse(localStorage.getItem('absensi_kegiatan_lokal') || '[]');
         let riwayatHariIni = localLogs.filter(l => new Date(l.waktu_absen).toLocaleDateString('fr-CA') === hariIniString);
         
-        // 2. Ambil data dari Cloud Supabase KHUSUS yang dilakukan HARI INI saja
         if (navigator.onLine) {
             try {
                 let { data: cloudLogs } = await _supabase
                     .from('absensi_kegiatan')
                     .select('waktu_absen, nama_kegiatan')
                     .eq('id_generus', idGenerus)
-                    .gte('waktu_absen', awalHariIni)  // Mulai dari jam 00:00:00 Hari Ini murni
-                    .lte('waktu_absen', akhirHariIni); // Sampai dengan jam 23:59:59 Hari Ini murni
+                    .gte('waktu_absen', awalHariIni)
+                    .lte('waktu_absen', akhirHariIni);
                 
                 if (cloudLogs) {
                     riwayatHariIni = riwayatHariIni.concat(cloudLogs);
@@ -886,12 +611,8 @@
             } catch(e) {}
         }
 
-        // 3. Cek apakah di HARI INI sudah ada nama kegiatan yang persis sama
-        let sudahAbsenAcaraSamaHariIni = riwayatHariIni.some(l => {
-            return l.nama_kegiatan.toUpperCase().trim() === namaKegiatan;
-        });
+        let sudahAbsenAcaraSamaHariIni = riwayatHariIni.some(l => l.nama_kegiatan.toUpperCase().trim() === namaKegiatan);
 
-        // Jika terdeteksi ganda DI HARI YANG SAMA untuk ACARA YANG SAMA, baru kita tolak
         if (sudahAbsenAcaraSamaHariIni) {
             bunyikanSuaraGagal(); 
             tampilkanNotifKustom('error', 'Sudah Absen', `${profil.nama_lengkap} sudah mengisi presensi ${namaKegiatan} hari ini.`);
@@ -905,7 +626,6 @@
             waktu_absen: waktuSekarang.toISOString() 
         };
 
-        // 4. JALUR UTAMA: Jika online langsung tembak ke Supabase
         if (navigator.onLine) {
             try {
                 let { error } = await _supabase.from('absensi_kegiatan').insert([dataAbsenBaru]);
@@ -917,7 +637,6 @@
             } catch (err) {}
         }
         
-        // 5. JALUR CADANGAN: Masuk lokal jika jaringan bermasalah / offline
         localLogs.push(dataAbsenBaru);
         localStorage.setItem('absensi_kegiatan_lokal', JSON.stringify(localLogs));
         bunyikanSuaraSukses();
@@ -927,7 +646,6 @@
     function inputManualKehadiran() { if(!selectedIdInput.value) return tampilkanNotifKustom('error', 'Gagal', 'Pilih nama terlebih dahulu!'); prosesAbsensi(selectedIdInput.value, "Manual"); searchInput.value=''; selectedIdInput.value=''; }
     function inputManualIziin() { if(!selectedIdInput.value) return tampilkanNotifKustom('error', 'Gagal', 'Pilih nama terlebih dahulu!'); prosesAbsensi(selectedIdInput.value, "Izin"); searchInput.value=''; selectedIdInput.value=''; }
 
-    // Dapatkan data komparatif offline + online secara transparan
     async function dapatkanDataGabungan(namaKegiatan) {
         let logAbsen = [];
         
@@ -975,7 +693,7 @@
         });
     }
 
-    // OTOMATIS BACKGROUND BACKGROUND SYNC DATA OFFLINE KE CLOUD
+    // SYNC OTOMATIS DATA LOKAL KE CLOUD SUPABASE
     async function sinkronisasiDataOfflineKeCloud() {
         if (!navigator.onLine) return;
         let localLogs = JSON.parse(localStorage.getItem('absensi_kegiatan_lokal') || '[]');
@@ -1003,7 +721,6 @@
         }
     }
 
-    // SINKRONISASI MANUAL TRIGGER BUTTON
     async function sinkronisasiManual() {
         if (!navigator.onLine) {
             tampilkanNotifKustom('error', 'Gagal', 'Anda sedang offline. Tidak bisa memaksa sinkronisasi.');
@@ -1265,7 +982,6 @@
         tutupSemuaDropdownAman(); renderTabelRekapSemuaSistem();
     }
 
-    // REKAP MATRIKS TAHUNAN SEKARANG MENDUKUNG MULTI-AGENDA BERBEDA DI TANGGAL/BULAN SAMA
     async function tarikRekapTahunanMatriks(statusPilihan) {
         let namaKegiatan = document.getElementById('kegiatan').value.toUpperCase().trim();
         if(!namaKegiatan) {
@@ -1418,19 +1134,16 @@
                             <td style="font-weight:600;">${orang.nama_lengkap}</td>
                             <td>${kolom3Isi}</td>`;
                 
-                let totalHadir = 0;
-                let totalIzin = 0;
                 for (let m = 0; m < 12; m++) {
                     let logsBulanIni = logOrang.filter(l => new Date(l.waktu_absen).getMonth() === m);
                     let hadir = logsBulanIni.some(l => l.metode_input !== 'Izin');
                     let izin = logsBulanIni.some(l => l.metode_input === 'Izin');
                     
-                    if (hadir) { html += `<td style="text-align:center; color:#10b981; font-weight:700;">✔</td>`; totalHadir++; }
-                    else if (izin) { html += `<td style="text-align:center; color:#eab308; font-weight:700; font-size:9px;">IZN</td>`; totalIzin++; }
+                    if (hadir) { html += `<td style="text-align:center; color:#10b981; font-weight:700;">✔</td>`; }
+                    else if (izin) { html += `<td style="text-align:center; color:#eab308; font-weight:700; font-size:9px;">IZN</td>`; }
                     else { html += `<td style="text-align:center; color:#cbd5e1;">-</td>`; }
                 }
                 
-                // Menghitung total kemunculan absensi secara akumulatif, bukan terbatas 1 per bulan
                 let hitungHadirMurni = logOrang.filter(l => l.metode_input !== 'Izin').length;
                 let hitungIzinMurni = logOrang.filter(l => l.metode_input === 'Izin').length;
 
