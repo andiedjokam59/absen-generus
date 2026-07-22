@@ -1,4 +1,4 @@
-const CACHE_NAME = 'presensi-iq-v3'; // <-- NAIKKAN VERSI INI SETIAP KALI UPDATE FITUR
+const CACHE_NAME = 'presensi-iq-v4'; // <-- NAIKKAN VERSI INI SETIAP KALI UPDATE FITUR
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
