@@ -228,7 +228,7 @@
             border-collapse: separate; 
             border-spacing: 0; 
             font-size: 11px; 
-            min-width: 600px; /* Menjamin scrollbar muncul dengan anggun jika layar terlalu sempit */
+            min-width: 600px;
         }
 
         .print-table th, .print-table td { 
@@ -249,7 +249,7 @@
             border-top: none;
         }
 
-        /* DYNAMIC STICKY COLUMN UNTUK NAMA GENERUS */
+        /* DYNAMIC STICKY COLUMN UNTUK NAMA GENERUS & MODIFIKASI UKURAN KOLOM NAMA */
         .print-table th:nth-child(2),
         .print-table td:nth-child(2) {
             position: sticky;
@@ -257,6 +257,11 @@
             background: var(--bg-card);
             z-index: 10;
             box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+            max-width: 120px; /* Batasi lebar maksimal kolom nama */
+            min-width: 90px;  /* Set lebar minimal agar pas */
+            overflow: hidden;
+            text-overflow: ellipsis; /* Menambahkan titik-titik (...) jika nama terpotong */
+            white-space: nowrap;
         }
 
         .print-table th:nth-child(2) {
@@ -321,7 +326,7 @@
             #print-table-container, .kelompok-table-wrapper { border: none !important; box-shadow: none !important; overflow: visible !important; }
             .print-table { min-width: 100% !important; }
             .print-table th, .print-table td { border: 1px solid #94a3b8 !important; padding: 6px 8px !important; }
-            .print-table th:nth-child(2), .print-table td:nth-child(2) { position: static !important; box-shadow: none !important; }
+            .print-table th:nth-child(2), .print-table td:nth-child(2) { position: static !important; box-shadow: none !important; max-width: none !important; overflow: visible !important; white-space: normal !important; }
         }
     </style>
 </head>
@@ -1303,7 +1308,7 @@
 
                 html += `<tr>
                             <td style="text-align:center;">${idx + 1}</td>
-                            <td style="font-weight:700;">${orang.nama_lengkap}</td>
+                            <td style="font-weight:700;" title="${orang.nama_lengkap}">${orang.nama_lengkap}</td>
                             <td>${kolom3Isi}</td>`;
                 
                 for (let m = 0; m < 12; m++) {
