@@ -279,28 +279,40 @@
         .excel-filter-btn svg { width: 12px; height: 12px; fill: var(--icon-color); }
         .excel-filter-btn.active svg { fill: var(--primary); }
 
-        .filter-backdrop-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.2); backdrop-filter: blur(2px); z-index: 1999; }
-        
-        /* ELEGANT POPUP DROPDOWN */
-        .filter-dropdown-menu { 
-            display: none; 
-            position: absolute; 
-            top: 100%; 
-            left: 0; 
-            background: var(--bg-card); 
-            border: 1px solid var(--border-color); 
-            box-shadow: var(--shadow-lg); 
-            border-radius: 14px; 
-            z-index: 2000; 
-            min-width: 200px; 
-            max-height: 300px; 
-            overflow: hidden; 
-            padding: 12px; 
-            box-sizing: border-box; 
-            font-weight: normal; 
-            text-transform: none; 
-            overscroll-behavior: contain !important; 
-        }
+        /* 1. Perbaikan Overlay agar blur tidak meluber di iOS */
+		.filter-backdrop-overlay { 
+			display: none; 
+			position: fixed; 
+			top: 0; 
+			left: 0; 
+			width: 100vw; 
+			height: 100vh; 
+			background: rgba(0, 0, 0, 0.25); /* Hilangkan backdrop-filter blur agar aman di Safari iOS */
+			z-index: 1999; 
+			-webkit-tap-highlight-color: transparent;
+		}
+
+		/* 2. Perbaikan Menu Dropdown agar selalu di atas overlay & bisa diklik di iOS */
+		.filter-dropdown-menu { 
+			display: none; 
+			position: absolute; 
+			top: 100%; 
+			left: 0; 
+			background: var(--bg-card); 
+			border: 1px solid var(--border-color); 
+			box-shadow: var(--shadow-lg); 
+			border-radius: 14px; 
+			z-index: 9999 !important; /* Ditinggikan agar pasti berada di atas overlay di iOS */
+			min-width: 200px; 
+			max-height: 300px; 
+			overflow: hidden; 
+			padding: 12px; 
+			box-sizing: border-box; 
+			font-weight: normal; 
+			text-transform: none; 
+			overscroll-behavior: contain !important; 
+			-webkit-transform: translateZ(0); /* Menegaskan Stacking Context untuk GPU Safari/iOS */
+		}
         .filter-search-box { width: 100%; padding: 8px 10px; font-size: 12px; border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 8px; box-sizing: border-box; background: var(--bg-main); color: var(--text-dark); }
         .filter-options-list { display: flex; flex-direction: column; gap: 4px; max-height: 140px; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-right: 4px; overscroll-behavior: contain !important; }
         .filter-option-item { display: flex; align-items: center; gap: 8px; font-size: 12px; cursor: pointer; padding: 6px 8px; border-radius: 8px; min-height: 32px; box-sizing: border-box; transition: background 0.2s; }
