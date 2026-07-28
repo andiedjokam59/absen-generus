@@ -249,7 +249,7 @@
             border-top: none;
         }
 
-        /* DYNAMIC STICKY COLUMN UNTUK NAMA GENERUS & MODIFIKASI UKURAN KOLOM NAMA */
+        /* DYNAMIC STICKY COLUMN UNTUK NAMA GENERUS & UKURAN KOLOM NAMA */
         .print-table th:nth-child(2),
         .print-table td:nth-child(2) {
             position: sticky;
@@ -257,10 +257,10 @@
             background: var(--bg-card);
             z-index: 10;
             box-shadow: 2px 0 5px rgba(0,0,0,0.05);
-            max-width: 120px; /* Batasi lebar maksimal kolom nama */
-            min-width: 90px;  /* Set lebar minimal agar pas */
+            max-width: 120px;
+            min-width: 90px;
             overflow: hidden;
-            text-overflow: ellipsis; /* Menambahkan titik-titik (...) jika nama terpotong */
+            text-overflow: ellipsis;
             white-space: nowrap;
         }
 
@@ -279,47 +279,49 @@
         .excel-filter-btn svg { width: 12px; height: 12px; fill: var(--icon-color); }
         .excel-filter-btn.active svg { fill: var(--primary); }
 
-        /* 1. Perbaikan Overlay agar blur tidak meluber di iOS */
-		.filter-backdrop-overlay { 
-			display: none; 
-			position: fixed; 
-			top: 0; 
-			left: 0; 
-			width: 100vw; 
-			height: 100vh; 
-			background: rgba(0, 0, 0, 0.25); /* Hilangkan backdrop-filter blur agar aman di Safari iOS */
-			z-index: 1999; 
-			-webkit-tap-highlight-color: transparent;
-		}
-
-		/* 2. Perbaikan Menu Dropdown agar selalu di atas overlay & bisa diklik di iOS */
-		.filter-dropdown-menu { 
-			display: none; 
-			position: absolute; 
-			top: 100%; 
-			left: 0; 
-			background: var(--bg-card); 
-			border: 1px solid var(--border-color); 
-			box-shadow: var(--shadow-lg); 
-			border-radius: 14px; 
-			z-index: 9999 !important; /* Ditinggikan agar pasti berada di atas overlay di iOS */
-			min-width: 200px; 
-			max-height: 300px; 
-			overflow: hidden; 
-			padding: 12px; 
-			box-sizing: border-box; 
-			font-weight: normal; 
-			text-transform: none; 
-			overscroll-behavior: contain !important; 
-			-webkit-transform: translateZ(0); /* Menegaskan Stacking Context untuk GPU Safari/iOS */
-		}
-        .filter-search-box { width: 100%; padding: 8px 10px; font-size: 12px; border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 8px; box-sizing: border-box; background: var(--bg-main); color: var(--text-dark); }
-        .filter-options-list { display: flex; flex-direction: column; gap: 4px; max-height: 140px; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-right: 4px; overscroll-behavior: contain !important; }
-        .filter-option-item { display: flex; align-items: center; gap: 8px; font-size: 12px; cursor: pointer; padding: 6px 8px; border-radius: 8px; min-height: 32px; box-sizing: border-box; transition: background 0.2s; }
+        /* OVERLAY / BACKDROP LAYAR PENUH */
+        .filter-backdrop-overlay { 
+            display: none; 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100vw; 
+            height: 100vh; 
+            background: rgba(15, 23, 42, 0.45); 
+            z-index: 9998; 
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        /* MODAL POPUP DI TENGAH LAYAR */
+        .filter-dropdown-menu { 
+            display: none; 
+            position: fixed !important; 
+            top: 50% !important; 
+            left: 50% !important; 
+            transform: translate(-50%, -50%) !important; 
+            background: var(--bg-card); 
+            border: 1px solid var(--border-color); 
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); 
+            border-radius: 20px; 
+            z-index: 9999 !important; 
+            width: 85%;
+            max-width: 320px; 
+            max-height: 80vh; 
+            overflow: hidden; 
+            padding: 16px; 
+            box-sizing: border-box; 
+            font-weight: normal; 
+            text-transform: none; 
+            overscroll-behavior: contain !important; 
+            -webkit-transform: translate(-50%, -50%) translateZ(0) !important; 
+        }
+        .filter-search-box { width: 100%; padding: 10px 12px; font-size: 13px; border: 1px solid var(--border-color); border-radius: 10px; margin-bottom: 10px; box-sizing: border-box; background: var(--bg-main); color: var(--text-dark); }
+        .filter-options-list { display: flex; flex-direction: column; gap: 6px; max-height: 200px; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-right: 4px; overscroll-behavior: contain !important; }
+        .filter-option-item { display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; padding: 8px 10px; border-radius: 10px; min-height: 36px; box-sizing: border-box; transition: background 0.2s; }
         .filter-option-item:hover { background: var(--bg-main); }
-        .filter-option-item input { width: 16px !important; height: 16px !important; margin: 0; padding: 0; cursor: pointer; accent-color: var(--primary); }
-        .filter-action-buttons { display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px; border-top: 1px solid var(--border-color); padding-top: 10px; }
-        .filter-btn-sub { padding: 6px 12px; font-size: 11px; font-weight: 700; border-radius: 8px; border: none; cursor: pointer; transition: all 0.2s; }
+        .filter-option-item input { width: 18px !important; height: 18px !important; margin: 0; padding: 0; cursor: pointer; accent-color: var(--primary); }
+        .filter-action-buttons { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; border-top: 1px solid var(--border-color); padding-top: 12px; }
+        .filter-btn-sub { padding: 8px 16px; font-size: 12px; font-weight: 700; border-radius: 10px; border: none; cursor: pointer; transition: all 0.2s; }
         .filter-btn-ok { background: var(--primary); color: white; }
         .filter-btn-clear { background: var(--border-color); color: var(--text-dark); }
 
