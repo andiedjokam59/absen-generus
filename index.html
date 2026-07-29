@@ -279,7 +279,7 @@
         .excel-filter-btn svg { width: 12px; height: 12px; fill: var(--icon-color); }
         .excel-filter-btn.active svg { fill: var(--primary); }
 
-        /* OVERLAY / BACKDROP LAYAR PENUH */
+        /* OVERLAY / BACKDROP LAYAR PENUH (PERBAIKAN IOS) */
         .filter-backdrop-overlay { 
             display: none; 
             position: fixed; 
@@ -288,22 +288,21 @@
             width: 100vw; 
             height: 100vh; 
             background: rgba(15, 23, 42, 0.45); 
-            z-index: 9998; 
+            z-index: 99988; 
+            align-items: center;
+            justify-content: center;
             -webkit-tap-highlight-color: transparent;
         }
         
-        /* MODAL POPUP DI TENGAH LAYAR */
+        /* MODAL POPUP DI TENGAH LAYAR (PERBAIKAN IOS) */
         .filter-dropdown-menu { 
             display: none; 
-            position: fixed !important; 
-            top: 50% !important; 
-            left: 50% !important; 
-            transform: translate(-50%, -50%) !important; 
+            position: relative;
             background: var(--bg-card); 
             border: 1px solid var(--border-color); 
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); 
             border-radius: 20px; 
-            z-index: 9999 !important; 
+            z-index: 99999 !important; 
             width: 85%;
             max-width: 320px; 
             max-height: 80vh; 
@@ -313,7 +312,6 @@
             font-weight: normal; 
             text-transform: none; 
             overscroll-behavior: contain !important; 
-            -webkit-transform: translate(-50%, -50%) translateZ(0) !important; 
         }
         .filter-search-box { width: 100%; padding: 10px 12px; font-size: 13px; border: 1px solid var(--border-color); border-radius: 10px; margin-bottom: 10px; box-sizing: border-box; background: var(--bg-main); color: var(--text-dark); }
         .filter-options-list { display: flex; flex-direction: column; gap: 6px; max-height: 200px; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-right: 4px; overscroll-behavior: contain !important; }
@@ -350,7 +348,61 @@
   <img src="Logo remaja daerah.png" alt="Logo Presensi" class="logo-animasi">
 </div>
 
-<div id="global-filter-overlay" class="filter-backdrop-overlay" onclick="tutupSemuaDropdownAman()"></div>
+<!-- CONTAINER GLOBAL FILTER MODAL DENGAN FLEXBOX OVERLAY -->
+<div id="global-filter-overlay" class="filter-backdrop-overlay" onclick="tutupSemuaDropdownAman()">
+    <!-- Dropdown Modal Rekap Semua -->
+    <div class="filter-dropdown-menu" id="dropdown-semua-jk" onclick="event.stopPropagation()">
+        <div class="filter-options-list" id="list-semua-jk"></div>
+        <div class="filter-action-buttons">
+            <button class="filter-btn-sub filter-btn-clear" onclick="bersihkanFilterSemua('jk')">Clear</button>
+            <button class="filter-btn-sub filter-btn-ok" onclick="terapkanFilterSemua('jk')">OK</button>
+        </div>
+    </div>
+
+    <div class="filter-dropdown-menu" id="dropdown-semua-kelompok" onclick="event.stopPropagation()">
+        <input type="text" class="filter-search-box" placeholder="Cari..." oninput="cariOpsiSemua(this.value, 'kelompok')">
+        <div class="filter-options-list" id="list-semua-kelompok"></div>
+        <div class="filter-action-buttons">
+            <button class="filter-btn-sub filter-btn-clear" onclick="bersihkanFilterSemua('kelompok')">Clear</button>
+            <button class="filter-btn-sub filter-btn-ok" onclick="terapkanFilterSemua('kelompok')">OK</button>
+        </div>
+    </div>
+
+    <div class="filter-dropdown-menu" id="dropdown-semua-desa" onclick="event.stopPropagation()">
+        <input type="text" class="filter-search-box" placeholder="Cari..." oninput="cariOpsiSemua(this.value, 'desa')">
+        <div class="filter-options-list" id="list-semua-desa"></div>
+        <div class="filter-action-buttons">
+            <button class="filter-btn-sub filter-btn-clear" onclick="bersihkanFilterSemua('desa')">Clear</button>
+            <button class="filter-btn-sub filter-btn-ok" onclick="terapkanFilterSemua('desa')">OK</button>
+        </div>
+    </div>
+
+    <div class="filter-dropdown-menu" id="dropdown-semua-status" onclick="event.stopPropagation()">
+        <div class="filter-options-list" id="list-semua-status"></div>
+        <div class="filter-action-buttons">
+            <button class="filter-btn-sub filter-btn-clear" onclick="bersihkanFilterSemua('status')">Clear</button>
+            <button class="filter-btn-sub filter-btn-ok" onclick="terapkanFilterSemua('status')">OK</button>
+        </div>
+    </div>
+
+    <!-- Dropdown Modal Rekap Tahunan -->
+    <div class="filter-dropdown-menu" id="dropdown-filter-dapukan" onclick="event.stopPropagation()">
+        <div class="filter-options-list" id="list-opsi-dapukan"></div>
+        <div class="filter-action-buttons">
+            <button class="filter-btn-sub filter-btn-clear" onclick="bersihkanFilterDapukanPengurus()">Clear</button>
+            <button class="filter-btn-sub filter-btn-ok" onclick="terapkanFilterDapukanPengurus()">OK</button>
+        </div>
+    </div>
+
+    <div class="filter-dropdown-menu" id="dropdown-filter-kelompok" onclick="event.stopPropagation()">
+        <input type="text" class="filter-search-box" placeholder="Cari..." oninput="cariOpsiKelompok(this.value)">
+        <div class="filter-options-list" id="list-opsi-kelompok"></div>
+        <div class="filter-action-buttons">
+            <button class="filter-btn-sub filter-btn-clear" onclick="bersihkanFilterKelompok()">Clear</button>
+            <button class="filter-btn-sub filter-btn-ok" onclick="terapkanFilterKelompok()">OK</button>
+        </div>
+    </div>
+</div>
 
 <div class="app-container">
     <div class="top-bar">
@@ -1050,13 +1102,6 @@
                                     <button class="excel-filter-btn ${filterSemuaTerpilih['jk'] ? 'active' : ''}" onclick="toggleDropdownSemua(event, 'jk')">
                                         <svg viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
                                     </button>
-                                    <div class="filter-dropdown-menu" id="dropdown-semua-jk" onclick="event.stopPropagation()">
-                                        <div class="filter-options-list" id="list-semua-jk"></div>
-                                        <div class="filter-action-buttons">
-                                            <button class="filter-btn-sub filter-btn-clear" onclick="bersihkanFilterSemua('jk')">Clear</button>
-                                            <button class="filter-btn-sub filter-btn-ok" onclick="terapkanFilterSemua('jk')">OK</button>
-                                        </div>
-                                    </div>
                                 </div>
                             </th>
                             <th>
@@ -1065,14 +1110,6 @@
                                     <button class="excel-filter-btn ${filterSemuaTerpilih['kelompok'] ? 'active' : ''}" onclick="toggleDropdownSemua(event, 'kelompok')">
                                         <svg viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
                                     </button>
-                                    <div class="filter-dropdown-menu" id="dropdown-semua-kelompok" onclick="event.stopPropagation()">
-                                        <input type="text" class="filter-search-box" placeholder="Cari..." oninput="cariOpsiSemua(this.value, 'kelompok')">
-                                        <div class="filter-options-list" id="list-semua-kelompok"></div>
-                                        <div class="filter-action-buttons">
-                                            <button class="filter-btn-sub filter-btn-clear" onclick="bersihkanFilterSemua('kelompok')">Clear</button>
-                                            <button class="filter-btn-sub filter-btn-ok" onclick="terapkanFilterSemua('kelompok')">OK</button>
-                                        </div>
-                                    </div>
                                 </div>
                             </th>
                             <th>
@@ -1081,14 +1118,6 @@
                                     <button class="excel-filter-btn ${filterSemuaTerpilih['desa'] ? 'active' : ''}" onclick="toggleDropdownSemua(event, 'desa')">
                                         <svg viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
                                     </button>
-                                    <div class="filter-dropdown-menu" id="dropdown-semua-desa" onclick="event.stopPropagation()">
-                                        <input type="text" class="filter-search-box" placeholder="Cari..." oninput="cariOpsiSemua(this.value, 'desa')">
-                                        <div class="filter-options-list" id="list-semua-desa"></div>
-                                        <div class="filter-action-buttons">
-                                            <button class="filter-btn-sub filter-btn-clear" onclick="bersihkanFilterSemua('desa')">Clear</button>
-                                            <button class="filter-btn-sub filter-btn-ok" onclick="terapkanFilterSemua('desa')">OK</button>
-                                        </div>
-                                    </div>
                                 </div>
                             </th>
                             <th>
@@ -1097,13 +1126,6 @@
                                     <button class="excel-filter-btn ${filterSemuaTerpilih['status'] ? 'active' : ''}" onclick="toggleDropdownSemua(event, 'status')">
                                         <svg viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
                                     </button>
-                                    <div class="filter-dropdown-menu" id="dropdown-semua-status" onclick="event.stopPropagation()">
-                                        <div class="filter-options-list" id="list-semua-status"></div>
-                                        <div class="filter-action-buttons">
-                                            <button class="filter-btn-sub filter-btn-clear" onclick="bersihkanFilterSemua('status')">Clear</button>
-                                            <button class="filter-btn-sub filter-btn-ok" onclick="terapkanFilterSemua('status')">OK</button>
-                                        </div>
-                                    </div>
                                 </div>
                             </th>
                             <th>Keterangan Absen</th>
@@ -1142,7 +1164,7 @@
         
         if(!terbukanNow) {
             menu.style.display = 'block';
-            globalOverlay.style.display = 'block';
+            globalOverlay.style.display = 'flex';
             
             let listDataUnik = [...new Set(dataAktifRekap.map(d => d[kolom]))].sort();
             let containerOpsi = document.getElementById(`list-semua-${kolom}`);
@@ -1259,13 +1281,6 @@
                         <button class="excel-filter-btn ${subDapukanPengurusTerpilih.length > 0 ? 'active' : ''}" onclick="toggleDropdownDapukanPengurus(event)">
                             <svg viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
                         </button>
-                        <div class="filter-dropdown-menu" id="dropdown-filter-dapukan" onclick="event.stopPropagation()">
-                            <div class="filter-options-list" id="list-opsi-dapukan"></div>
-                            <div class="filter-action-buttons">
-                                <button class="filter-btn-sub filter-btn-clear" onclick="bersihkanFilterDapukanPengurus()">Clear</button>
-                                <button class="filter-btn-sub filter-btn-ok" onclick="terapkanFilterDapukanPengurus()">OK</button>
-                            </div>
-                        </div>
                     </div>
                 </th>`;
         } else {
@@ -1280,14 +1295,6 @@
                         <button class="excel-filter-btn ${filterTerpilih['kelompok'] ? 'active' : ''}" onclick="toggleDropdownKelompok(event)">
                             <svg viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
                         </button>
-                        <div class="filter-dropdown-menu" id="dropdown-filter-kelompok" onclick="event.stopPropagation()">
-                            <input type="text" class="filter-search-box" placeholder="Cari..." oninput="cariOpsiKelompok(this.value)">
-                            <div class="filter-options-list" id="list-opsi-kelompok"></div>
-                            <div class="filter-action-buttons">
-                                <button class="filter-btn-sub filter-btn-clear" onclick="bersihkanFilterKelompok()">Clear</button>
-                                <button class="filter-btn-sub filter-btn-ok" onclick="terapkanFilterKelompok()">OK</button>
-                            </div>
-                        </div>
                     </div>
                 </th>`;
         }
@@ -1370,7 +1377,7 @@
         
         if(!terbukanNow) {
             menu.style.display = 'block';
-            globalOverlay.style.display = 'block';
+            globalOverlay.style.display = 'flex';
             
             let listDapukanMaster = ["KMM", "PPG", "DAERAH", "PONDOK", "KELOMPOK", "DESA"];
             let containerOpsi = document.getElementById('list-opsi-dapukan');
@@ -1410,7 +1417,7 @@
         tutupSemuaDropdownAman();
         if(!terbukanNow) {
             menu.style.display = 'block';
-            globalOverlay.style.display = 'block';
+            globalOverlay.style.display = 'flex';
             
             let listKlp = [...new Set(dataMasterTahunanOrang.map(o => (o.kelompok || "-").toUpperCase()))].sort();
             let containerOpsi = document.getElementById('list-opsi-kelompok');
