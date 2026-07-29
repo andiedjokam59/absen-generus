@@ -279,7 +279,7 @@
         .excel-filter-btn svg { width: 12px; height: 12px; fill: var(--icon-color); }
         .excel-filter-btn.active svg { fill: var(--primary); }
 
-        /* OVERLAY / BACKDROP LAYAR PENUH (PERBAIKAN IOS) */
+        /* OVERLAY / BACKDROP LAYAR PENUH (PERBAIKAN IOS & SAFARI) */
         .filter-backdrop-overlay { 
             display: none; 
             position: fixed; 
@@ -294,7 +294,7 @@
             -webkit-tap-highlight-color: transparent;
         }
         
-        /* MODAL POPUP DI TENGAH LAYAR (PERBAIKAN IOS) */
+        /* MODAL POPUP DI TENGAH LAYAR (PERBAIKAN IOS & SAFARI) */
         .filter-dropdown-menu { 
             display: none; 
             position: relative;
@@ -348,7 +348,7 @@
   <img src="Logo remaja daerah.png" alt="Logo Presensi" class="logo-animasi">
 </div>
 
-<!-- CONTAINER GLOBAL FILTER MODAL DENGAN FLEXBOX OVERLAY -->
+<!-- CONTAINER GLOBAL FILTER MODAL DENGAN FLEXBOX OVERLAY (PERBAIKAN IOS) -->
 <div id="global-filter-overlay" class="filter-backdrop-overlay" onclick="tutupSemuaDropdownAman()">
     <!-- Dropdown Modal Rekap Semua -->
     <div class="filter-dropdown-menu" id="dropdown-semua-jk" onclick="event.stopPropagation()">
@@ -785,7 +785,7 @@
                 resultsBox.appendChild(div);
             });
         } else {
-            resultsBox.style.display = 'block'; resultsBox.innerHTML = '<div class="search-item" style="color:#ef4444;">Nama tidak ditemukan</div>';
+            resultsBox.style.display = 'block'; resultsBox.innerHTML = '<div class="search-item" style="color:#ef4444;">Nama tidak ditemukan di database</div>';
         }
     }
 
@@ -825,8 +825,17 @@
             tampilkanNotifKustom('error', 'Gagal Presensi', 'Harap isi Nama Agenda terlebih dahulu!'); 
             return; 
         }
+
+        // PERBAIKAN: PENGECEKAN DATA DI DATABASE (SUPABASE/LOKAL)
+        let profil = semuaDataGenerus.find(g => String(g.id_generus) === String(idGenerus));
         
-        let profil = semuaDataGenerus.find(g => String(g.id_generus) === String(idGenerus)) || { nama_lengkap: "ID: " + idGenerus };
+        // JIKA DATA TIDAK DITEMUKAN / BELUM TERDAFTAR
+        if (!profil) {
+            bunyikanSuaraGagal();
+            tampilkanNotifKustom('error', 'Ditolak / Belum Terdaftar', `ID / Anggota (${idGenerus}) tidak terdaftar di database Supabase!`);
+            return;
+        }
+        
         let waktuSekarang = new Date();
         let hariIniString = waktuSekarang.toLocaleDateString('fr-CA');
         
@@ -883,8 +892,25 @@
         tampilkanNotifKustom('success', 'Berhasil (Offline)', profil.nama_lengkap + ' [Tersimpan Lokal]');
     }
 
-    function inputManualKehadiran() { if(!selectedIdInput.value) return tampilkanNotifKustom('error', 'Gagal', 'Pilih nama terlebih dahulu!'); prosesAbsensi(selectedIdInput.value, "Manual"); searchInput.value=''; selectedIdInput.value=''; }
-    function inputManualIziin() { if(!selectedIdInput.value) return tampilkanNotifKustom('error', 'Gagal', 'Pilih nama terlebih dahulu!'); prosesAbsensi(selectedIdInput.value, "Izin"); searchInput.value=''; selectedIdInput.value=''; }
+    function inputManualKehadiran() { 
+        if(!selectedIdInput.value) {
+            bunyikanSuaraGagal();
+            return tampilkanNotifKustom('error', 'Gagal', 'Pilih / cari nama anggota terdaftar terlebih dahulu!'); 
+        }
+        prosesAbsensi(selectedIdInput.value, "Manual"); 
+        searchInput.value=''; 
+        selectedIdInput.value=''; 
+    }
+    
+    function inputManualIziin() { 
+        if(!selectedIdInput.value) {
+            bunyikanSuaraGagal();
+            return tampilkanNotifKustom('error', 'Gagal', 'Pilih / cari nama anggota terdaftar terlebih dahulu!'); 
+        }
+        prosesAbsensi(selectedIdInput.value, "Izin"); 
+        searchInput.value=''; 
+        selectedIdInput.value=''; 
+    }
 
     async function dapatkanDataGabungan(namaKegiatan) {
         let logAbsen = [];
