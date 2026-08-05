@@ -6,7 +6,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-	<title>Sistem Presensi Kegiatan (Offline Ready)</title>
+	<title>Sistem Presensi Kegiatan (iOS 26 Glass Edition)</title>
     <link rel="apple-touch-icon" href="Logo remaja daerah.png">
     <link rel="icon" type="image/png" href="Logo remaja daerah.png">
     <link rel="manifest" href="manifest.json">
@@ -15,340 +15,500 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
     <style>
+        /* ==================================================== */
+        /* SCROLLBAR ULTRA TRANSPARAN                           */
+        /* ==================================================== */
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+            background: transparent;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.25);
+            border-radius: 20px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.45);
+        }
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
+        }
+
+        /* ==================================================== */
+        /* SPLASH SCREEN SEBELUMNYA (DENGAN EFEK RIPPLE BUNDAR) */
+        /* ==================================================== */
         #splash-screen {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background-color: var(--bg-main); display: flex; justify-content: center; align-items: center;
-            z-index: 99999; transition: opacity 0.6s ease-in-out, visibility 0.6s ease-in-out;
+            background: linear-gradient(-45deg, #022c22, #047857, #0f172a, #1e293b);
+            background-size: 400% 400%;
+            animation: gradientBG 8s ease infinite;
+            display: flex; justify-content: center; align-items: center; flex-direction: column;
+            z-index: 99999; transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
         }
+
+        .splash-content {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 2; position: relative;
+        }
+
+        .logo-wrapper {
+            position: relative;
+            display: flex; justify-content: center; align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .logo-wrapper::before, .logo-wrapper::after {
+            content: '';
+            position: absolute;
+            border-radius: 50%;
+            border: 2px solid rgba(16, 185, 129, 0.4);
+            animation: ripple 2.5s cubic-bezier(0.1, 0.8, 0.3, 1) infinite;
+        }
+        .logo-wrapper::after { animation-delay: 1.25s; }
+
         .logo-animasi {
-            width: 140px; animation: pulse-splash 1.2s infinite alternate ease-in-out;
-            filter: drop-shadow(0 10px 15px rgba(4, 120, 87, 0.2));
+            width: 120px; height: 120px;
+            object-fit: contain;
+            filter: drop-shadow(0 15px 25px rgba(0, 0, 0, 0.5));
+            animation: floatLogo 3s ease-in-out infinite alternate;
+            z-index: 3;
+            border-radius: 20px;
         }
-        @keyframes pulse-splash { 0% { transform: scale(0.85); opacity: 0.8; } 100% { transform: scale(1.1); opacity: 1; } }
+
+        .splash-title {
+            color: #ffffff;
+            font-size: 20px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            margin-top: 10px;
+            text-transform: uppercase;
+            text-align: center;
+            text-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            animation: fadeInUp 1s ease forwards;
+        }
+
+        .splash-subtitle {
+            color: #10b981;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            margin-top: 4px;
+            opacity: 0.9;
+            animation: fadeInUp 1s ease 0.2s forwards;
+        }
+
+        .splash-loader {
+            width: 48px; height: 6px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            margin-top: 24px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .splash-loader-bar {
+            width: 100%; height: 100%;
+            background: #10b981;
+            position: absolute; left: -100%;
+            animation: loadingBar 1.8s ease-in-out infinite;
+            box-shadow: 0 0 10px #10b981;
+        }
+
+        @keyframes floatLogo {
+            0% { transform: translateY(0px) scale(0.95); }
+            100% { transform: translateY(-12px) scale(1.05); }
+        }
+
+        @keyframes ripple {
+            0% { width: 100px; height: 100px; opacity: 1; }
+            100% { width: 220px; height: 220px; opacity: 0; }
+        }
+
+        @keyframes loadingBar {
+            0% { left: -100%; }
+            50% { left: 0%; }
+            100% { left: 100%; }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         .splash-sembunyi { opacity: 0 !important; visibility: hidden !important; pointer-events: none; }
 
-        :root {
-            --primary: #047857; 
-            --primary-hover: #065f46; 
-            --primary-light: rgba(4, 120, 87, 0.08);
-            --accent: #d97706; 
-            --bg-main: #f1f5f9; 
-            --bg-card: #ffffff; 
-            --bg-table-header: #f8fafc;
-            --text-dark: #0f172a; 
-            --text-muted: #64748b; 
-            --border-color: #e2e8f0;
-            --success: #10b981; 
-            --shadow: rgba(15, 23, 42, 0.08); 
-            --shadow-lg: 0 20px 25px -5px rgba(0,0,0,0.05), 0 8px 10px -6px rgba(0,0,0,0.01);
-            --icon-color: #475569;
-            --warning: #eab308; 
-            --warning-hover: #ca8a04;
+        /* ==================================================== */
+        /* CANVAS PARTIKEL iOS GLASS BACKGROUND                 */
+        /* ==================================================== */
+        #particles-canvas {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            pointer-events: none; z-index: 0;
         }
+
+        /* ==================================================== */
+        /* THEME VARIABLES & AURORA GLASS AMBIENCE              */
+        /* ==================================================== */
+        :root {
+            --primary: #059669; 
+            --primary-hover: #047857; 
+            --primary-light: rgba(16, 185, 129, 0.12);
+            --accent: #f59e0b; 
+            --bg-card: rgba(255, 255, 255, 0.45); 
+            --glass-border: rgba(255, 255, 255, 0.65);
+            --glass-inner-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.8), inset 0 -1px 2px rgba(0, 0, 0, 0.05);
+            --bg-table-header: rgba(255, 255, 255, 0.55);
+            --text-dark: #0f172a; 
+            --text-muted: #475569; 
+            --border-color: rgba(255, 255, 255, 0.5);
+            --shadow-lg: 0 30px 60px rgba(0, 0, 0, 0.12), 0 10px 20px rgba(0, 0, 0, 0.05);
+            --icon-color: #334155;
+            --input-bg: rgba(255, 255, 255, 0.5);
+        }
+
         [data-theme="dark"] {
-            --bg-main: #0b0f19; 
-            --bg-card: #1e293b; 
-            --bg-table-header: #111827;
+            --bg-card: rgba(15, 23, 42, 0.55); 
+            --glass-border: rgba(255, 255, 255, 0.15);
+            --glass-inner-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.2), inset 0 -1px 2px rgba(0, 0, 0, 0.5);
+            --bg-table-header: rgba(30, 41, 59, 0.65);
             --text-dark: #f8fafc; 
-            --text-muted: #94a3b8;
-            --border-color: #334155; 
-            --shadow: rgba(0, 0, 0, 0.3); 
-            --shadow-lg: 0 20px 25px -5px rgba(0,0,0,0.3);
-            --icon-color: #94a3b8;
-            --primary-light: rgba(16, 185, 129, 0.15);
+            --text-muted: #cbd5e1;
+            --border-color: rgba(255, 255, 255, 0.1); 
+            --shadow-lg: 0 30px 60px rgba(0, 0, 0, 0.5);
+            --icon-color: #cbd5e1;
+            --primary-light: rgba(16, 185, 129, 0.2);
+            --input-bg: rgba(15, 23, 42, 0.5);
         }
 
         body { 
-            font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; padding: 0; 
-            background-color: var(--bg-main); color: var(--text-dark);
+            font-family: -apple-system, BlinkMacSystemFont, 'Plus Jakarta Sans', sans-serif; 
+            margin: 0; padding: 0; 
+            background: radial-gradient(circle at 0% 0%, #a7f3d0 0%, transparent 50%),
+                        radial-gradient(circle at 100% 0%, #fef08a 0%, transparent 50%),
+                        radial-gradient(circle at 50% 100%, #bae6fd 0%, transparent 50%),
+                        #e2e8f0;
+            background-attachment: fixed;
+            color: var(--text-dark);
             display: flex; justify-content: center; align-items: flex-start; min-height: 100vh;
-            transition: all 0.3s ease; overscroll-behavior-y: auto; 
+            transition: color 0.3s ease; overscroll-behavior-y: auto; 
+            position: relative;
         }
 
+        [data-theme="dark"] body {
+            background: radial-gradient(circle at 0% 0%, #064e3b 0%, transparent 50%),
+                        radial-gradient(circle at 100% 0%, #78350f 0%, transparent 50%),
+                        radial-gradient(circle at 50% 100%, #0f172a 0%, transparent 50%),
+                        #020617;
+            background-attachment: fixed;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* ==================================================== */
+        /* CONTAINER KACA UTAMA iOS 26                          */
+        /* ==================================================== */
         .app-container { 
-            width: 100%; max-width: 480px; background: var(--bg-card); 
-            padding: 28px 20px; border-radius: 28px; 
-            box-shadow: var(--shadow-lg);
-            box-sizing: border-box; margin: 16px; position: relative;
-            overflow: hidden;
-            border: 1px solid var(--border-color);
+            width: 100%; max-width: 480px; 
+            background: var(--bg-card); 
+            backdrop-filter: blur(28px) saturate(210%); 
+            -webkit-backdrop-filter: blur(28px) saturate(210%);
+            padding: 28px 22px; border-radius: 36px; 
+            box-shadow: var(--shadow-lg), var(--glass-inner-shadow);
+            box-sizing: border-box; margin: 20px 16px; position: relative;
+            border: 1px solid var(--glass-border);
+            z-index: 1;
         }
 
-        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; width: 100%; }
-        .theme-toggle-btn {
-            background: var(--bg-main); border: 1px solid var(--border-color); color: var(--text-dark);
-            padding: 8px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;
-        }
+        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; width: 100%; position: relative; z-index: 2; }
+        
         .net-status { 
-            font-weight: 700; font-size: 11px; padding: 6px 14px; border-radius: 20px; display: inline-block;
+            font-weight: 700; font-size: 11px; padding: 6px 16px; border-radius: 30px; display: inline-flex; align-items: center; gap: 4px;
             text-transform: uppercase; letter-spacing: 0.5px;
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
         }
-        .online { background: rgba(16, 185, 129, 0.12); color: #10b981 !important; }
-        .offline { background: rgba(239, 68, 68, 0.12); color: #ef4444 !important; }
+        .online { background: rgba(16, 185, 129, 0.2); color: #059669 !important; border: 1px solid rgba(16, 185, 129, 0.35); }
+        [data-theme="dark"] .online { color: #34d399 !important; }
+        .offline { background: rgba(239, 68, 68, 0.2); color: #dc2626 !important; border: 1px solid rgba(239, 68, 68, 0.35); }
 
-        .brand-header { text-align: center; margin: 10px 0 24px 0; }
-        .brand-logo { width: 100px; height: 100px; object-fit: contain; border-radius: 16px; margin-bottom: 12px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.05)); }
-        .brand-header h2 { font-size: 22px; font-weight: 800; margin: 0; letter-spacing: -0.5px; background: linear-gradient(135deg, var(--primary), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .brand-header p { font-size: 12px; color: var(--accent); font-weight: 700; margin: 4px 0 0 0; text-transform: uppercase; letter-spacing: 0.8px; }
+        .brand-header { text-align: center; margin: 10px 0 24px 0; position: relative; z-index: 2; }
+        .brand-logo { width: 95px; height: 95px; object-fit: contain; border-radius: 22px; margin-bottom: 12px; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.15)); }
+        .brand-header h2 { font-size: 22px; font-weight: 800; margin: 0; letter-spacing: -0.5px; color: var(--text-dark); }
+        .brand-header p { font-size: 11px; color: var(--primary); font-weight: 800; margin: 4px 0 0 0; text-transform: uppercase; letter-spacing: 1px; }
 
-        .form-group { margin-bottom: 20px; position: relative; }
-        label { display: block; font-size: 11px; font-weight: 700; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-muted); }
+        .form-group { margin-bottom: 20px; position: relative; z-index: 2; }
+        label { display: block; font-size: 10px; font-weight: 800; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-muted); }
         
         .agenda-input-wrapper { display: flex; gap: 8px; }
 
-        input, .btn-primary, .btn-warning { 
-            width: 100%; padding: 12px 16px; border: 1px solid var(--border-color); background: var(--bg-card);
-            color: var(--text-dark); border-radius: 14px; box-sizing: border-box; font-size: 14px; font-family: inherit;
-            transition: all 0.2s; -webkit-user-select: text !important; user-select: text !important; -webkit-tap-highlight-color: transparent;
+        input { 
+            width: 100%; padding: 13px 18px; border: 1px solid var(--glass-border); 
+            background: var(--input-bg); color: var(--text-dark); 
+            border-radius: 20px; box-sizing: border-box; font-size: 13px; font-family: inherit; font-weight: 600;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            box-shadow: var(--glass-inner-shadow);
         }
         input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px var(--primary-light); }
-        #kegiatan { text-transform: uppercase; font-weight: 600; }
+        #kegiatan { text-transform: uppercase; font-weight: 700; }
 
-        .btn-primary { background: var(--primary); color: #fff; border: none; font-weight: 700; cursor: pointer; margin-top: 8px; box-shadow: 0 4px 14px rgba(4, 120, 87, 0.25); text-align: center; }
-        .btn-primary:hover { background: var(--primary-hover); }
-
-        .btn-warning { background: var(--warning); color: #0f172a; border: none; font-weight: 700; cursor: pointer; margin-top: 8px; box-shadow: 0 4px 14px rgba(234, 179, 8, 0.25); text-align: center; }
-        .btn-warning:hover { background: var(--warning-hover); }
-
-        .section-title { font-size: 11px; font-weight: 800; color: var(--text-muted); text-align: center; margin: 24px 0 12px 0; letter-spacing: 1px; text-transform: uppercase; }
-        
-        #reader { width: 100%; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: none !important; background: var(--bg-card); }
-        #reader button {
-            background-color: var(--primary) !important; color: #ffffff !important; border: none !important;
-            padding: 12px 20px !important; font-size: 13px !important; font-weight: 700 !important;
-            border-radius: 12px !important; cursor: pointer !important; transition: background-color 0.2s ease, transform 0.1s ease !important;
-            box-shadow: 0 4px 12px rgba(4, 120, 87, 0.15) !important; margin: 10px 0 !important; font-family: inherit !important;
+        /* ==================================================== */
+        /* iOS 26 GLASS BUTTONS & CONTROLS                      */
+        /* ==================================================== */
+        .btn-3d {
+            border: 1px solid var(--glass-border);
+            outline: none;
+            position: relative;
+            cursor: pointer;
+            border-radius: 20px;
+            font-family: inherit;
+            font-weight: 800;
+            text-align: center;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            z-index: 2;
+            backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            box-shadow: var(--glass-inner-shadow), 0 8px 16px rgba(0,0,0,0.06);
         }
-        #reader button:hover { background-color: var(--primary-hover) !important; }
-        #reader button:active { transform: scale(0.98) !important; }
-        #reader a { color: var(--primary) !important; font-weight: 500; text-decoration: none; font-size: 13px; }
+        .btn-3d:active { transform: scale(0.96); opacity: 0.9; }
 
-        .divider { text-align: center; margin: 20px 0; font-size: 11px; font-weight: 800; color: var(--text-muted); letter-spacing: 1px; }
+        .theme-toggle-btn {
+            background: rgba(255, 255, 255, 0.5); 
+            color: var(--text-dark);
+            padding: 8px 16px; border-radius: 30px; font-size: 11px;
+        }
+        [data-theme="dark"] .theme-toggle-btn { background: rgba(30, 41, 59, 0.5); }
+
+        .btn-primary { 
+            width: 100%; padding: 14px 18px;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.85), rgba(4, 120, 87, 0.9)); 
+            color: #fff; margin-top: 8px; font-size: 14px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-warning { 
+            width: 100%; padding: 14px 18px;
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.85), rgba(217, 119, 6, 0.9)); 
+            color: #fff; margin-top: 8px; font-size: 14px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .section-title { font-size: 10px; font-weight: 800; color: var(--text-muted); text-align: center; margin: 24px 0 12px 0; letter-spacing: 1.2px; text-transform: uppercase; position: relative; z-index: 2; }
+        
+        #reader { width: 100%; border-radius: 24px; overflow: hidden; border: 1px solid var(--glass-border) !important; background: var(--bg-card); position: relative; z-index: 2; }
+        #reader button {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.85), rgba(4, 120, 87, 0.9)) !important; color: #ffffff !important; border: 1px solid rgba(255,255,255,0.3) !important;
+            padding: 12px 20px !important; font-size: 13px !important; font-weight: 800 !important;
+            border-radius: 18px !important; cursor: pointer !important;
+            margin: 10px 0 !important; font-family: inherit !important;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1) !important;
+        }
+
+        .divider { text-align: center; margin: 22px 0; font-size: 10px; font-weight: 800; color: var(--text-muted); letter-spacing: 1.5px; position: relative; z-index: 2; }
+
+        /* PENCARIAN MANUAL iOS GLASS Z-INDEX LEBIH TINGGI */
+        .form-group-pencarian {
+            position: relative;
+            z-index: 100;
+            margin-bottom: 20px;
+        }
 
         .search-results { 
-            position: absolute; width: 100%; background: var(--bg-card); border: 1px solid var(--border-color); 
-            max-height: 220px; overflow-y: auto !important; z-index: 999; border-radius: 14px; margin-top: 4px;
-            box-shadow: var(--shadow-lg); display: none; -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
+            position: absolute; width: 100%; background: var(--bg-card); border: 1px solid var(--glass-border); 
+            max-height: 220px; overflow-y: auto !important; z-index: 99999; border-radius: 20px; margin-top: 6px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2); display: none; -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
+            backdrop-filter: blur(28px) saturate(210%); -webkit-backdrop-filter: blur(28px) saturate(210%);
         }
-        .search-item { padding: 12px 16px; cursor: pointer; border-bottom: 1px solid var(--border-color); font-size: 13px; font-weight: 500; min-height: 44px; box-sizing: border-box; }
-        .search-item:hover { background: var(--bg-main); color: var(--primary); font-weight: 600; }
+        .search-item { padding: 12px 18px; cursor: pointer; border-bottom: 1px solid var(--border-color); font-size: 13px; font-weight: 600; min-height: 44px; box-sizing: border-box; }
+        .search-item:hover { background: var(--primary-light); color: var(--primary); }
 
-        .action-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; margin-top: 10px; position: relative; }
+        .action-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin-top: 10px; position: relative; z-index: 2; }
+        
         .btn-icon, .select-wrapper { 
-            background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-dark);
-            padding: 10px 0; border-radius: 12px; cursor: pointer; display: flex; flex-direction: column;
-            align-items: center; justify-content: center; gap: 4px; font-size: 10px; font-weight: 700;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); width: 100%; box-sizing: border-box;
-            box-shadow: 0 2px 4px var(--shadow);
+            background: var(--input-bg); 
+            border: 1px solid var(--glass-border); color: var(--text-dark);
+            padding: 10px 0; border-radius: 18px; cursor: pointer; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; gap: 4px; font-size: 10px; font-weight: 800;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1); width: 100%; box-sizing: border-box;
+            position: relative;
         }
         
-        .btn-icon svg { width: 16px; height: 16px; fill: none; stroke: var(--icon-color); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: all 0.2s ease; }
-        .btn-icon:hover { background: var(--bg-main); border-color: var(--primary); }
-        .btn-icon:hover svg { stroke: var(--primary); transform: translateY(-2px); }
-        .btn-icon:active { transform: scale(0.95); }
+        .btn-icon svg { width: 16px; height: 16px; fill: none; stroke: var(--icon-color); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
 
         .select-wrapper { position: relative; padding: 0; }
         .select-wrapper select { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; font-family: inherit; z-index: 2; }
-        .select-wrapper:hover { background: var(--bg-main); border-color: var(--primary); }
-        .select-wrapper:hover svg { stroke: var(--primary); transform: translateY(-2px); }
 
-        .custom-dropdown-border { border: 1.5px solid var(--primary) !important; border-radius: 12px; background: var(--bg-card); transition: all 0.2s ease-in-out; }
-        .custom-dropdown-border:hover { border-color: var(--primary-hover) !important; box-shadow: 0 4px 12px rgba(4, 120, 87, 0.15); }
+        .custom-dropdown-border { 
+            border: 1.5px solid var(--primary) !important; 
+            border-radius: 18px; 
+            background: rgba(16, 185, 129, 0.1) !important; 
+        }
 
         .scan-notif-modal {
             position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(20px);
-            background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-dark);
-            padding: 20px 28px; border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+            background: var(--bg-card); border: 1px solid var(--glass-border); color: var(--text-dark);
+            padding: 20px 28px; border-radius: 28px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
             z-index: 10005; text-align: center; box-shadow: var(--shadow-lg);
-            opacity: 0; visibility: hidden; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); min-width: 260px;
+            opacity: 0; visibility: hidden; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); min-width: 260px;
+            backdrop-filter: blur(28px) saturate(210%); -webkit-backdrop-filter: blur(28px) saturate(210%);
         }
         .scan-notif-modal.show { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0); }
         .scan-notif-icon { width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
-        .scan-notif-modal.success-status .scan-notif-icon { background: rgba(16, 185, 129, 0.15); color: #10b981; }
-        .scan-notif-modal.error-status .scan-notif-icon { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
-        .scan-notif-title { font-size: 16px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; }
+        .scan-notif-modal.success-status .scan-notif-icon { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+        .scan-notif-modal.error-status .scan-notif-icon { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+        .scan-notif-title { font-size: 15px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; }
         .scan-notif-desc { font-size: 12px; color: var(--text-muted); margin: 0; font-weight: 600; }
         
         /* ==================================================== */
-        /* STYLED LUXURY TABLE, DYNAMIC & DUAL SCROLL CONTAINER */
+        /* STICKY HEADER & FOOTER TABLE WRAPPER REKAP GLASS     */
         /* ==================================================== */
         #print-area { 
             display: none; 
             width: 100%; 
             margin-top: 24px; 
             box-sizing: border-box;
+            position: relative;
+            z-index: 2;
         }
 
-        /* Container scrollbar atas */
-        .top-scroll-container {
-            width: 100%;
-            overflow-x: auto !important;
-            overflow-y: hidden;
-            -webkit-overflow-scrolling: touch;
-            height: 16px;
-            margin-top: 12px;
-            display: none;
-        }
-        .top-scroll-dummy {
-            height: 1px;
-        }
-
-        /* Container scrollbar bawah (utama) */
         #print-table-container {
             width: 100%;
             max-width: 100%;
-            overflow-x: auto !important;
+            max-height: 520px; 
+            overflow: auto !important;
             -webkit-overflow-scrolling: touch;
-            border-radius: 16px;
-            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            border: 1px solid var(--glass-border);
             background: var(--bg-card);
-            box-shadow: var(--shadow);
+            box-shadow: var(--shadow-lg);
             margin-top: 4px;
             position: relative;
         }
         
-        .print-box-wilayah { 
-            margin-bottom: 25px; 
-            page-break-inside: avoid; 
-        }
-        .print-box-wilayah h4 { margin: 0 0 10px 0; font-size: 13px; font-weight: 800; color: var(--text-dark); text-transform: uppercase; border-bottom: 2px solid var(--primary); padding-bottom: 6px; }
+        .print-box-wilayah { margin-bottom: 25px; page-break-inside: avoid; }
+        .print-box-wilayah h4 { margin: 0 0 10px 0; font-size: 12px; font-weight: 800; color: var(--text-dark); text-transform: uppercase; border-bottom: 2px solid var(--primary); padding-bottom: 6px; }
         
-        /* Container scroll khusus tiap kelompok */
         .kelompok-table-wrapper {
-            width: 100%;
-            overflow-x: auto !important;
-            -webkit-overflow-scrolling: touch;
-            border-radius: 12px;
-            border: 1px solid var(--border-color);
-            background: var(--bg-card);
+            width: 100%; max-height: 400px; overflow: auto !important;
+            -webkit-overflow-scrolling: touch; border-radius: 18px;
+            border: 1px solid var(--glass-border); background: var(--bg-card);
         }
 
         .print-table { 
-            width: 100%; 
-            border-collapse: separate; 
-            border-spacing: 0; 
-            font-size: 11px; 
-            min-width: 600px;
+            width: 100%; border-collapse: separate; border-spacing: 0; 
+            font-size: 11px; min-width: 600px;
         }
 
         .print-table th, .print-table td { 
             border-bottom: 1px solid var(--border-color); 
-            padding: 10px 12px; 
-            text-align: left; 
-            white-space: nowrap;
+            padding: 11px 14px; text-align: left; white-space: nowrap;
         }
 
         .print-table th { 
-            background: var(--bg-table-header); 
-            color: var(--text-dark); 
-            font-weight: 700; 
-            position: relative; 
-            text-transform: uppercase;
-            font-size: 10px;
-            letter-spacing: 0.5px;
-            border-top: none;
+            background: var(--bg-table-header); color: var(--text-dark); 
+            font-weight: 800; position: sticky; top: 0; z-index: 20;
+            text-transform: uppercase; font-size: 10px; letter-spacing: 0.5px;
+            border-top: none; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
         }
 
-        /* DYNAMIC STICKY COLUMN UNTUK NAMA GENERUS & UKURAN KOLOM NAMA */
+        .print-table tfoot td, .print-table tfoot tr {
+            position: sticky; bottom: 0; background: var(--bg-table-header);
+            z-index: 20; font-weight: 800; border-top: 2px solid var(--border-color);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+        }
+
         .print-table th:nth-child(2),
         .print-table td:nth-child(2) {
-            position: sticky;
-            left: 0;
-            background: var(--bg-card);
-            z-index: 10;
-            box-shadow: 2px 0 5px rgba(0,0,0,0.05);
-            max-width: 120px;
-            min-width: 90px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+            position: sticky; left: 0; background: var(--bg-card);
+            z-index: 10; max-width: 120px; min-width: 90px;
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
         }
 
-        .print-table th:nth-child(2) {
-            background: var(--bg-table-header);
-            z-index: 11;
-        }
+        .print-table th:nth-child(2) { background: var(--bg-table-header); z-index: 25; }
+        .print-table tfoot td:nth-child(2) { background: var(--bg-table-header); z-index: 25; }
 
-        .print-table tr:hover td {
-            background-color: var(--primary-light) !important;
-        }
+        .print-table tr:hover td { background-color: var(--primary-light) !important; }
 
         .th-filter-container { display: flex; align-items: center; justify-content: space-between; gap: 4px; }
-        .excel-filter-btn { background: none; border: none; padding: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 6px; min-width: 22px; min-height: 22px; transition: all 0.2s; }
-        .excel-filter-btn:hover { background: var(--border-color); }
+        .excel-filter-btn { background: none; border: none; padding: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 8px; min-width: 22px; min-height: 22px; transition: all 0.2s; }
+        .excel-filter-btn:hover { background: rgba(255, 255, 255, 0.2); }
         .excel-filter-btn svg { width: 12px; height: 12px; fill: var(--icon-color); }
         .excel-filter-btn.active svg { fill: var(--primary); }
 
-        /* OVERLAY / BACKDROP LAYAR PENUH (PERBAIKAN IOS & SAFARI) */
         .filter-backdrop-overlay { 
-            display: none; 
-            position: fixed; 
-            top: 0; 
-            left: 0; 
-            width: 100vw; 
-            height: 100vh; 
-            background: rgba(15, 23, 42, 0.45); 
-            z-index: 99988; 
-            align-items: center;
-            justify-content: center;
-            -webkit-tap-highlight-color: transparent;
+            display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; 
+            background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            z-index: 99988; align-items: center; justify-content: center;
         }
         
-        /* MODAL POPUP DI TENGAH LAYAR (PERBAIKAN IOS & SAFARI) */
         .filter-dropdown-menu { 
-            display: none; 
-            position: relative;
-            background: var(--bg-card); 
-            border: 1px solid var(--border-color); 
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); 
-            border-radius: 20px; 
-            z-index: 99999 !important; 
-            width: 85%;
-            max-width: 320px; 
-            max-height: 80vh; 
-            overflow: hidden; 
-            padding: 16px; 
-            box-sizing: border-box; 
-            font-weight: normal; 
-            text-transform: none; 
-            overscroll-behavior: contain !important; 
+            display: none; position: relative; background: var(--bg-card); 
+            border: 1px solid var(--glass-border); box-shadow: var(--shadow-lg); 
+            border-radius: 28px; z-index: 99999 !important; width: 85%;
+            max-width: 320px; max-height: 80vh; overflow: hidden; padding: 18px; 
+            box-sizing: border-box; backdrop-filter: blur(28px) saturate(210%); -webkit-backdrop-filter: blur(28px) saturate(210%);
         }
-        .filter-search-box { width: 100%; padding: 10px 12px; font-size: 13px; border: 1px solid var(--border-color); border-radius: 10px; margin-bottom: 10px; box-sizing: border-box; background: var(--bg-main); color: var(--text-dark); }
-        .filter-options-list { display: flex; flex-direction: column; gap: 6px; max-height: 200px; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-right: 4px; overscroll-behavior: contain !important; }
-        .filter-option-item { display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; padding: 8px 10px; border-radius: 10px; min-height: 36px; box-sizing: border-box; transition: background 0.2s; }
-        .filter-option-item:hover { background: var(--bg-main); }
-        .filter-option-item input { width: 18px !important; height: 18px !important; margin: 0; padding: 0; cursor: pointer; accent-color: var(--primary); }
+        .filter-search-box { width: 100%; padding: 10px 14px; font-size: 12px; border: 1px solid var(--glass-border); border-radius: 14px; margin-bottom: 10px; box-sizing: border-box; background: var(--input-bg); color: var(--text-dark); }
+        .filter-options-list { display: flex; flex-direction: column; gap: 6px; max-height: 200px; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-right: 4px; }
+        .filter-option-item { display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; padding: 8px 10px; border-radius: 12px; min-height: 36px; box-sizing: border-box; transition: background 0.2s; }
+        .filter-option-item:hover { background: var(--primary-light); }
+        .filter-option-item input { width: 18px !important; height: 18px !important; margin: 0; cursor: pointer; accent-color: var(--primary); }
         .filter-action-buttons { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; border-top: 1px solid var(--border-color); padding-top: 12px; }
-        .filter-btn-sub { padding: 8px 16px; font-size: 12px; font-weight: 700; border-radius: 10px; border: none; cursor: pointer; transition: all 0.2s; }
+        .filter-btn-sub { padding: 8px 16px; font-size: 12px; font-weight: 800; border-radius: 14px; border: none; cursor: pointer; }
         .filter-btn-ok { background: var(--primary); color: white; }
-        .filter-btn-clear { background: var(--border-color); color: var(--text-dark); }
+        .filter-btn-clear { background: rgba(255,255,255,0.2); color: var(--text-dark); }
 
-        .resume-kehadiran-box { background: var(--bg-card); border: 1px solid var(--border-color); padding: 14px 18px; border-radius: 16px; margin-bottom: 12px; font-size: 12px; font-weight: 700; display: flex; flex-direction: column; gap: 8px; color: var(--text-dark); box-shadow: var(--shadow); }
+        .resume-kehadiran-box { background: var(--bg-card); border: 1px solid var(--glass-border); padding: 14px 18px; border-radius: 20px; margin-bottom: 12px; font-size: 12px; font-weight: 700; display: flex; flex-direction: column; gap: 8px; color: var(--text-dark); box-shadow: var(--shadow-lg); }
         .resume-row { display: flex; gap: 16px; }
 
-        .waktu-filter-row { grid-column: span 6; display: flex; gap: 6px; margin-bottom: 6px; background: var(--bg-main); padding: 8px; border-radius: 14px; border: 1px dashed var(--border-color); }
-        .waktu-select { flex: 1; padding: 8px 12px; font-size: 12px; font-weight: 700; border-radius: 10px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-dark); outline: none; cursor: pointer; font-family: inherit; }
-        .waktu-select:focus { border-color: var(--primary); }
+        .waktu-filter-row { grid-column: span 6; display: flex; gap: 8px; margin-bottom: 6px; background: var(--input-bg); padding: 8px; border-radius: 20px; border: 1px solid var(--glass-border); }
+        .waktu-select { flex: 1; padding: 8px 12px; font-size: 11px; font-weight: 800; border-radius: 14px; border: 1px solid var(--glass-border); background: var(--bg-card); color: var(--text-dark); outline: none; cursor: pointer; font-family: inherit; }
 
         @media print {
             body { background: #fff!important; color: #000!important; display: block; padding: 0; margin: 0; position: static !important; overflow: auto !important; }
-            .app-container { max-width: 100%; width: 100%; box-shadow: none!important; padding: 0; margin: 0; background: #fff!important; border: none !important; }
-            .top-bar, .section-title, #reader, .divider, .form-group, .btn-primary, .btn-warning, .action-row, .search-results, .scan-notif-modal, .excel-filter-btn, .filter-dropdown-menu, .filter-backdrop-overlay, .top-scroll-container { display: none!important; }
+            #particles-canvas { display: none !important; }
+            .app-container { max-width: 100%; width: 100%; box-shadow: none!important; padding: 0; margin: 0; background: #fff!important; border: none !important; backdrop-filter: none !important; }
+            .top-bar, .section-title, #reader, .divider, .form-group, .form-group-pencarian, .btn-primary, .btn-warning, .action-row, .search-results, .scan-notif-modal, .excel-filter-btn, .filter-dropdown-menu, .filter-backdrop-overlay { display: none!important; }
             #print-area { display: block!important; margin-top: 0 !important; }
-            #print-table-container, .kelompok-table-wrapper { border: none !important; box-shadow: none !important; overflow: visible !important; }
+            #print-table-container, .kelompok-table-wrapper { border: none !important; box-shadow: none !important; overflow: visible !important; max-height: none !important; }
             .print-table { min-width: 100% !important; }
-            .print-table th, .print-table td { border: 1px solid #94a3b8 !important; padding: 6px 8px !important; }
+            .print-table th, .print-table td { border: 1px solid #94a3b8 !important; padding: 6px 8px !important; position: static !important; backdrop-filter: none !important; }
             .print-table th:nth-child(2), .print-table td:nth-child(2) { position: static !important; box-shadow: none !important; max-width: none !important; overflow: visible !important; white-space: normal !important; }
+            .print-table tfoot td, .print-table tfoot tr { position: static !important; backdrop-filter: none !important; }
         }
     </style>
 </head>
 <body onclick="bukaKunciAudioKonstruktor()">
 
+<!-- CANVAS PARTIKEL ANIMASI iOS GLASS BACKGROUND -->
+<canvas id="particles-canvas"></canvas>
+
+<!-- SPLASH SCREEN SEBELUMNYA BERANIMASI MODERN -->
 <div id="splash-screen">
-  <img src="Logo remaja daerah.png" alt="Logo Presensi" class="logo-animasi">
+  <div class="splash-content">
+      <div class="logo-wrapper">
+          <img src="Logo remaja daerah.png" alt="Logo Presensi" class="logo-animasi">
+      </div>
+      <div class="splash-title">Presensi Kegiatan</div>
+      <div class="splash-subtitle">Muda-mudi Daerah Tawangmangu</div>
+      <div class="splash-loader">
+          <div class="splash-loader-bar"></div>
+      </div>
+  </div>
 </div>
 
-<!-- CONTAINER GLOBAL FILTER MODAL DENGAN FLEXBOX OVERLAY (PERBAIKAN IOS) -->
+<!-- CONTAINER GLOBAL FILTER MODAL OVERLAY -->
 <div id="global-filter-overlay" class="filter-backdrop-overlay" onclick="tutupSemuaDropdownAman()">
     <!-- Dropdown Modal Rekap Semua -->
     <div class="filter-dropdown-menu" id="dropdown-semua-jk" onclick="event.stopPropagation()">
@@ -406,13 +566,13 @@
 
 <div class="app-container">
     <div class="top-bar">
-        <button class="theme-toggle-btn" onclick="ubahTemaSistem()" id="theme-btn">🌙 Dark Mode</button>
+        <button class="theme-toggle-btn btn-3d" onclick="ubahTemaSistem()" id="theme-btn">🌙 Dark Mode</button>
         <div id="network-indicator" class="net-status online">● Online</div>
     </div>
     
 	<div class="brand-header">
 		<img src="Logo remaja daerah.png" alt="Logo" class="brand-logo" id="app-logo">
-		<h2 style="color: #047857; background: none; -webkit-text-fill-color: initial;">PRESENSI KEGIATAN</h2>
+		<h2>PRESENSI KEGIATAN</h2>
 		<p>Muda-mudi Daerah Tawangmangu</p>
 	</div>
     
@@ -420,7 +580,7 @@
         <label for="kegiatan">Nama Agenda Pertemuan</label>
         <div class="agenda-input-wrapper">
             <input type="text" id="kegiatan" placeholder="Ketik manual / Pilih template..." oninput="this.value = this.value.toUpperCase(); updateJudulCetak(); perbaruiTeksTombolTahunan(this.value);">
-            <div class="select-wrapper custom-dropdown-border" style="width: 115px; padding: 0; height: 46px;">
+            <div class="select-wrapper custom-dropdown-border btn-3d" style="width: 115px; padding: 0; height: 48px;">
                 <span style="font-size:11px; color:var(--primary); font-weight:800; display:flex; align-items:center; justify-content:center; height:100%; text-align:center; padding: 0 4px;">RUTIN</span>
                 <select id="template-agenda-select" onchange="pilihTemplateAgenda(this.value)" style="height:100%;">
                     <option value="" disabled selected hidden>Pilih</option>
@@ -436,22 +596,23 @@
 
     <div class="section-title">OPSI 1: SCAN BARCODE</div>
 
-	<button id="btn-hidupkan" class="btn-primary" type="button" onclick="hidupkanKamera()">Hidupkan Kamera</button>
-	<button id="btn-matikan" class="btn-warning" type="button" style="display: none;" onclick="matikanKamera()">Matikan Kamera</button>
+	<button id="btn-hidupkan" class="btn-primary btn-3d" type="button" onclick="hidupkanKamera()">Hidupkan Kamera</button>
+	<button id="btn-matikan" class="btn-warning btn-3d" type="button" style="display: none;" onclick="matikanKamera()">Matikan Kamera</button>
 
 	<div id="reader" style="margin-top: 15px;"></div>
 
     <div class="divider">— ATAU —</div>
 
-    <div class="form-group">
+    <!-- PENCARIAN MANUAL iOS GLASS Z-INDEX SANGAT TINGGI -->
+    <div class="form-group-pencarian">
         <label for="search-input">OPSI 2: INPUT MANUAL NAMA ANGGOTA</label>
         <input type="text" id="search-input" autocomplete="off" placeholder="Ketik nama untuk mencari..." oninput="cariNamaPintar()" onfocus="cariNamaPintar()" onclick="cariNamaPintar()">
         <div id="search-results-box" class="search-results"></div>
     </div>
     
     <input type="hidden" id="selected-id-generus">
-    <button class="btn-primary" onclick="inputManualKehadiran()">Konfirmasi Kehadiran</button>
-    <button class="btn-warning" onclick="inputManualIziin()">Izin</button>
+    <button class="btn-primary btn-3d" onclick="inputManualKehadiran()">Konfirmasi Kehadiran</button>
+    <button class="btn-warning btn-3d" onclick="inputManualIziin()">Izin</button>
 
     <div class="section-title">Menu Rekap & Penyimpanan</div>
     <div class="action-row">
@@ -475,23 +636,23 @@
             <select id="filter-rekap-tahun" class="waktu-select"></select>
         </div>
 
-        <button class="btn-icon" onclick="tarikDanCetakLaporan('semua')" title="Preview Semua">
+        <button class="btn-icon btn-3d" onclick="tarikDanCetakLaporan('semua')" title="Preview Semua">
             <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
             Semua
         </button>
-        <button class="btn-icon" onclick="tarikDanCetakLaporan('desa')" title="Rekap Desa">
+        <button class="btn-icon btn-3d" onclick="tarikDanCetakLaporan('desa')" title="Rekap Desa">
             <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
             Desa
         </button>
-        <button class="btn-icon" onclick="tarikDanCetakLaporan('kelompok')" title="Rekap Kelompok">
+        <button class="btn-icon btn-3d" onclick="tarikDanCetakLaporan('kelompok')" title="Rekap Kelompok">
             <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
             Klp
         </button>
-        <button class="btn-icon" onclick="sinkronisasiManual()" title="Simpan Cloud">
+        <button class="btn-icon btn-3d" onclick="sinkronisasiManual()" title="Simpan Cloud">
             <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
             Simpan
         </button>
-        <div class="select-wrapper" title="Cetak File">
+        <div class="select-wrapper btn-3d" title="Cetak File">
             <svg viewBox="0 0 24 24" style="width:16px; height:16px; fill:none; stroke:var(--icon-color); stroke-width:2; stroke-linecap:round; stroke-linejoin:round; transition:all 0.2s ease;"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
             <span style="margin-top:4px;">Print</span>
             <select id="print-dropdown" onchange="eksekusiPrintKhusus(this.value)">
@@ -502,12 +663,12 @@
                 <option value="tahunan">Print Hasil Set Tahun</option>
             </select>
         </div>
-        <button class="btn-icon" onclick="eksporKeExcel()" title="Ekspor Excel">
+        <button class="btn-icon btn-3d" onclick="eksporKeExcel()" title="Ekspor Excel">
             <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
             Excel
         </button>
 
-        <div class="select-wrapper custom-dropdown-border" title="Rekap Tahunan" style="grid-column: span 6; margin-top: 10px; padding: 10px 0; min-height: 48px;">
+        <div class="select-wrapper custom-dropdown-border btn-3d" title="Rekap Tahunan" style="grid-column: span 6; margin-top: 10px; padding: 10px 0; min-height: 48px;">
             <div style="display:flex; align-items:center; gap:8px; justify-content:center; width:100%; padding:0 12px; box-sizing:border-box;">
                 <svg viewBox="0 0 24 24" style="stroke: var(--primary); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; width:18px; height:18px; flex-shrink:0;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
                 <span id="rekap-tahunan-label-text" style="color: var(--primary); font-size:12px; font-weight:800; text-transform: uppercase; text-align:center; line-height:1.2;">Rekap Tahunan Kegiatan</span>
@@ -531,10 +692,6 @@
         <p style="text-align: center; margin: 0 0 16px 0; font-size: 12px; color: var(--text-muted); font-weight: 500;" id="cetak-waktu">-</p>
         <div id="resume-kehadiran-container"></div>
         
-        <!-- DUAL SCROLL CONTAINER: Scrollbar Atas & Scrollbar Bawah (Utama) -->
-        <div id="top-scroll-container" class="top-scroll-container">
-            <div id="top-scroll-dummy" class="top-scroll-dummy"></div>
-        </div>
         <div id="print-table-container"></div>
     </div>
 </div>
@@ -546,6 +703,123 @@
 </div>
 
 <script>
+    /* ==================================================== */
+    /* PARTIKEL AMBIENT GLASS (CANVAS)                      */
+    /* ==================================================== */
+    const canvas = document.getElementById('particles-canvas');
+    const ctx = canvas.getContext('2d');
+    let particlesArray = [];
+
+    function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    const shapes = ['circle', 'square', 'star', 'hexagon', 'triangle'];
+
+    class Particle {
+        constructor() {
+            this.x = Math.random() * canvas.width;
+            this.y = Math.random() * canvas.height;
+            this.size = Math.random() * 30 + 15;
+            this.speedX = (Math.random() - 0.5) * 0.5;
+            this.speedY = (Math.random() - 0.5) * 0.5;
+            this.angle = Math.random() * Math.PI * 2;
+            this.rotationSpeed = (Math.random() - 0.5) * 0.02;
+            this.opacity = Math.random() * 0.2 + 0.08; 
+            this.shape = shapes[Math.floor(Math.random() * shapes.length)];
+        }
+
+        update() {
+            this.x += this.speedX;
+            this.y += this.speedY;
+            this.angle += this.rotationSpeed;
+
+            if (this.x < -50 || this.x > canvas.width + 50) this.speedX *= -1;
+            if (this.y < -50 || this.y > canvas.height + 50) this.speedY *= -1;
+        }
+
+        draw() {
+            let isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            
+            ctx.save();
+            ctx.translate(this.x, this.y);
+            ctx.rotate(this.angle);
+
+            let fillGradient = ctx.createRadialGradient(0, 0, 0, 0, 0, this.size);
+            if(isDark) {
+                fillGradient.addColorStop(0, `rgba(52, 211, 153, ${this.opacity * 1.5})`);
+                fillGradient.addColorStop(1, `rgba(56, 189, 248, ${this.opacity * 0.15})`);
+            } else {
+                fillGradient.addColorStop(0, `rgba(5, 150, 105, ${this.opacity * 1.2})`);
+                fillGradient.addColorStop(1, `rgba(245, 158, 11, ${this.opacity * 0.25})`);
+            }
+            
+            ctx.fillStyle = fillGradient;
+
+            if (this.shape === 'circle') {
+                ctx.beginPath();
+                ctx.arc(0, 0, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            } 
+            else if (this.shape === 'square') {
+                ctx.fillRect(-this.size / 2, -this.size / 2, this.size, this.size);
+            } 
+            else if (this.shape === 'triangle') {
+                ctx.beginPath();
+                ctx.moveTo(0, -this.size);
+                ctx.lineTo(this.size, this.size);
+                ctx.lineTo(-this.size, this.size);
+                ctx.closePath();
+                ctx.fill();
+            }
+            else if (this.shape === 'hexagon') {
+                ctx.beginPath();
+                for (let i = 0; i < 6; i++) {
+                    ctx.lineTo(this.size * Math.cos(i * Math.PI / 3), this.size * Math.sin(i * Math.PI / 3));
+                }
+                ctx.closePath();
+                ctx.fill();
+            }
+            else if (this.shape === 'star') {
+                ctx.beginPath();
+                for (let i = 0; i < 5; i++) {
+                    ctx.lineTo(Math.cos((18 + i * 72) * Math.PI / 180) * this.size, -Math.sin((18 + i * 72) * Math.PI / 180) * this.size);
+                    ctx.lineTo(Math.cos((54 + i * 72) * Math.PI / 180) * (this.size / 2), -Math.sin((54 + i * 72) * Math.PI / 180) * (this.size / 2));
+                }
+                ctx.closePath();
+                ctx.fill();
+            }
+
+            ctx.restore();
+        }
+    }
+
+    function initParticles() {
+        particlesArray = [];
+        let numberOfParticles = Math.floor((canvas.width * canvas.height) / 25000);
+        if (numberOfParticles < 15) numberOfParticles = 15;
+        for (let i = 0; i < numberOfParticles; i++) {
+            particlesArray.push(new Particle());
+        }
+    }
+
+    function animateParticles() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        for (let i = 0; i < particlesArray.length; i++) {
+            particlesArray[i].update();
+            particlesArray[i].draw();
+        }
+        requestAnimationFrame(animateParticles);
+    }
+    initParticles();
+    animateParticles();
+
+    /* ==================================================== */
+    /* LOGIKA SCRIPT UTAMA SISTEM ABSENSI                   */
+    /* ==================================================== */
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('./sw.js').then(reg => {
@@ -564,7 +838,7 @@
     window.addEventListener('load', () => {
         const splashScreen = document.getElementById('splash-screen');
         if(splashScreen) {
-            setTimeout(() => { splashScreen.classList.add('splash-sembunyi'); }, 1800); 
+            setTimeout(() => { splashScreen.classList.add('splash-sembunyi'); }, 2200); 
         }
     });
 
@@ -589,37 +863,6 @@
     let globalAudioCtx = null;
     let toastTimeout = null;
     let subDapukanPengurusTerpilih = []; 
-
-    // Fitur Sinkronisasi Dual Scrollbar Atas-Bawah
-    function inisialisasiDualScroll() {
-        const topScroll = document.getElementById('top-scroll-container');
-        const topDummy = document.getElementById('top-scroll-dummy');
-        const bottomScroll = document.getElementById('print-table-container');
-        const table = bottomScroll.querySelector('table.print-table');
-
-        if (table && bottomScroll.scrollWidth > bottomScroll.clientWidth) {
-            topDummy.style.width = table.scrollWidth + 'px';
-            topScroll.style.display = 'block';
-
-            let syncing = false;
-            topScroll.onscroll = function() {
-                if (!syncing) {
-                    syncing = true;
-                    bottomScroll.scrollLeft = topScroll.scrollLeft;
-                    syncing = false;
-                }
-            };
-            bottomScroll.onscroll = function() {
-                if (!syncing) {
-                    syncing = true;
-                    topScroll.scrollLeft = bottomScroll.scrollLeft;
-                    syncing = false;
-                }
-            };
-        } else {
-            topScroll.style.display = 'none';
-        }
-    }
 
     function inisialisasiOpsiPilihanTahun() {
         const tahunSekarang = new Date().getFullYear();
@@ -826,10 +1069,8 @@
             return; 
         }
 
-        // PERBAIKAN: PENGECEKAN DATA DI DATABASE (SUPABASE/LOKAL)
         let profil = semuaDataGenerus.find(g => String(g.id_generus) === String(idGenerus));
         
-        // JIKA DATA TIDAK DITEMUKAN / BELUM TERDAFTAR
         if (!profil) {
             bunyikanSuaraGagal();
             tampilkanNotifKustom('error', 'Ditolak / Belum Terdaftar', `ID / Anggota (${idGenerus}) tidak terdaftar di database Supabase!`);
@@ -1012,7 +1253,6 @@
         
         container.innerHTML = "";
         resumeContainer.innerHTML = "";
-        document.getElementById('top-scroll-container').style.display = 'none';
         
         const txtBulan = document.getElementById('filter-rekap-bulan').options[document.getElementById('filter-rekap-bulan').selectedIndex].text;
         const txtTahun = document.getElementById('filter-rekap-tahun').options[document.getElementById('filter-rekap-tahun').selectedIndex].text;
@@ -1047,16 +1287,43 @@
                 else rekapDesa[d.desa].hadir++;
             });
             
-            let html = `<table class="print-table"><thead><tr><th style="width:30px;">No</th><th>Nama Desa</th><th style="text-align:center;">Hadir</th><th style="text-align:center;">Izin</th><th style="text-align:center;">Total</th></tr></thead><tbody>`;
+            let html = `<table class="print-table">
+                            <thead>
+                                <tr>
+                                    <th style="width:30px;">No</th>
+                                    <th>Nama Desa</th>
+                                    <th style="text-align:center;">Hadir</th>
+                                    <th style="text-align:center;">Izin</th>
+                                    <th style="text-align:center;">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>`;
             let n=1; 
+            let totHadirDesa = 0, totIzinDesa = 0;
             for(let d in rekapDesa) { 
                 let t = rekapDesa[d].hadir + rekapDesa[d].izin;
-                html += `<tr><td>${n++}</td><td style="font-weight:700;">DESA ${d}</td><td style="text-align:center; color:var(--primary); font-weight:700;">${rekapDesa[d].hadir}</td><td style="text-align:center; color:var(--accent); font-weight:700;">${rekapDesa[d].izin}</td><td style="text-align:center; font-weight:700;">${t} Orang</td></tr>`; 
+                totHadirDesa += rekapDesa[d].hadir;
+                totIzinDesa += rekapDesa[d].izin;
+                html += `<tr>
+                            <td>${n++}</td>
+                            <td style="font-weight:700;">DESA ${d}</td>
+                            <td style="text-align:center; color:var(--primary); font-weight:700;">${rekapDesa[d].hadir}</td>
+                            <td style="text-align:center; color:var(--accent); font-weight:700;">${rekapDesa[d].izin}</td>
+                            <td style="text-align:center; font-weight:700;">${t} Orang</td>
+                        </tr>`; 
             }
-            html += `</tbody></table>`; 
+            html += `</tbody>
+                     <tfoot>
+                        <tr>
+                            <td colspan="2" style="text-align:right;">TOTAL KESELURUHAN:</td>
+                            <td style="text-align:center; color:var(--primary);">${totHadirDesa}</td>
+                            <td style="text-align:center; color:var(--accent);">${totIzinDesa}</td>
+                            <td style="text-align:center;">${totHadirDesa + totIzinDesa} Orang</td>
+                        </tr>
+                     </tfoot>
+                     </table>`; 
             container.innerHTML = html; 
             areaCetak.style.display = "block";
-            inisialisasiDualScroll();
         }
         else if(jenis === 'kelompok') {
             let rekapKlp = {}; 
@@ -1176,10 +1443,16 @@
             });
         }
 
-        html += `</tbody></table>`;
+        html += `</tbody>
+                 <tfoot>
+                    <tr>
+                        <td colspan="6" style="text-align:right;">TOTAL HASIL FILTER:</td>
+                        <td><b>${dataTerfilter.length} Data / Orang</b></td>
+                    </tr>
+                 </tfoot>
+                 </table>`;
         container.innerHTML = html;
         areaCetak.style.display = "block";
-        inisialisasiDualScroll();
     }
 
     function toggleDropdownSemua(event, kolom) {
@@ -1375,23 +1648,24 @@
                 akumulasiIzinSemua += hitungIzinMurni;
 
                 html += `
-                    <td style="text-align:center; font-weight:800; color:#047857;">${hitungHadirMurni}x</td>
+                    <td style="text-align:center; font-weight:800; color:#059669;">${hitungHadirMurni}x</td>
                     <td style="text-align:center; font-weight:800; color:#ef4444;">${hitungIzinMurni}x</td>
                 </tr>`;
             });
 
-            html += `
-                <tr style="background: var(--bg-table-header); font-weight: 800;">
-                    <td colspan="15" style="text-align: right; padding: 10px;">TOTAL AKUMULASI:</td>
-                    <td style="text-align: center; color: #047857;">${akumulasiHadirSemua}x</td>
-                    <td style="text-align: center; color: #ef4444;">${akumulasiIzinSemua}x</td>
-                </tr>`;
+            html += `</tbody>
+                     <tfoot>
+                        <tr>
+                            <td colspan="15" style="text-align: right; padding: 10px;">TOTAL AKUMULASI:</td>
+                            <td style="text-align: center; color: #059669;">${akumulasiHadirSemua}x</td>
+                            <td style="text-align: center; color: #ef4444;">${akumulasiIzinSemua}x</td>
+                        </tr>
+                     </tfoot>`;
         }
 
-        html += `</tbody></table>`;
+        html += `</table>`;
         container.innerHTML = html;
         areaCetak.style.display = "block";
-        inisialisasiDualScroll();
     }
 
     function toggleDropdownDapukanPengurus(event) {
