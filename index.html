@@ -39,7 +39,7 @@
         }
 
         /* ==================================================== */
-        /* SPLASH SCREEN SEBELUMNYA (DENGAN EFEK RIPPLE BUNDAR) */
+        /* SPLASH SCREEN BERANIMASI                             */
         /* ==================================================== */
         #splash-screen {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
@@ -159,30 +159,30 @@
             --primary-hover: #047857; 
             --primary-light: rgba(16, 185, 129, 0.12);
             --accent: #f59e0b; 
-            --bg-card: rgba(255, 255, 255, 0.45); 
-            --glass-border: rgba(255, 255, 255, 0.65);
+            --bg-card: rgba(255, 255, 255, 0.55); 
+            --glass-border: rgba(255, 255, 255, 0.7);
             --glass-inner-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.8), inset 0 -1px 2px rgba(0, 0, 0, 0.05);
-            --bg-table-header: rgba(255, 255, 255, 0.55);
+            --bg-table-header: rgba(255, 255, 255, 0.65);
             --text-dark: #0f172a; 
             --text-muted: #475569; 
             --border-color: rgba(255, 255, 255, 0.5);
             --shadow-lg: 0 30px 60px rgba(0, 0, 0, 0.12), 0 10px 20px rgba(0, 0, 0, 0.05);
             --icon-color: #334155;
-            --input-bg: rgba(255, 255, 255, 0.5);
+            --input-bg: rgba(255, 255, 255, 0.55);
         }
 
         [data-theme="dark"] {
-            --bg-card: rgba(15, 23, 42, 0.55); 
+            --bg-card: rgba(15, 23, 42, 0.65); 
             --glass-border: rgba(255, 255, 255, 0.15);
             --glass-inner-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.2), inset 0 -1px 2px rgba(0, 0, 0, 0.5);
-            --bg-table-header: rgba(30, 41, 59, 0.65);
+            --bg-table-header: rgba(30, 41, 59, 0.75);
             --text-dark: #f8fafc; 
             --text-muted: #cbd5e1;
             --border-color: rgba(255, 255, 255, 0.1); 
             --shadow-lg: 0 30px 60px rgba(0, 0, 0, 0.5);
             --icon-color: #cbd5e1;
             --primary-light: rgba(16, 185, 129, 0.2);
-            --input-bg: rgba(15, 23, 42, 0.5);
+            --input-bg: rgba(15, 23, 42, 0.6);
         }
 
         body { 
@@ -317,7 +317,6 @@
 
         .divider { text-align: center; margin: 22px 0; font-size: 10px; font-weight: 800; color: var(--text-muted); letter-spacing: 1.5px; position: relative; z-index: 2; }
 
-        /* PENCARIAN MANUAL iOS GLASS Z-INDEX LEBIH TINGGI */
         .form-group-pencarian {
             position: relative;
             z-index: 100;
@@ -347,60 +346,69 @@
         .btn-icon svg { width: 16px; height: 16px; fill: none; stroke: var(--icon-color); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
 
         /* ==================================================== */
-        /* STYLING CUSTOM DROPDOWN KACA (ALL GLASS POPUPS)      */
+        /* MODAL POPUP DI TENGAH LAYAR DENGAN ANIMASI IN & OUT  */
         /* ==================================================== */
-        .custom-select-container {
-            position: relative;
-            width: 100%;
+        .glass-modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(15, 23, 42, 0.45);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            z-index: 999999;
+            display: flex; justify-content: center; align-items: center;
+            opacity: 0; visibility: hidden;
+            transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            padding: 20px; box-sizing: border-box;
         }
 
-        .custom-select-trigger {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            width: 100%;
-            box-sizing: border-box;
-            cursor: pointer;
-            user-select: none;
+        .glass-modal-overlay.active {
+            opacity: 1; visibility: visible;
         }
 
-        .custom-select-menu {
-            display: none;
-            position: absolute;
-            top: 115%;
-            left: 0;
-            width: 100%;
+        .glass-modal-card {
+            width: 100%; max-width: 340px;
             background: var(--bg-card);
-            backdrop-filter: blur(28px) saturate(210%);
-            -webkit-backdrop-filter: blur(28px) saturate(210%);
             border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
-            z-index: 99999;
-            overflow: hidden;
-            max-height: 250px;
-            overflow-y: auto;
+            border-radius: 28px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3), var(--glass-inner-shadow);
+            backdrop-filter: blur(30px) saturate(210%); -webkit-backdrop-filter: blur(30px) saturate(210%);
+            padding: 20px; box-sizing: border-box;
+            transform: scale(0.85) translateY(15px);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
-        .custom-option {
-            padding: 12px 16px;
-            font-size: 12px;
-            font-weight: 700;
-            color: var(--text-dark);
-            cursor: pointer;
-            transition: all 0.2s ease;
-            text-align: center;
-            border-bottom: 1px solid var(--border-color);
+        .glass-modal-overlay.active .glass-modal-card {
+            transform: scale(1) translateY(0);
         }
 
-        .custom-option:last-child {
-            border-bottom: none;
+        .glass-modal-title {
+            font-size: 13px; font-weight: 800; text-transform: uppercase;
+            letter-spacing: 0.8px; color: var(--primary); text-align: center;
+            margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px solid var(--border-color);
         }
 
-        .custom-option:hover {
-            background: var(--primary-light);
-            color: var(--primary);
+        .glass-modal-list {
+            display: flex; flex-direction: column; gap: 6px;
+            max-height: 260px; overflow-y: auto; -webkit-overflow-scrolling: touch;
+        }
+
+        .glass-modal-item {
+            padding: 12px 16px; font-size: 13px; font-weight: 700;
+            color: var(--text-dark); text-align: center; border-radius: 16px;
+            background: var(--input-bg); border: 1px solid var(--glass-border);
+            cursor: pointer; transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .glass-modal-item:hover, .glass-modal-item:active {
+            background: var(--primary); color: #ffffff;
+            transform: scale(0.98);
+        }
+
+        .glass-modal-close-btn {
+            width: 100%; margin-top: 12px; padding: 10px 0;
+            border-radius: 16px; border: 1px solid var(--border-color);
+            background: rgba(255, 255, 255, 0.2); color: var(--text-muted);
+            font-size: 11px; font-weight: 800; text-transform: uppercase;
+            cursor: pointer; text-align: center;
         }
 
         .custom-dropdown-border { 
@@ -570,9 +578,17 @@
   </div>
 </div>
 
-<!-- CONTAINER GLOBAL FILTER MODAL OVERLAY -->
+<!-- SINGLE GLOBAL MODAL DI TENGAH LAYAR DENGAN ANIMASI ANIMATED IN/OUT -->
+<div class="glass-modal-overlay" id="global-center-modal" onclick="tutupGlassModalTengah()">
+    <div class="glass-modal-card" onclick="event.stopPropagation()">
+        <div class="glass-modal-title" id="glass-modal-title-text">Pilihan Menu</div>
+        <div class="glass-modal-list" id="glass-modal-items-container"></div>
+        <button class="glass-modal-close-btn" onclick="tutupGlassModalTengah()">Batal / Tutup</button>
+    </div>
+</div>
+
+<!-- CONTAINER GLOBAL FILTER MODAL OVERLAY (UNTUK EXCEL FILTER) -->
 <div id="global-filter-overlay" class="filter-backdrop-overlay" onclick="tutupSemuaDropdownAman()">
-    <!-- Dropdown Modal Rekap Semua -->
     <div class="filter-dropdown-menu" id="dropdown-semua-jk" onclick="event.stopPropagation()">
         <div class="filter-options-list" id="list-semua-jk"></div>
         <div class="filter-action-buttons">
@@ -607,7 +623,6 @@
         </div>
     </div>
 
-    <!-- Dropdown Modal Rekap Tahunan -->
     <div class="filter-dropdown-menu" id="dropdown-filter-dapukan" onclick="event.stopPropagation()">
         <div class="filter-options-list" id="list-opsi-dapukan"></div>
         <div class="filter-action-buttons">
@@ -643,20 +658,9 @@
         <div class="agenda-input-wrapper">
             <input type="text" id="kegiatan" placeholder="Ketik manual / Pilih template..." oninput="this.value = this.value.toUpperCase(); updateJudulCetak(); perbaruiTeksTombolTahunan(this.value);">
             
-            <!-- CUSTOM DROPDOWN RUTIN KACA -->
-            <div class="custom-select-container custom-dropdown-border btn-3d" style="width: 115px; height: 48px;">
-                <div class="custom-select-trigger" onclick="toggleCustomSelect('menu-rutin-glass')">
-                    <span style="font-size:11px; color:var(--primary); font-weight:800; text-align:center; padding: 0 4px;">RUTIN</span>
-                </div>
-                <div class="custom-select-menu" id="menu-rutin-glass">
-                    <div class="custom-option" onclick="pilihCustomOptionRutin('PENGAJIAN MUDA-MUDI DAERAH')">Pengajian Muda-Mudi Daerah</div>
-                    <div class="custom-option" onclick="pilihCustomOptionRutin('PENGAJIAN AKHIR TAHUN')">Pengajian Akhir Tahun</div>
-                    <div class="custom-option" onclick="pilihCustomOptionRutin('PENEROBOSAN MUDA-MUDI DAERAH')">Penerobosan Muda-Mudi Daerah</div>
-                    <div class="custom-option" onclick="pilihCustomOptionRutin('MUSYAWARAH KMM')">Musyawarah KMM</div>
-                    <div class="custom-option" onclick="pilihCustomOptionRutin('BERSIH')">-- Tulis Manual Bebas --</div>
-                </div>
-            </div>
-
+            <button type="button" class="custom-dropdown-border btn-3d" style="width: 115px; height: 48px; color: var(--primary); font-weight: 800; font-size: 11px;" onclick="bukaModalRutin()">
+                RUTIN
+            </button>
         </div>
     </div>
 
@@ -669,7 +673,6 @@
 
     <div class="divider">— ATAU —</div>
 
-    <!-- PENCARIAN MANUAL iOS GLASS Z-INDEX SANGAT TINGGI -->
     <div class="form-group-pencarian">
         <label for="search-input">OPSI 2: INPUT MANUAL NAMA ANGGOTA</label>
         <input type="text" id="search-input" autocomplete="off" placeholder="Ketik nama untuk mencari..." oninput="cariNamaPintar()" onfocus="cariNamaPintar()" onclick="cariNamaPintar()">
@@ -684,36 +687,16 @@
     <div class="action-row">
         
         <div class="waktu-filter-row">
-            <!-- CUSTOM DROPDOWN BULAN KACA -->
             <div class="waktu-custom-select">
-                <div class="waktu-select-trigger" onclick="toggleCustomSelect('menu-bulan-glass')" id="label-bulan-terpilih">
+                <div class="waktu-select-trigger" onclick="bukaModalBulan()" id="label-bulan-terpilih">
                     -- Semua Bulan --
-                </div>
-                <div class="custom-select-menu" id="menu-bulan-glass">
-                    <div class="custom-option" onclick="pilihCustomBulan('SEMUA', '-- Semua Bulan --')">-- Semua Bulan --</div>
-                    <div class="custom-option" onclick="pilihCustomBulan('0', 'Januari')">Januari</div>
-                    <div class="custom-option" onclick="pilihCustomBulan('1', 'Februari')">Februari</div>
-                    <div class="custom-option" onclick="pilihCustomBulan('2', 'Maret')">Maret</div>
-                    <div class="custom-option" onclick="pilihCustomBulan('3', 'April')">April</div>
-                    <div class="custom-option" onclick="pilihCustomBulan('4', 'Mei')">Mei</div>
-                    <div class="custom-option" onclick="pilihCustomBulan('5', 'Juni')">Juni</div>
-                    <div class="custom-option" onclick="pilihCustomBulan('6', 'Juli')">Juli</div>
-                    <div class="custom-option" onclick="pilihCustomBulan('7', 'Agustus')">Agustus</div>
-                    <div class="custom-option" onclick="pilihCustomBulan('8', 'September')">September</div>
-                    <div class="custom-option" onclick="pilihCustomBulan('9', 'Oktober')">Oktober</div>
-                    <div class="custom-option" onclick="pilihCustomBulan('10', 'November')">November</div>
-                    <div class="custom-option" onclick="pilihCustomBulan('11', 'Desember')">Desember</div>
                 </div>
             </div>
             <input type="hidden" id="filter-rekap-bulan" value="SEMUA">
 
-            <!-- CUSTOM DROPDOWN TAHUN KACA -->
             <div class="waktu-custom-select">
-                <div class="waktu-select-trigger" onclick="toggleCustomSelect('menu-tahun-glass')" id="label-tahun-terpilih">
+                <div class="waktu-select-trigger" onclick="bukaModalTahun()" id="label-tahun-terpilih">
                     -- Semua Tahun --
-                </div>
-                <div class="custom-select-menu" id="menu-tahun-glass">
-                    <!-- Opsi Tahun Direset Lewat JS -->
                 </div>
             </div>
             <input type="hidden" id="filter-rekap-tahun" value="SEMUA">
@@ -736,50 +719,29 @@
             Simpan
         </button>
 
-        <!-- CUSTOM DROPDOWN PRINT KACA -->
-        <div class="custom-select-container btn-3d" title="Cetak File">
-            <div class="custom-select-trigger" onclick="toggleCustomSelect('menu-print-glass')" style="flex-direction:column; gap:2px;">
-                <svg viewBox="0 0 24 24" style="width:16px; height:16px; fill:none; stroke:var(--icon-color); stroke-width:2; stroke-linecap:round; stroke-linejoin:round;"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
-                <span>Print</span>
-            </div>
-            <div class="custom-select-menu" id="menu-print-glass">
-                <div class="custom-option" onclick="pilihCustomPrint('semua')">Print Semua</div>
-                <div class="custom-option" onclick="pilihCustomPrint('desa')">Print Desa</div>
-                <div class="custom-option" onclick="pilihCustomPrint('kelompok')">Print Kelompok</div>
-                <div class="custom-option" onclick="pilihCustomPrint('tahunan')">Print Hasil Set Tahun</div>
-            </div>
-        </div>
+        <button type="button" class="btn-icon btn-3d" onclick="bukaModalPrint()" title="Cetak File">
+            <svg viewBox="0 0 24 24" style="width:16px; height:16px; fill:none; stroke:var(--icon-color); stroke-width:2; stroke-linecap:round; stroke-linejoin:round;"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+            Print
+        </button>
 
         <button class="btn-icon btn-3d" onclick="eksporKeExcel()" title="Ekspor Excel">
             <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
             Excel
         </button>
 
-        <!-- CUSTOM DROPDOWN REKAP TAHUNAN KACA -->
-        <div class="custom-select-container custom-dropdown-border btn-3d" title="Rekap Tahunan" style="grid-column: span 6; margin-top: 10px; padding: 10px 0; min-height: 48px;">
-            <div class="custom-select-trigger" onclick="toggleCustomSelect('menu-tahunan-glass')">
-                <div style="display:flex; align-items:center; gap:8px; justify-content:center; width:100%; padding:0 12px; box-sizing:border-box;">
-                    <svg viewBox="0 0 24 24" style="stroke: var(--primary); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; width:18px; height:18px; flex-shrink:0;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                    <span id="rekap-tahunan-label-text" style="color: var(--primary); font-size:12px; font-weight:800; text-transform: uppercase; text-align:center; line-height:1.2;">Rekap Tahunan Kegiatan</span>
-                </div>
+        <button type="button" class="custom-dropdown-border btn-3d" title="Rekap Tahunan" style="grid-column: span 6; margin-top: 10px; padding: 10px 0; min-height: 48px;" onclick="bukaModalTahunan()">
+            <div style="display:flex; align-items:center; gap:8px; justify-content:center; width:100%; padding:0 12px; box-sizing:border-box;">
+                <svg viewBox="0 0 24 24" style="stroke: var(--primary); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; width:18px; height:18px; flex-shrink:0;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                <span id="rekap-tahunan-label-text" style="color: var(--primary); font-size:12px; font-weight:800; text-transform: uppercase; text-align:center; line-height:1.2;">Rekap Tahunan Kegiatan</span>
             </div>
-            <div class="custom-select-menu" id="menu-tahunan-glass">
-                <div class="custom-option" onclick="pilihCustomTahunan('GENERUS')">GENERUS</div>
-                <div class="custom-option" onclick="pilihCustomTahunan('PENGURUS')">PENGURUS</div>
-                <div class="custom-option" onclick="pilihCustomTahunan('MT')">MT</div>
-            </div>
-            <input type="hidden" id="tahunan-dropdown" value="">
-        </div>
+        </button>
+        <input type="hidden" id="tahunan-dropdown" value="">
         
-        <!-- CUSTOM DROPDOWN SET TAHUN MATRIKS KACA -->
         <div style="grid-column: span 6; display:flex; align-items:center; gap:6px; margin-top:4px;">
             <label style="margin:0; font-size:10px; color:var(--text-muted); white-space:nowrap;">SET TAHUN MATRIKS:</label>
             <div class="waktu-custom-select" style="flex:1;">
-                <div class="waktu-select-trigger" onclick="toggleCustomSelect('menu-matriks-tahun-glass')" id="label-matriks-tahun-terpilih">
+                <div class="waktu-select-trigger" onclick="bukaModalMatriksTahun()" id="label-matriks-tahun-terpilih">
                     2026
-                </div>
-                <div class="custom-select-menu" id="menu-matriks-tahun-glass">
-                    <!-- Ditentukan lewat JS -->
                 </div>
             </div>
             <input type="hidden" id="filter-tahunan-tahun" value="2026">
@@ -963,83 +925,114 @@
     let toastTimeout = null;
     let subDapukanPengurusTerpilih = []; 
 
-    /* LOGIKA MANAJEMEN CUSTOM DROPDOWN KACA */
-    function toggleCustomSelect(menuId) {
-        const targetMenu = document.getElementById(menuId);
-        const isVisible = targetMenu.style.display === 'block';
-        tutupSemuaDropdownAman();
-        if(!isVisible) {
-            targetMenu.style.display = 'block';
-        }
+    /* ==================================================== */
+    /* LOGIKA SANGAT RAPI DENGAN MODAL KACA TENGAH LAYAR    */
+    /* ==================================================== */
+    function bukaGlassModalTengah(judul, daftarOpsi) {
+        const modal = document.getElementById('global-center-modal');
+        const titleEl = document.getElementById('glass-modal-title-text');
+        const containerEl = document.getElementById('glass-modal-items-container');
+
+        titleEl.innerText = judul;
+        containerEl.innerHTML = '';
+
+        daftarOpsi.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'glass-modal-item';
+            div.innerText = item.label;
+            div.onclick = function() {
+                item.action();
+                tutupGlassModalTengah();
+            };
+            containerEl.appendChild(div);
+        });
+
+        modal.classList.add('active');
     }
 
-    window.addEventListener('click', function(e) {
-        if (!e.target.closest('.custom-select-container') && !e.target.closest('.waktu-custom-select')) {
-            document.querySelectorAll('.custom-select-menu').forEach(m => m.style.display = 'none');
-        }
-    });
-
-    function pilihCustomOptionRutin(val) {
-        pilihTemplateAgenda(val);
-        tutupSemuaDropdownAman();
+    function tutupGlassModalTengah() {
+        document.getElementById('global-center-modal').classList.remove('active');
     }
 
-    function pilihCustomBulan(val, text) {
-        document.getElementById('filter-rekap-bulan').value = val;
-        document.getElementById('label-bulan-terpilih').innerText = text;
-        tutupSemuaDropdownAman();
+    function bukaModalRutin() {
+        bukaGlassModalTengah('Pilih Agenda Rutin', [
+            { label: 'Pengajian Muda-Mudi Daerah', action: () => pilihTemplateAgenda('PENGAJIAN MUDA-MUDI DAERAH') },
+            { label: 'Pengajian Akhir Tahun', action: () => pilihTemplateAgenda('PENGAJIAN AKHIR TAHUN') },
+            { label: 'Penerobosan Muda-Mudi Daerah', action: () => pilihTemplateAgenda('PENEROBOSAN MUDA-MUDI DAERAH') },
+            { label: 'Musyawarah KMM', action: () => pilihTemplateAgenda('MUSYAWARAH KMM') },
+            { label: '-- Tulis Manual Bebas --', action: () => pilihTemplateAgenda('BERSIH') }
+        ]);
     }
 
-    function pilihCustomTahun(val, text) {
-        document.getElementById('filter-rekap-tahun').value = val;
-        document.getElementById('label-tahun-terpilih').innerText = text;
-        tutupSemuaDropdownAman();
+    function bukaModalBulan() {
+        const daftarBulan = [
+            { label: '-- Semua Bulan --', val: 'SEMUA' },
+            { label: 'Januari', val: '0' }, { label: 'Februari', val: '1' },
+            { label: 'Maret', val: '2' }, { label: 'April', val: '3' },
+            { label: 'Mei', val: '4' }, { label: 'Juni', val: '5' },
+            { label: 'Juli', val: '6' }, { label: 'Agustus', val: '7' },
+            { label: 'September', val: '8' }, { label: 'Oktober', val: '9' },
+            { label: 'November', val: '10' }, { label: 'Desember', val: '11' }
+        ];
+
+        bukaGlassModalTengah('Filter Bulan', daftarBulan.map(b => ({
+            label: b.label,
+            action: () => {
+                document.getElementById('filter-rekap-bulan').value = b.val;
+                document.getElementById('label-bulan-terpilih').innerText = b.label;
+            }
+        })));
     }
 
-    function pilihCustomPrint(val) {
-        eksekusiPrintKhusus(val);
-        tutupSemuaDropdownAman();
-    }
-
-    function pilihCustomTahunan(val) {
-        document.getElementById('tahunan-dropdown').value = val;
-        tarikRekapTahunanMatriks(val);
-        tutupSemuaDropdownAman();
-    }
-
-    function pilihCustomMatriksTahun(val) {
-        document.getElementById('filter-tahunan-tahun').value = val;
-        document.getElementById('label-matriks-tahun-terpilih').innerText = val;
-        pemicuUlangTahunanMatriks();
-        tutupSemuaDropdownAman();
-    }
-
-    function inisialisasiOpsiPilihanTahun() {
+    function bukaModalTahun() {
         const tahunSekarang = new Date().getFullYear();
-        const containerTahun = document.getElementById('menu-tahun-glass');
-        const containerMatriksTahun = document.getElementById('menu-matriks-tahun-glass');
-        
-        containerTahun.innerHTML = '<div class="custom-option" onclick="pilihCustomTahun(\'SEMUA\', \'-- Semua Tahun --\')">-- Semua Tahun --</div>';
-        containerMatriksTahun.innerHTML = ''; 
-
+        let opsiTahun = [{ label: '-- Semua Tahun --', val: 'SEMUA' }];
         for (let t = tahunSekarang - 2; t <= tahunSekarang + 3; t++) {
-            let itemTahun = document.createElement('div');
-            itemTahun.className = 'custom-option';
-            itemTahun.innerText = t;
-            itemTahun.onclick = function() { pilihCustomTahun(String(t), String(t)); };
-            containerTahun.appendChild(itemTahun);
-
-            let itemMatriksTahun = document.createElement('div');
-            itemMatriksTahun.className = 'custom-option';
-            itemMatriksTahun.innerText = t;
-            itemMatriksTahun.onclick = function() { pilihCustomMatriksTahun(String(t)); };
-            containerMatriksTahun.appendChild(itemMatriksTahun);
+            opsiTahun.push({ label: String(t), val: String(t) });
         }
 
-        document.getElementById('filter-tahunan-tahun').value = tahunSekarang;
-        document.getElementById('label-matriks-tahun-terpilih').innerText = tahunSekarang;
+        bukaGlassModalTengah('Filter Tahun', opsiTahun.map(t => ({
+            label: t.label,
+            action: () => {
+                document.getElementById('filter-rekap-tahun').value = t.val;
+                document.getElementById('label-tahun-terpilih').innerText = t.label;
+            }
+        })));
     }
-    inisialisasiOpsiPilihanTahun();
+
+    function bukaModalPrint() {
+        bukaGlassModalTengah('Opsi Cetak Laporan', [
+            { label: 'Print Semua', action: () => eksekusiPrintKhusus('semua') },
+            { label: 'Print Desa', action: () => eksekusiPrintKhusus('desa') },
+            { label: 'Print Kelompok', action: () => eksekusiPrintKhusus('kelompok') },
+            { label: 'Print Hasil Set Tahun', action: () => eksekusiPrintKhusus('tahunan') }
+        ]);
+    }
+
+    function bukaModalTahunan() {
+        bukaGlassModalTengah('Rekap Tahunan Kategori', [
+            { label: 'GENERUS', action: () => { document.getElementById('tahunan-dropdown').value = 'GENERUS'; tarikRekapTahunanMatriks('GENERUS'); } },
+            { label: 'PENGURUS', action: () => { document.getElementById('tahunan-dropdown').value = 'PENGURUS'; tarikRekapTahunanMatriks('PENGURUS'); } },
+            { label: 'MT', action: () => { document.getElementById('tahunan-dropdown').value = 'MT'; tarikRekapTahunanMatriks('MT'); } }
+        ]);
+    }
+
+    function bukaModalMatriksTahun() {
+        const tahunSekarang = new Date().getFullYear();
+        let opsiTahun = [];
+        for (let t = tahunSekarang - 2; t <= tahunSekarang + 3; t++) {
+            opsiTahun.push({ label: String(t), val: String(t) });
+        }
+
+        bukaGlassModalTengah('Set Tahun Matriks', opsiTahun.map(t => ({
+            label: t.label,
+            action: () => {
+                document.getElementById('filter-tahunan-tahun').value = t.val;
+                document.getElementById('label-matriks-tahun-terpilih').innerText = t.val;
+                pemicuUlangTahunanMatriks();
+            }
+        })));
+    }
 
     function bukaKunciAudioKonstruktor() {
         if (!globalAudioCtx) { globalAudioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
@@ -1905,8 +1898,8 @@
     function tutupSemuaDropdownAman() {
         let menus = document.querySelectorAll('.filter-dropdown-menu');
         menus.forEach(m => m.style.display = 'none');
-        document.querySelectorAll('.custom-select-menu').forEach(m => m.style.display = 'none');
         globalOverlay.style.display = 'none';
+        tutupGlassModalTengah();
     }
 
     function eksekusiPrintKhusus(pilihan) {
