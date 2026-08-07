@@ -387,7 +387,6 @@
             opacity: 1; visibility: visible;
         }
 
-        /* PERBAIKAN SCROLLBAR DI MODAL REKAP */
         .glass-modal-card {
             width: 100%; max-width: 460px;
             background: var(--bg-table-sticky);
@@ -468,7 +467,6 @@
             z-index: 2;
         }
 
-        /* KOP SURAT MULTI-FUNGSI */
         .doc-word-header {
             display: flex;
             flex-direction: column;
@@ -700,28 +698,22 @@
             transition: var(--smooth-transition);
         }
 
-        /* ==================================================== */
-        /* PERBAIKAN PRINT ISOLATION & FULL PAGE PRINTING        */
-        /* ==================================================== */
         @media print {
             @page {
                 size: A4 portrait;
                 margin: 10mm;
             }
 
-            /* 1. Reset background & scroll pada Body */
             body {
                 background: #ffffff !important;
                 color: #000000 !important;
                 overflow: visible !important;
             }
 
-            /* 2. Sembunyikan seluruh elemen visual di layar */
             body * {
                 visibility: hidden !important;
             }
 
-            /* 3. Netralkan pembatas Modal (agar tidak terpotong / overflow) */
             .glass-modal-overlay, 
             .glass-modal-card {
                 position: static !important;
@@ -739,7 +731,6 @@
                 backdrop-filter: none !important;
             }
 
-            /* 4. Tampilkan Khusus Area Print secara Penuh */
             #print-area, #print-area * {
                 visibility: visible !important;
             }
@@ -757,12 +748,10 @@
                 font-family: Arial, Helvetica, sans-serif !important;
             }
 
-            /* 5. Sembunyikan Tombol Cetak saat Kertas Keluar */
             .btn-print-rekapan {
                 display: none !important;
             }
 
-            /* 6. Kop Surat */
             .doc-word-header {
                 display: flex !important;
                 flex-direction: column !important;
@@ -813,7 +802,6 @@
                 color: #333333 !important;
             }
 
-            /* 7. Kontainer Tabel & Kelompok (Hilangkan Scrollbar) */
             #print-table-container, 
             .kelompok-table-wrapper { 
                 border: none !important; 
@@ -997,7 +985,6 @@
             <p style="text-align: center; margin: 0 0 12px 0; font-size: 11px; color: var(--text-muted); font-weight: 700;" id="cetak-waktu">-</p>
             <div id="resume-kehadiran-container"></div>
 
-            <!-- TOMBOL PRINT DIPOSISIKAN TEPAT DI ATAS TABEL HASIL REKAPAN -->
             <button class="btn-print-rekapan btn-3d" onclick="window.print()">
                 <svg viewBox="0 0 24 24" style="width:16px; height:16px; fill:none; stroke:currentColor; stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round;"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
                 Cetak Hasil Rekapan Ini
@@ -1199,6 +1186,36 @@
     resizeCanvas();
     drawHyperAnimation();
 
+    /* ==================================================== */
+    /* INTEGRASI SISTEM NAVIGASI & TOMBOL BACK HP (ANDROID/IOS)*/
+    /* ==================================================== */
+    window.addEventListener('DOMContentLoaded', () => {
+        history.replaceState({ page: 'home' }, '', '#home');
+    });
+
+    window.addEventListener('popstate', (e) => {
+        // 1. Tutup Filter Dropdown / Overlay Jika Aktif
+        const globalOverlay = document.getElementById('global-filter-overlay');
+        if (globalOverlay && globalOverlay.style.display === 'flex') {
+            tutupSemuaDropdownAman(false);
+            return;
+        }
+
+        // 2. Tutup Modal Center Pilihan
+        const centerModal = document.getElementById('global-center-modal');
+        if (centerModal && centerModal.classList.contains('active')) {
+            tutupGlassModalTengah(false);
+            return;
+        }
+
+        // 3. Tutup Modal Fitur Rekap
+        const rekapModal = document.getElementById('modal-fitur-rekap');
+        if (rekapModal && rekapModal.classList.contains('active')) {
+            tutupModalRekap(false);
+            return;
+        }
+    });
+
     // ==================================================== //
     // LOGIKA APLIKASI UTUH                                 //
     // ==================================================== //
@@ -1260,7 +1277,7 @@
             div.innerText = item.label;
             div.onclick = function() {
                 item.action();
-                tutupGlassModalTengah();
+                tutupGlassModalTengah(false);
             };
             containerEl.appendChild(div);
         });
@@ -1268,16 +1285,31 @@
         modal.classList.add('active');
     }
 
-    function tutupGlassModalTengah() {
-        document.getElementById('global-center-modal').classList.remove('active');
+    function tutupGlassModalTengah(backHistory = false) {
+        const modal = document.getElementById('global-center-modal');
+        if (modal && modal.classList.contains('active')) {
+            modal.classList.remove('active');
+            if (backHistory && history.state && history.state.modal === 'global-center-modal') {
+                history.back();
+            }
+        }
     }
 
-    function bukaModalRekap() {
+    function bukaModalRekap(pushHistory = true) {
+        if (pushHistory) {
+            history.pushState({ modal: 'modal-fitur-rekap' }, '', '#rekap');
+        }
         document.getElementById('modal-fitur-rekap').classList.add('active');
     }
 
-    function tutupModalRekap() {
-        document.getElementById('modal-fitur-rekap').classList.remove('active');
+    function tutupModalRekap(backHistory = false) {
+        const modal = document.getElementById('modal-fitur-rekap');
+        if (modal && modal.classList.contains('active')) {
+            modal.classList.remove('active');
+            if (backHistory && history.state && history.state.modal === 'modal-fitur-rekap') {
+                history.back();
+            }
+        }
     }
 
     async function bukaModalPilihKegiatanTersimpan() {
@@ -1675,7 +1707,6 @@
             let html = ""; 
             for(let k in rekapKlp) {
                 let hK = rekapKlp[k].filter(d => d.metode !== 'Izin').length; let iK = rekapKlp[k].filter(d => d.metode === 'Izin').length;
-                // UBAH 'KLP:' MENJADI 'KELOMPOK:' PADA BARIS DI BAWAH INI:
                 html += `<div class="print-box-wilayah"><h4><span>KELOMPOK: ${k}</span><span style="font-size:11px;">H: ${hK} | I: ${iK}</span></h4><div class="kelompok-table-wrapper"><table class="print-table"><thead><tr><th>No</th><th>Nama</th><th>L/P</th><th>Status</th><th>Waktu</th></tr></thead><tbody>`;
                 rekapKlp[k].forEach((a, i) => { 
                     let st = a.metode === 'Izin' ? '<span style="color:var(--accent);">IZIN</span>' : '<span style="color:var(--primary);">HADIR</span>';
@@ -1694,7 +1725,6 @@
         
         let filterSvg = `<svg viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>`;
 
-        // UBAH 'Klp' MENJADI 'Kelompok' PADA HEADER TABEL DI BAWAH INI:
         let html = `<table class="print-table"><thead><tr><th>No</th><th>Nama</th><th><div class="th-filter-container">L/P<button class="filter-icon-btn" onclick="toggleDropdownSemua(event, 'jk')">${filterSvg}</button></div></th><th><div class="th-filter-container">Kelompok<button class="filter-icon-btn" onclick="toggleDropdownSemua(event, 'kelompok')">${filterSvg}</button></div></th><th><div class="th-filter-container">Desa<button class="filter-icon-btn" onclick="toggleDropdownSemua(event, 'desa')">${filterSvg}</button></div></th><th><div class="th-filter-container">Status<button class="filter-icon-btn" onclick="toggleDropdownSemua(event, 'status')">${filterSvg}</button></div></th><th>Absen</th></tr></thead><tbody>`;
         if(dataTerfilter.length === 0) html += `<tr><td colspan="7">Tidak ada data.</td></tr>`;
         else { dataTerfilter.forEach((d, i) => { 
@@ -1710,7 +1740,7 @@
         event.stopPropagation();
         let menu = document.getElementById(`dropdown-semua-${kolom}`);
         let terbukanNow = (menu.style.display === 'block');
-        tutupSemuaDropdownAman();
+        tutupSemuaDropdownAman(false);
         if(!terbukanNow) {
             menu.style.display = 'block'; globalOverlay.style.display = 'flex';
             let listDataUnik = [...new Set(dataAktifRekap.map(d => d[kolom]))].sort();
@@ -1728,11 +1758,11 @@
         let items = document.querySelectorAll(`#list-semua-${kolom} .filter-option-item`);
         items.forEach(item => { item.style.display = item.textContent.toLowerCase().includes(val.toLowerCase()) ? 'flex' : 'none'; });
     }
-    function bersihkanFilterSemua(kolom) { delete filterSemuaTerpilih[kolom]; tutupSemuaDropdownAman(); renderTabelRekapSemuaSistem(); }
+    function bersihkanFilterSemua(kolom) { delete filterSemuaTerpilih[kolom]; tutupSemuaDropdownAman(false); renderTabelRekapSemuaSistem(); }
     function terapkanFilterSemua(kolom) {
         let terpilih = []; document.querySelectorAll(`#list-semua-${kolom} input:checked`).forEach(cb => terpilih.push(cb.value));
         if(terpilih.length > 0) filterSemuaTerpilih[kolom] = terpilih; else delete filterSemuaTerpilih[kolom];
-        tutupSemuaDropdownAman(); renderTabelRekapSemuaSistem();
+        tutupSemuaDropdownAman(false); renderTabelRekapSemuaSistem();
     }
 
     async function tarikRekapTahunanMatriks(statusPilihan) {
@@ -1771,7 +1801,6 @@
             headerDinamis = `<th><div class="th-filter-container">Dapukan<button class="filter-icon-btn" onclick="toggleDropdownDapukanPengurus(event)">${filterSvg}</button></div></th>`;
         } else {
             if (filterTerpilih['kelompok']) dataOrangTerfilter = dataOrangTerfilter.filter(o => filterTerpilih['kelompok'].includes((o.kelompok || "-").toUpperCase()));
-            // UBAH 'Klp' MENJADI 'Kelompok' PADA HEADER DINAMIS DI BAWAH INI:
             headerDinamis = `<th><div class="th-filter-container">Kelompok<button class="filter-icon-btn" onclick="toggleDropdownKelompok(event)">${filterSvg}</button></div></th>`;
         }
         let html = `<table class="print-table"><thead><tr><th>No</th><th>Nama</th>${headerDinamis}<th>Jan</th><th>Feb</th><th>Mar</th><th>Apr</th><th>Mei</th><th>Jun</th><th>Jul</th><th>Agu</th><th>Sep</th><th>Okt</th><th>Nov</th><th>Des</th><th>Hadir</th><th>Izin</th></tr></thead><tbody>`;
@@ -1794,7 +1823,7 @@
     }
 
     function toggleDropdownDapukanPengurus(event) {
-        event.stopPropagation(); let menu = document.getElementById('dropdown-filter-dapukan'); tutupSemuaDropdownAman();
+        event.stopPropagation(); let menu = document.getElementById('dropdown-filter-dapukan'); tutupSemuaDropdownAman(false);
         if(menu.style.display !== 'block') {
             menu.style.display = 'block'; globalOverlay.style.display = 'flex';
             let containerOpsi = document.getElementById('list-opsi-dapukan'); containerOpsi.innerHTML = '';
@@ -1806,12 +1835,12 @@
     }
     function terapkanFilterDapukanPengurus() {
         let terpilih = []; document.querySelectorAll('#list-opsi-dapukan input:checked').forEach(cb => terpilih.push(cb.value));
-        subDapukanPengurusTerpilih = terpilih; tutupSemuaDropdownAman(); renderTabelMatriksTahunanSistem();
+        subDapukanPengurusTerpilih = terpilih; tutupSemuaDropdownAman(false); renderTabelMatriksTahunanSistem();
     }
-    function bersihkanFilterDapukanPengurus() { subDapukanPengurusTerpilih = []; tutupSemuaDropdownAman(); renderTabelMatriksTahunanSistem(); }
+    function bersihkanFilterDapukanPengurus() { subDapukanPengurusTerpilih = []; tutupSemuaDropdownAman(false); renderTabelMatriksTahunanSistem(); }
 
     function toggleDropdownKelompok(event) {
-        event.stopPropagation(); let menu = document.getElementById('dropdown-filter-kelompok'); tutupSemuaDropdownAman();
+        event.stopPropagation(); let menu = document.getElementById('dropdown-filter-kelompok'); tutupSemuaDropdownAman(false);
         if(menu.style.display !== 'block') {
             menu.style.display = 'block'; globalOverlay.style.display = 'flex';
             let listKlp = [...new Set(dataMasterTahunanOrang.map(o => (o.kelompok || "-").toUpperCase()))].sort();
@@ -1823,14 +1852,21 @@
         }
     }
     function cariOpsiKelompok(val) { document.querySelectorAll('#list-opsi-kelompok .filter-option-item').forEach(item => item.style.display = item.textContent.toLowerCase().includes(val.toLowerCase()) ? 'flex' : 'none'); }
-    function bersihkanFilterKelompok() { delete filterTerpilih['kelompok']; tutupSemuaDropdownAman(); renderTabelMatriksTahunanSistem(); }
+    function bersihkanFilterKelompok() { delete filterTerpilih['kelompok']; tutupSemuaDropdownAman(false); renderTabelMatriksTahunanSistem(); }
     function terapkanFilterKelompok() {
         let terpilih = []; document.querySelectorAll('#list-opsi-kelompok input:checked').forEach(cb => terpilih.push(cb.value));
         if(terpilih.length > 0) filterTerpilih['kelompok'] = terpilih; else delete filterTerpilih['kelompok'];
-        tutupSemuaDropdownAman(); renderTabelMatriksTahunanSistem();
+        tutupSemuaDropdownAman(false); renderTabelMatriksTahunanSistem();
     }
 
-    function tutupSemuaDropdownAman() { document.querySelectorAll('.filter-dropdown-menu').forEach(m => m.style.display = 'none'); globalOverlay.style.display = 'none'; tutupGlassModalTengah(); }
+    function tutupSemuaDropdownAman(backHistory = false) { 
+        document.querySelectorAll('.filter-dropdown-menu').forEach(m => {
+            m.style.display = 'none';
+        });
+        globalOverlay.style.display = 'none'; 
+        tutupGlassModalTengah(backHistory);
+    }
+    
     async function eksporKeExcel() {
         let namaKegiatan = document.getElementById('kegiatan').value.toUpperCase(); if(!namaKegiatan) return tampilkanNotifKustom('error', 'Gagal', 'Isi nama agenda!');
         let dataMurni = await dapatkanDataGabungan(namaKegiatan);
