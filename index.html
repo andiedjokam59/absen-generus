@@ -917,17 +917,17 @@
             <div class="waktu-filter-row">
                 <div class="waktu-custom-select">
                     <div class="waktu-select-trigger" onclick="bukaModalBulan()" id="label-bulan-terpilih">
-                        -- Semua Bulan --
+                        --
                     </div>
                 </div>
-                <input type="hidden" id="filter-rekap-bulan" value="SEMUA">
+                <input type="hidden" id="filter-rekap-bulan" value="">
 
                 <div class="waktu-custom-select">
                     <div class="waktu-select-trigger" onclick="bukaModalTahun()" id="label-tahun-terpilih">
-                        -- Semua Tahun --
+                        --
                     </div>
                 </div>
-                <input type="hidden" id="filter-rekap-tahun" value="SEMUA">
+                <input type="hidden" id="filter-rekap-tahun" value="">
             </div>
 
             <button class="btn-icon btn-3d" onclick="tarikDanCetakLaporan('semua');" title="Preview Semua">
@@ -961,13 +961,13 @@
             <input type="hidden" id="tahunan-dropdown" value="">
             
             <div style="grid-column: span 5; display:flex; align-items:center; gap:6px; margin-top:4px;">
-                <label style="margin:0; font-size:10px; color:var(--text-muted); white-space:nowrap;">SET TAHUN MATRIKS:</label>
+                <label style="margin:0; font-size:10px; color:var(--text-muted); white-space:nowrap;">SET TAHUN REKAP:</label>
                 <div class="waktu-custom-select" style="flex:1;">
                     <div class="waktu-select-trigger" onclick="bukaModalMatriksTahun()" id="label-matriks-tahun-terpilih">
-                        2026
+                        --
                     </div>
                 </div>
-                <input type="hidden" id="filter-tahunan-tahun" value="2026">
+                <input type="hidden" id="filter-tahunan-tahun" value="">
             </div>
         </div>
 
@@ -1115,6 +1115,11 @@
     let hyperParticles = [];
     let pulseTime = 0;
 
+    const MAMA_BULAN = [
+        "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+        "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+    ];
+
     function resizeCanvas() {
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
@@ -1191,6 +1196,7 @@
     /* ==================================================== */
     window.addEventListener('DOMContentLoaded', () => {
         history.replaceState({ page: 'home' }, '', '#home');
+        inisialisasiWaktuOtomatis();
     });
 
     window.addEventListener('popstate', (e) => {
@@ -1262,6 +1268,27 @@
     let globalAudioCtx = null;
     let toastTimeout = null;
     let subDapukanPengurusTerpilih = []; 
+
+    function inisialisasiWaktuOtomatis() {
+        const sekarang = new Date();
+        const bulanSekarang = sekarang.getMonth(); 
+        const tahunSekarang = sekarang.getFullYear();
+
+        const elLabelBulan = document.getElementById('label-bulan-terpilih');
+        const elInputBulan = document.getElementById('filter-rekap-bulan');
+        if (elLabelBulan) elLabelBulan.innerText = MAMA_BULAN[bulanSekarang];
+        if (elInputBulan) elInputBulan.value = String(bulanSekarang);
+
+        const elLabelTahun = document.getElementById('label-tahun-terpilih');
+        const elInputTahun = document.getElementById('filter-rekap-tahun');
+        if (elLabelTahun) elLabelTahun.innerText = String(tahunSekarang);
+        if (elInputTahun) elInputTahun.value = String(tahunSekarang);
+
+        const elLabelMatriks = document.getElementById('label-matriks-tahun-terpilih');
+        const elInputMatriks = document.getElementById('filter-tahunan-tahun');
+        if (elLabelMatriks) elLabelMatriks.innerText = String(tahunSekarang);
+        if (elInputMatriks) elInputMatriks.value = String(tahunSekarang);
+    }
 
     function bukaGlassModalTengah(judul, daftarOpsi) {
         const modal = document.getElementById('global-center-modal');
@@ -1358,15 +1385,11 @@
     }
 
     function bukaModalBulan() {
-        const daftarBulan = [
-            { label: '-- Semua Bulan --', val: 'SEMUA' },
-            { label: 'Januari', val: '0' }, { label: 'Februari', val: '1' },
-            { label: 'Maret', val: '2' }, { label: 'April', val: '3' },
-            { label: 'Mei', val: '4' }, { label: 'Juni', val: '5' },
-            { label: 'Juli', val: '6' }, { label: 'Agustus', val: '7' },
-            { label: 'September', val: '8' }, { label: 'Oktober', val: '9' },
-            { label: 'November', val: '10' }, { label: 'Desember', val: '11' }
-        ];
+        const daftarBulan = [{ label: '-- Semua Bulan --', val: 'SEMUA' }];
+        MAMA_BULAN.forEach((nama, idx) => {
+            daftarBulan.push({ label: nama, val: String(idx) });
+        });
+        
         bukaGlassModalTengah('Filter Bulan', daftarBulan.map(b => ({
             label: b.label,
             action: () => {
@@ -1405,11 +1428,11 @@
         for (let t = tahunSekarang - 2; t <= tahunSekarang + 3; t++) {
             opsiTahun.push({ label: String(t), val: String(t) });
         }
-        bukaGlassModalTengah('Set Tahun Matriks', opsiTahun.map(t => ({
+        bukaGlassModalTengah('Set Tahun Rekap', opsiTahun.map(t => ({
             label: t.label,
             action: () => {
                 document.getElementById('filter-tahunan-tahun').value = t.val;
-                document.getElementById('label-matriks-tahun-terpilih').innerText = t.val;
+                document.getElementById('label-matriks-tahun-terpilih').innerText = t.label;
                 pemicuUlangTahunanMatriks();
             }
         })));
@@ -1782,7 +1805,7 @@
         if (statusPilihan === "JAMA'AH UMUM") { dataMasterTahunanOrang = semuaDataGenerus.filter(g => g.status && ["GENERUS", "PENGURUS", "MT/MS", "JAMA'AH UMUM"].includes(g.status.toUpperCase()) && g.kelompok_aktif !== false); } 
         else { dataMasterTahunanOrang = semuaDataGenerus.filter(g => g.status && g.status.toUpperCase().includes(statusPilihan.toUpperCase())); }
         filterTerpilih = {}; subDapukanPengurusTerpilih = []; 
-        document.getElementById('cetak-judul-kegiatan').innerText = `MATRIKS: ${namaKegiatan}`;
+        document.getElementById('cetak-judul-kegiatan').innerText = `REKAP TAHUNAN: ${namaKegiatan}`;
         document.getElementById('cetak-waktu').innerText = `Kategori: ${statusPilihan} | Tahun: ${tahunPilihan}`;
         document.getElementById('resume-kehadiran-container').innerHTML = ""; renderTabelMatriksTahunanSistem();
     }
