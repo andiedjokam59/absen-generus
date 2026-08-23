@@ -1667,7 +1667,7 @@
                 jk: detail ? (detail.jenis_kelamin || "-").toUpperCase() : "-", 
                 status: detail ? (detail.status || "-").toUpperCase() : "-",
                 metode: absen.metode_input,
-                waktu: tanggalObj.toLocaleTimeString('id-ID'),
+                waktu: tanggalObj.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
                 tanggalLengkap: tanggalObj.toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'})
             }
         });
@@ -1715,14 +1715,21 @@
         if(jenis === 'semua') { filterSemuaTerpilih = {}; renderTabelRekapSemuaSistem(); } 
         else if(jenis === 'desa') {
             let rekapDesa = {};
-            dataAktifRekap.forEach(d => { if(!rekapDesa[d.desa]) rekapDesa[d.desa] = { hadir: 0, izin: 0 }; if(d.metode === 'Izin') rekapDesa[d.desa].izin++; else rekapDesa[d.desa].hadir++; });
-            let html = `<table class="print-table"><thead><tr><th>No</th><th>Desa</th><th>Hadir</th><th>Izin</th><th>Total</th></tr></thead><tbody>`;
-            let n=1; let totH={h:0, i:0};
+            dataAktifRekap.forEach(d => {
+                if(!rekapDesa[d.desa]) rekapDesa[d.desa] = { hadir: 0, izin: 0, laki: 0, perempuan: 0 };
+                if(d.metode === 'Izin') rekapDesa[d.desa].izin++; else rekapDesa[d.desa].hadir++;
+                if(d.jk.includes('P')) rekapDesa[d.desa].perempuan++;
+                else if(d.jk !== '-') rekapDesa[d.desa].laki++;
+            });
+            let html = `<table class="print-table"><thead><tr><th>No</th><th>Desa</th><th>L</th><th>P</th><th>Hadir</th><th>Izin</th><th>Total</th></tr></thead><tbody>`;
+            let n=1; let totH={h:0, i:0, l:0, p:0};
             for(let d in rekapDesa) { 
-                let t = rekapDesa[d].hadir + rekapDesa[d].izin; totH.h+=rekapDesa[d].hadir; totH.i+=rekapDesa[d].izin;
-                html += `<tr><td>${n++}</td><td style="font-weight:800;">DESA ${d}</td><td style="color:var(--primary);">${rekapDesa[d].hadir}</td><td style="color:var(--accent);">${rekapDesa[d].izin}</td><td>${t}</td></tr>`; 
+                let t = rekapDesa[d].hadir + rekapDesa[d].izin; 
+                totH.h += rekapDesa[d].hadir; totH.i += rekapDesa[d].izin;
+                totH.l += rekapDesa[d].laki; totH.p += rekapDesa[d].perempuan;
+                html += `<tr><td>${n++}</td><td style="font-weight:800;">${d}</td><td>${rekapDesa[d].laki}</td><td>${rekapDesa[d].perempuan}</td><td style="color:var(--primary);">${rekapDesa[d].hadir}</td><td style="color:var(--accent);">${rekapDesa[d].izin}</td><td>${t}</td></tr>`; 
             }
-            html += `</tbody><tfoot><tr><td colspan="2">TOTAL:</td><td>${totH.h}</td><td>${totH.i}</td><td>${totH.h + totH.i}</td></tr></tfoot></table>`; 
+            html += `</tbody><tfoot><tr><td colspan="2">TOTAL:</td><td>${totH.l}</td><td>${totH.p}</td><td>${totH.h}</td><td>${totH.i}</td><td>${totH.h + totH.i}</td></tr></tfoot></table>`; 
             container.innerHTML = html; areaCetak.style.display = "block";
         }
         else if(jenis === 'kelompok') {
@@ -1733,7 +1740,7 @@
                 html += `<div class="print-box-wilayah"><h4><span>KELOMPOK: ${k}</span><span style="font-size:11px;">H: ${hK} | I: ${iK}</span></h4><div class="kelompok-table-wrapper"><table class="print-table"><thead><tr><th>No</th><th>Nama</th><th>L/P</th><th>Status</th><th>Waktu</th></tr></thead><tbody>`;
                 rekapKlp[k].forEach((a, i) => { 
                     let st = a.metode === 'Izin' ? '<span style="color:var(--accent);">IZIN</span>' : '<span style="color:var(--primary);">HADIR</span>';
-                    html += `<tr><td>${i+1}</td><td style="font-weight:800;">${a.name}</td><td>${a.jk.includes('P')?'P':'L'}</td><td>${st}</td><td>${a.tanggalLengkap} - ${a.waktu}</td></tr>`; 
+                    html += `<tr><td>${i+1}</td><td style="font-weight:800;">${a.name}</td><td>${a.jk.includes('P')?'P':'L'}</td><td>${st}</td><td>${a.waktu}</td></tr>`; 
                 });
                 html += `</tbody></table></div></div>`;
             }
@@ -1752,7 +1759,7 @@
         if(dataTerfilter.length === 0) html += `<tr><td colspan="7">Tidak ada data.</td></tr>`;
         else { dataTerfilter.forEach((d, i) => { 
                 let label = d.metode === 'Izin' ? '<span style="color:var(--accent);">IZIN</span>' : '<span style="color:var(--primary);">HADIR</span>';
-                html += `<tr><td>${i+1}</td><td style="font-weight:800;">${d.name}</td><td>${d.jk.includes('P')?'P':'L'}</td><td>${d.kelompok}</td><td>${d.desa}</td><td>${d.status}</td><td>${label} (${d.tanggalLengkap})</td></tr>`; 
+                html += `<tr><td>${i+1}</td><td style="font-weight:800;">${d.name}</td><td>${d.jk.includes('P')?'P':'L'}</td><td>${d.kelompok}</td><td>${d.desa}</td><td>${d.status}</td><td>${label} (${d.waktu})</td></tr>`; 
             });
         }
         html += `</tbody><tfoot><tr><td colspan="6" style="text-align:left; padding-left:10px;">TOTAL:</td><td>${dataTerfilter.length}</td></tr></tfoot></table>`;
