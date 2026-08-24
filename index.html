@@ -901,27 +901,28 @@
     </div>
 </div>
 
-<!-- Modal Konfirmasi Hapus -->
-<div id="modal-konfirmasi-hapus" class="modal">
-  <div class="modal-content text-center">
-    <h3>⚠️ KONFIRMASI PENGHAPUSAN DATA</h3>
-    <p>Data generus berikut sudah tidak pernah absen lebih dari 1 tahun:</p>
+<!-- MODAL KONFIRMASI HAPUS INAKTIF -->
+<div id="modal-konfirmasi-hapus" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span class="warning-icon" style="font-size: 24px;">⚠️</span>
+      <h3>KONFIRMASI PENGHAPUSAN DATA</h3>
+    </div>
     
-    <div class="card-detail-hapus" style="background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; margin: 15px 0;">
-      <!-- Nama Generus -->
-      <h4 id="konfirmasi-nama-generus" style="color: #047857; margin: 0; font-size: 18px;">-</h4>
-      
-      <!-- Tambahkan Baris Kelompok Ini -->
-      <p id="konfirmasi-kelompok-generus" style="color: #475569; margin: 4px 0 0 0; font-weight: 600; font-size: 14px;">Kelompok: -</p>
-      
-      <!-- Absen Terakhir -->
-      <p id="konfirmasi-absen-terakhir" style="color: #64748b; margin: 4px 0 0 0; font-size: 13px;">Absen Terakhir: -</p>
+    <p class="modal-subtitle">Data generus berikut sudah tidak pernah absen lebih dari 1 tahun:</p>
+    
+    <div class="card-detail-generus">
+      <h4 id="konfirmasi-nama-generus">-</h4>
+      <p id="konfirmasi-kelompok-generus">Kelompok: -</p>
+      <p id="konfirmasi-absen-terakhir">Absen Terakhir: -</p>
     </div>
 
-    <p style="color: #ef4444; font-size: 13px; font-weight: 600;">Apakah Anda yakin ingin menghapus data ini secara permanen?</p>
+    <p class="modal-alert-text">Apakah Anda yakin ingin menghapus data ini secara permanen?</p>
 
-    <button id="btn-eksekusi-hapus" class="btn-danger">Ya, Hapus Data Ini</button>
-    <button onclick="tutupModalHapus()" class="btn-secondary">BATAL</button>
+    <div class="modal-action-btns">
+      <button id="btn-eksekusi-hapus" class="btn-hapus-danger">Ya, Hapus Data Ini</button>
+      <button onclick="tutupModalHapus()" class="btn-batal-secondary">BATAL</button>
+    </div>
   </div>
 </div>
 
@@ -1297,13 +1298,15 @@
     /* ==================================================== */
     /* LOGIKA KONFIRMASI HAPUS EMAIL GENERUS                */
     /* ==================================================== */
-    async function cekTokenKonfirmasiEmail() {
+    // 1. Fungsi Cek Token URL & Membuka Modal
+	async function cekTokenKonfirmasiEmail() {
 		const urlParams = new URLSearchParams(window.location.search);
 		const token = urlParams.get('token');
 
 		if (!token) return;
 
 		try {
+			// Cari data generus langsung di tabel utama
 			let { data, error } = await _supabase
 				.from('data_generus')
 				.select('id_generus, nama_lengkap, kelompok, deletion_token')
@@ -1312,10 +1315,15 @@
 				.single();
 
 			if (error || !data) {
-				tampilkanNotifKustom('error', 'Token Tidak Valid', 'Link konfirmasi tidak ditemukan atau data sudah dihapus.');
+				if (typeof tampilkanNotifKustom === 'function') {
+					tampilkanNotifKustom('error', 'Token Tidak Valid', 'Link konfirmasi tidak ditemukan atau data sudah dihapus.');
+				} else {
+					alert('Link konfirmasi tidak ditemukan atau data sudah dihapus.');
+				}
 				return;
 			}
 
+			// Cari riwayat absen terakhir
 			let { data: dataAbsen } = await _supabase
 				.from('absensi_kegiatan')
 				.select('waktu_absen')
@@ -1324,14 +1332,9 @@
 				.limit(1)
 				.maybeSingle();
 
-			// Isikan Data ke Elemen Modal
+			// Salin data ke elemen modal HTML
 			document.getElementById('konfirmasi-nama-generus').innerText = data.nama_lengkap || 'Generus Terkait';
-			
-			// Mengisi nama Kelompok
-			const elKelompok = document.getElementById('konfirmasi-kelompok-generus');
-			if (elKelompok) {
-				elKelompok.innerText = `Kelompok: ${(data.kelompok || '-').toUpperCase()}`;
-			}
+			document.getElementById('konfirmasi-kelompok-generus').innerText = `Kelompok: ${(data.kelompok || '-').toUpperCase()}`;
 			
 			const tglAbsen = (dataAbsen && dataAbsen.waktu_absen) 
 				? new Date(dataAbsen.waktu_absen).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) 
@@ -1339,14 +1342,15 @@
 				
 			document.getElementById('konfirmasi-absen-terakhir').innerText = `Absen Terakhir: ${tglAbsen}`;
 
+			// Event handler tombol hapus
 			document.getElementById('btn-eksekusi-hapus').onclick = function() {
 				eksekusiHapusGenerus(data.id_generus, token);
 			};
 
+			// Buka modal
 			const modal = document.getElementById('modal-konfirmasi-hapus');
 			if (modal) {
 				modal.classList.add('active');
-				modal.style.display = 'flex';
 			}
 
 		} catch (e) {
@@ -1354,39 +1358,51 @@
 		}
 	}
 
-	// WAJIB: Panggil fungsi ini otomatis saat halaman selesai dimuat
+	// 2. Fungsi Eksekusi Hapus Data
+	async function eksekusiHapusGenerus(idGenerus, token) {
+		const btn = document.getElementById('btn-eksekusi-hapus');
+		btn.disabled = true;
+		btn.innerText = "Memproses...";
+
+		try {
+			const { error } = await _supabase
+				.from('data_generus')
+				.update({ status_penghapusan: 'dihapus' })
+				.eq('id_generus', idGenerus)
+				.eq('deletion_token', token);
+
+			if (error) throw error;
+
+			tutupModalHapus();
+			
+			if (typeof tampilkanNotifKustom === 'function') {
+				tampilkanNotifKustom('success', 'Berhasil Dihapus', 'Data generus telah dinonaktifkan.');
+			} else {
+				alert('Data generus berhasil dihapus.');
+			}
+
+			// Bersihkan parameter token di URL
+			window.history.replaceState({}, document.title, window.location.pathname);
+
+		} catch (err) {
+			alert('Gagal menghapus data: ' + err.message);
+			btn.disabled = false;
+			btn.innerText = "Ya, Hapus Data Ini";
+		}
+	}
+
+	// 3. Fungsi Tutup Modal
+	function tutupModalHapus() {
+		const modal = document.getElementById('modal-konfirmasi-hapus');
+		if (modal) {
+			modal.classList.remove('active');
+		}
+	}
+
+	// Jalankan otomatis saat web selesai dimuat
 	document.addEventListener('DOMContentLoaded', () => {
 		cekTokenKonfirmasiEmail();
 	});
-
-    async function eksekusiHapusGenerus(idGenerus, token) {
-        try {
-            let { error } = await _supabase
-                .from('data_generus')
-                .delete()
-                .eq('id_generus', idGenerus)
-                .eq('deletion_token', token);
-
-            if (!error) {
-                tutupModalKonfirmasiHapus();
-                bunyikanSuaraSukses();
-                tampilkanNotifKustom('success', 'Berhasil', 'Data generus telah berhasil dihapus.');
-                // Bersihkan URL dari query parameter token
-                window.history.replaceState({}, document.title, window.location.pathname);
-                muatSemuaGenerus();
-            } else {
-                bunyikanSuaraGagal();
-                tampilkanNotifKustom('error', 'Gagal Hapus', error.message);
-            }
-        } catch (e) {
-            bunyikanSuaraGagal();
-            tampilkanNotifKustom('error', 'Gagal Hapus', 'Terjadi gangguan jaringan.');
-        }
-    }
-
-    function tutupModalKonfirmasiHapus() {
-        document.getElementById('modal-konfirmasi-hapus').classList.remove('active');
-    }
 
     function inisialisasiWaktuOtomatis() {
         const sekarang = new Date();
