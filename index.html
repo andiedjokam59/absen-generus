@@ -904,17 +904,26 @@
 <!-- MODAL KONFIRMASI HAPUS EMAIL -->
 <div class="glass-modal-overlay" id="modal-konfirmasi-hapus">
     <div class="glass-modal-card" onclick="event.stopPropagation()">
-        <div class="glass-modal-title" style="color: #ef4444;">⚠️ Konfirmasi Penghapusan Data</div>
+        <div class="glass-modal-title" style="color: #ef4444;">⚠️ KONFIRMASI PENGHAPUSAN DATA</div>
         <div style="text-align: center; margin-bottom: 16px; font-size: 13px; font-weight: 700; color: var(--text-dark);">
-            <p style="margin-bottom: 8px;">Data generus berikut sudah tidak pernah absen lebih dari 1 tahun:</p>
-            <div style="background: var(--input-bg); padding: 12px; border-radius: 16px; border: 1px solid var(--border-color); margin-bottom: 12px;">
-                <span id="konfirmasi-nama-generus" style="font-size: 15px; font-weight: 800; color: var(--primary); display: block;">-</span>
-                <span id="konfirmasi-absen-terakhir" style="font-size: 11px; color: var(--text-muted); display: block; margin-top: 4px;">Absen Terakhir: -</span>
+            <p style="margin-bottom: 12px; font-weight: 800; font-size: 14px;">Data generus berikut sudah tidak pernah absen lebih dari 1 tahun:</p>
+            
+            <div style="background: var(--input-bg); padding: 16px 12px; border-radius: 20px; border: 1px solid var(--border-color); margin-bottom: 16px;">
+                <!-- NAMA GENERUS -->
+                <span id="konfirmasi-nama-generus" style="font-size: 18px; font-weight: 800; color: #047857; display: block;">-</span>
+                
+                <!-- KELOMPOK GENERUS (DITAMBAHKAN) -->
+                <span id="konfirmasi-kelompok-generus" style="font-size: 13px; font-weight: 700; color: var(--text-dark); display: block; margin-top: 4px;">Kelompok: -</span>
+                
+                <!-- ABSEN TERAKHIR -->
+                <span id="konfirmasi-absen-terakhir" style="font-size: 12px; font-weight: 600; color: #475569; display: block; margin-top: 4px;">Absen Terakhir: -</span>
             </div>
-            <p style="margin: 0; color: #ef4444; font-size: 11px;">Apakah Anda yakin ingin menghapus data ini secara permanen?</p>
+            
+            <p style="margin: 0; color: #ef4444; font-size: 12px; font-weight: 700;">Apakah Anda yakin ingin menghapus data ini secara permanen?</p>
         </div>
-        <button class="btn-primary btn-3d" id="btn-eksekusi-hapus" style="background: linear-gradient(135deg, #ef4444, #dc2626); margin-bottom: 8px;">Ya, Hapus Data Ini</button>
-        <button class="glass-modal-close-btn" onclick="tutupModalKonfirmasiHapus()">Batal</button>
+        
+        <button class="btn-primary btn-3d" id="btn-eksekusi-hapus" style="background: linear-gradient(135deg, #ef4444, #dc2626); margin-bottom: 10px; font-weight: 800;">Ya, Hapus Data Ini</button>
+        <button class="glass-modal-close-btn" onclick="tutupModalKonfirmasiHapus()">BATAL</button>
     </div>
 </div>
 
@@ -1295,10 +1304,9 @@
 		const urlParams = new URLSearchParams(window.location.search);
 		const token = urlParams.get('token');
 
-		if (!token) return; // Jika tidak ada token di URL, abaikan (buka web normal)
+		if (!token) return;
 
 		try {
-			// Cari data di View berdasarkan token dari link email
 			let { data, error } = await _supabase
 				.from('generus_inaktif_1tahun')
 				.select('*')
@@ -1314,7 +1322,6 @@
 				return;
 			}
 
-			// Isikan data ke elemen modal
 			const elNama = document.getElementById('konfirmasi-nama-generus');
 			const elKelompok = document.getElementById('konfirmasi-kelompok-generus');
 			const elAbsen = document.getElementById('konfirmasi-absen-terakhir');
@@ -1333,10 +1340,9 @@
 				};
 			}
 
-			// Tampilkan Modal
 			if (modal) {
 				modal.classList.add('active');
-				modal.style.display = 'flex'; // Memastikan modal muncul visualnya
+				modal.style.display = 'flex';
 			}
 		} catch (e) {
 			console.error('Error konfirmasi email:', e);
