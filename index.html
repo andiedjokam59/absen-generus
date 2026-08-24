@@ -1290,14 +1290,15 @@
     /* ==================================================== */
     /* LOGIKA KONFIRMASI HAPUS EMAIL GENERUS                */
     /* ==================================================== */
-    async function cekTokenKonfirmasiEmail() {
+    // Fungsi untuk mengecek token URL dan memunculkan modal konfirmasi
+	async function cekTokenKonfirmasiEmail() {
 		const urlParams = new URLSearchParams(window.location.search);
 		const token = urlParams.get('token');
 
-		if (!token) return;
+		if (!token) return; // Jika tidak ada token di URL, abaikan (buka web normal)
 
 		try {
-			// Cari data di View generus_inaktif_1tahun berdasarkan token
+			// Cari data di View berdasarkan token dari link email
 			let { data, error } = await _supabase
 				.from('generus_inaktif_1tahun')
 				.select('*')
@@ -1305,26 +1306,47 @@
 				.single();
 
 			if (error || !data) {
-				tampilkanNotifKustom('error', 'Token Tidak Valid', 'Link konfirmasi tidak ditemukan atau sudah kadaluarsa.');
+				if (typeof tampilkanNotifKustom === 'function') {
+					tampilkanNotifKustom('error', 'Token Tidak Valid', 'Link konfirmasi tidak ditemukan atau data sudah dihapus.');
+				} else {
+					alert('Link konfirmasi tidak ditemukan atau data sudah dihapus.');
+				}
 				return;
 			}
 
-			// Tampilkan modal konfirmasi dengan data nama, kelompok, dan absen terakhir
-			document.getElementById('konfirmasi-nama-generus').innerText = data.nama_lengkap || 'Generus Terkait';
-			document.getElementById('konfirmasi-kelompok-generus').innerText = `Kelompok: ${(data.kelompok || '-').toUpperCase()}`;
+			// Isikan data ke elemen modal
+			const elNama = document.getElementById('konfirmasi-nama-generus');
+			const elKelompok = document.getElementById('konfirmasi-kelompok-generus');
+			const elAbsen = document.getElementById('konfirmasi-absen-terakhir');
+			const btnHapus = document.getElementById('btn-eksekusi-hapus');
+			const modal = document.getElementById('modal-konfirmasi-hapus');
+
+			if (elNama) elNama.innerText = data.nama_lengkap || 'Generus Terkait';
+			if (elKelompok) elKelompok.innerText = `Kelompok: ${(data.kelompok || '-').toUpperCase()}`;
 			
 			const tglAbsen = data.absen_terakhir ? new Date(data.absen_terakhir).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : 'Belum Pernah';
-			document.getElementById('konfirmasi-absen-terakhir').innerText = `Absen Terakhir: ${tglAbsen}`;
+			if (elAbsen) elAbsen.innerText = `Absen Terakhir: ${tglAbsen}`;
 
-			document.getElementById('btn-eksekusi-hapus').onclick = function() {
-				eksekusiHapusGenerus(data.id_generus, token);
-			};
+			if (btnHapus) {
+				btnHapus.onclick = function() {
+					eksekusiHapusGenerus(data.id_generus, token);
+				};
+			}
 
-			document.getElementById('modal-konfirmasi-hapus').classList.add('active');
+			// Tampilkan Modal
+			if (modal) {
+				modal.classList.add('active');
+				modal.style.display = 'flex'; // Memastikan modal muncul visualnya
+			}
 		} catch (e) {
-			tampilkanNotifKustom('error', 'Gagal', 'Terjadi kesalahan sistem.');
+			console.error('Error konfirmasi email:', e);
 		}
 	}
+
+	// WAJIB: Panggil fungsi ini otomatis saat halaman selesai dimuat
+	document.addEventListener('DOMContentLoaded', () => {
+		cekTokenKonfirmasiEmail();
+	});
 
     async function eksekusiHapusGenerus(idGenerus, token) {
         try {
