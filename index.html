@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- META STATUS BAR WARNA SYSTEM OTOMATIS -->
+    <meta id="theme-color-meta" name="theme-color" content="#e6e9ee">
+    
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -289,9 +292,7 @@
             user-select: none;
             -webkit-tap-highlight-color: transparent;
             z-index: 2;
-            box-shadow: var(--neu-btn-primary);
         }
-        .btn-3d:active { box-shadow: var(--neu-pressed); transform: scale(0.97); }
 
         .theme-toggle-btn {
             background: var(--neu-card-bg); 
@@ -302,28 +303,59 @@
             transition: var(--smooth-transition);
         }
 
+        /* ==================================================== */
+        /* TOMBOL BIRU & KUNING TIMBUL (PERBAIKAN WARNA SOLID)  */
+        /* ==================================================== */
+
+        /* Tombol Biru (Konfirmasi Kehadiran / Hidupkan / Massal) */
         .btn-primary { 
-            width: 100%; padding: 15px 18px;
+            width: 100%; 
+            padding: 15px 18px;
             background: var(--blue-primary); 
-            color: #ffffff; margin-top: 10px; font-size: 13px; font-weight: 700;
-            box-shadow: 4px 6px 14px rgba(18, 30, 120, 0.3);
-        }
-        [data-theme="dark"] .btn-primary {
-            box-shadow: 4px 6px 16px rgba(59, 130, 246, 0.35);
-        }
-        .btn-primary:hover {
-            background: var(--blue-hover);
+            color: #ffffff; 
+            margin-top: 10px; 
+            font-size: 13px; 
+            font-weight: 800;
+            border: none;
+            border-radius: 20px;
+            box-shadow: 5px 5px 12px rgba(0, 0, 0, 0.18), -4px -4px 10px rgba(255, 255, 255, 0.7);
+            transition: var(--smooth-transition);
         }
 
-        .btn-warning { 
-            width: 100%; padding: 15px 18px;
-            background: var(--yellow-accent); 
-            color: #1e293b; margin-top: 10px; font-size: 13px; font-weight: 700;
-            box-shadow: 4px 6px 14px rgba(217, 155, 0, 0.3);
+        .btn-primary:hover {
+            background: var(--blue-hover);
+            box-shadow: 6px 8px 16px rgba(18, 30, 120, 0.4);
         }
-        [data-theme="dark"] .btn-warning {
-            color: #0f172a;
-            box-shadow: 4px 6px 16px rgba(245, 158, 11, 0.35);
+
+        .btn-primary:active {
+            box-shadow: inset 3px 3px 6px rgba(0, 0, 0, 0.3), inset -3px -3px 6px rgba(255, 255, 255, 0.2);
+            transform: scale(0.97);
+        }
+
+        /* Tombol Kuning (Izin / Matikan Kamera) */
+        .btn-warning { 
+            width: 100%; 
+            padding: 15px 18px;
+            background: var(--yellow-accent); 
+            color: #1e293b; 
+            margin-top: 10px; 
+            font-size: 13px; 
+            font-weight: 800;
+            border: none;
+            border-radius: 20px;
+            box-shadow: 5px 5px 12px rgba(0, 0, 0, 0.18), -4px -4px 10px rgba(255, 255, 255, 0.7);
+            transition: var(--smooth-transition);
+        }
+
+        .btn-warning:hover {
+            background: #b88400;
+            color: #ffffff;
+            box-shadow: 6px 8px 16px rgba(217, 155, 0, 0.4);
+        }
+
+        .btn-warning:active {
+            box-shadow: inset 3px 3px 6px rgba(0, 0, 0, 0.3), inset -3px -3px 6px rgba(255, 255, 255, 0.2);
+            transform: scale(0.97);
         }
 
         .section-title { 
@@ -334,10 +366,10 @@
         
         #reader { width: 100%; border-radius: 24px; overflow: hidden; border: none !important; background: var(--neu-card-bg); position: relative; z-index: 2; transition: var(--smooth-transition); box-shadow: var(--neu-pressed); padding: 10px; }
         #reader button {
-            background: var(--blue-primary) !important; color: #ffffff !important; border: none !important;
+            background: var(--neu-card-bg) !important; color: var(--blue-primary) !important; border: none !important;
             padding: 12px 20px !important; font-size: 12px !important; font-weight: 700 !important; font-family: inherit !important;
             border-radius: 16px !important; cursor: pointer !important; margin: 10px 0 !important;
-            box-shadow: 4px 4px 10px rgba(18, 30, 120, 0.3) !important;
+            box-shadow: var(--neu-btn-primary) !important;
         }
 
         .divider { 
@@ -375,9 +407,7 @@
         
         .btn-icon svg { width: 18px; height: 18px; fill: none; stroke: var(--icon-color); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; transition: var(--smooth-transition); }
 
-        /* ==================================================== */
-        /* MODAL OVERLAY NEUMORPHIC MODAL (SCROLL FIX UTUH)     */
-        /* ==================================================== */
+        /* MODAL OVERLAY */
         .glass-modal-overlay {
             position: fixed;
             top: 0; left: 0; width: 100vw; height: 100vh;
@@ -745,8 +775,8 @@
 
         .btn-print-rekapan {
             width: 100%;
-            background: var(--blue-primary);
-            color: #ffffff;
+            background: var(--neu-card-bg);
+            color: var(--blue-primary);
             padding: 14px 0;
             border-radius: 20px;
             font-size: 12px;
@@ -757,13 +787,17 @@
             gap: 8px;
             border: none;
             cursor: pointer;
-            box-shadow: 4px 4px 12px rgba(18, 30, 120, 0.3);
+            box-shadow: var(--neu-btn-primary);
             margin-bottom: 12px;
             transition: var(--smooth-transition);
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
-        .btn-print-rekapan:active { transform: scale(0.98); }
+        .btn-print-rekapan:hover {
+            background: var(--blue-primary);
+            color: #ffffff;
+        }
+        .btn-print-rekapan:active { box-shadow: var(--neu-pressed); transform: scale(0.98); }
 
         @media print {
             @page { size: A4 portrait; margin: 10mm; }
@@ -831,7 +865,7 @@
         </div>
         
         <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 14px;">
-            <button class="btn-primary btn-3d" id="btn-eksekusi-hapus" style="background: #ef4444; margin-top: 0; font-weight: 800; box-shadow: 4px 4px 12px rgba(239, 68, 68, 0.35);">Ya, Hapus Data Ini</button>
+            <button class="btn-primary btn-3d" id="btn-eksekusi-hapus" style="color: #ef4444; margin-top: 0; font-weight: 800;">Ya, Hapus Data Ini</button>
             <button class="glass-modal-close-btn" style="margin-top: 0;" onclick="tutupModalKonfirmasiHapus()">BATAL</button>
         </div>
     </div>
@@ -1071,7 +1105,7 @@
 
     <div class="form-group" style="position: relative; z-index: 2;">
         <label>OPSI 3: ABSENSI MASSAL (ROMBONGAN)</label>
-        <button class="btn-primary btn-3d" type="button" style="background: var(--blue-primary); color: #fff; font-weight: 700;" onclick="bukaModalAbsensiMassal()">
+        <button class="btn-primary btn-3d" type="button" onclick="bukaModalAbsensiMassal()">
             Buka Panel Absensi Massal
         </button>
     </div>
@@ -1710,13 +1744,17 @@
         else { label.innerText = "Rekap Tahunan Kegiatan"; }
     }
 
+    /* UBAH TEMA BESERTA WARNA STATUS BAR BROWSER OTOMATIS */
     function ubahTemaSistem() {
+        const metaThemeColor = document.getElementById('theme-color-meta');
         if (document.documentElement.getAttribute('data-theme') === 'dark') {
             document.documentElement.removeAttribute('data-theme');
             themeBtn.innerText = "🌙 Dark Mode";
+            if(metaThemeColor) metaThemeColor.setAttribute('content', '#e6e9ee');
         } else {
             document.documentElement.setAttribute('data-theme', 'dark');
             themeBtn.innerText = "☀️ Light Mode";
+            if(metaThemeColor) metaThemeColor.setAttribute('content', '#11141a');
         }
     }
 
