@@ -16,18 +16,62 @@
     
     <style>
         /* ==================================================== */
-        /* ATURAN TRANSISI GLOBAL SMOOTH THEME                  */
+        /* NEUMORPHISM SOFT UI THEME VARIABLES                  */
         /* ==================================================== */
         :root {
-            --smooth-transition: background 0.5s cubic-bezier(0.4, 0, 0.2, 1), 
-                                border-color 0.5s cubic-bezier(0.4, 0, 0.2, 1), 
-                                color 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
-                                box-shadow 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            --smooth-transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            
+            /* Light Mode Palette */
+            --neu-bg: #e6e9ee;
+            --neu-card-bg: #e6e9ee;
+            --blue-primary: #121e78;
+            --blue-hover: #0d165c;
+            --yellow-accent: #d99b00;
+            --text-dark: #1e293b;
+            --text-muted: #64748b;
+            --border-subtle: rgba(255, 255, 255, 0.6);
+            
+            /* Light Neumorphic Shadow Presets */
+            --neu-flat: 10px 10px 20px #c2c5cc, -10px -10px 20px #ffffff;
+            --neu-flat-sm: 5px 5px 10px #c2c5cc, -5px -5px 10px #ffffff;
+            --neu-pressed: inset 4px 4px 8px #c2c5cc, inset -4px -4px 8px #ffffff;
+            --neu-btn-primary: 6px 6px 14px #c2c5cc, -6px -6px 14px #ffffff;
+
+            --bg-table-header: #dce1eb;
+            --bg-table-sticky: #e6e9ee;
+            --border-color: #cbd5e1;
+            --icon-color: #121e78;
+            --input-bg: #e6e9ee;
+            --primary: #121e78;
+            --accent: #d99b00;
         }
 
-        /* ==================================================== */
-        /* SCROLLBAR JELAS & BISA DI-SCROLL                     */
-        /* ==================================================== */
+        /* Dark Mode Palette (Elegan, Presisi, Professional) */
+        [data-theme="dark"] {
+            --neu-bg: #11141a;
+            --neu-card-bg: #161b22;
+            --blue-primary: #3b82f6;
+            --blue-hover: #60a5fa;
+            --yellow-accent: #f59e0b;
+            --text-dark: #f1f5f9;
+            --text-muted: #94a3b8;
+
+            /* Dark Neumorphic Shadow Presets */
+            --neu-flat: 8px 8px 18px #0b0d11, -8px -8px 18px #212933;
+            --neu-flat-sm: 4px 4px 10px #0b0d11, -4px -4px 10px #212933;
+            --neu-pressed: inset 4px 4px 8px #0b0d11, inset -4px -4px 8px #212933;
+            --neu-btn-primary: 5px 5px 12px #0b0d11, -5px -5px 12px #212933;
+
+            --bg-table-header: #1f2733;
+            --bg-table-sticky: #161b22;
+            --border-color: #334155;
+            --icon-color: #3b82f6;
+            --input-bg: #161b22;
+            --primary: #3b82f6;
+            --accent: #f59e0b;
+        }
+
+        /* SCROLLBAR SOFT UI STYLING */
         ::-webkit-scrollbar {
             width: 6px;
             height: 6px;
@@ -37,27 +81,32 @@
             background: transparent;
         }
         ::-webkit-scrollbar-thumb {
-            background: rgba(16, 185, 129, 0.5);
+            background: var(--blue-primary);
             border-radius: 20px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: rgba(16, 185, 129, 0.8);
         }
         * {
             scrollbar-width: thin;
-            scrollbar-color: rgba(16, 185, 129, 0.5) transparent;
+            scrollbar-color: var(--blue-primary) transparent;
+            box-sizing: border-box;
         }
 
         /* ==================================================== */
-        /* SPLASH SCREEN BERANIMASI                             */
+        /* CANVAS AMBIENT MESH BACKGROUND                       */
+        /* ==================================================== */
+        #particles-canvas {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            pointer-events: none; z-index: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        /* ==================================================== */
+        /* SPLASH SCREEN SOFT NEUMORPHIC                        */
         /* ==================================================== */
         #splash-screen {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: linear-gradient(-45deg, #022c22, #047857, #0f172a, #1e293b);
-            background-size: 400% 400%;
-            animation: gradientBG 8s ease infinite;
+            background: var(--neu-bg);
             display: flex; justify-content: center; align-items: center; flex-direction: column;
-            z-index: 99999; transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 99999; transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.8s;
             overflow: hidden;
         }
 
@@ -69,75 +118,61 @@
         .logo-wrapper {
             position: relative;
             display: flex; justify-content: center; align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 24px;
+            padding: 20px;
+            border-radius: 36px;
+            background: var(--neu-card-bg);
+            box-shadow: var(--neu-flat);
         }
-
-        .logo-wrapper::before, .logo-wrapper::after {
-            content: '';
-            position: absolute;
-            border-radius: 50%;
-            border: 2px solid rgba(16, 185, 129, 0.4);
-            animation: ripple 2.5s cubic-bezier(0.1, 0.8, 0.3, 1) infinite;
-        }
-        .logo-wrapper::after { animation-delay: 1.25s; }
 
         .logo-animasi {
-            width: 120px; height: 120px;
+            width: 100px; height: 100px;
             object-fit: contain;
-            filter: drop-shadow(0 15px 25px rgba(0, 0, 0, 0.5));
-            animation: floatLogo 3s ease-in-out infinite alternate;
-            z-index: 3;
-            border-radius: 20px;
+            animation: pulseSoft 3s ease-in-out infinite alternate;
         }
 
         .splash-title {
-            color: #ffffff;
+            color: var(--blue-primary);
             font-size: 20px;
             font-weight: 800;
-            letter-spacing: 2px;
+            letter-spacing: 0.5px;
             margin-top: 10px;
             text-transform: uppercase;
             text-align: center;
-            text-shadow: 0 4px 12px rgba(0,0,0,0.3);
             animation: fadeInUp 1s ease forwards;
         }
 
         .splash-subtitle {
-            color: #10b981;
-            font-size: 12px;
-            font-weight: 700;
-            letter-spacing: 1.5px;
+            color: var(--text-muted);
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 1px;
             text-transform: uppercase;
-            margin-top: 4px;
-            opacity: 0.9;
+            margin-top: 6px;
             animation: fadeInUp 1s ease 0.2s forwards;
         }
 
         .splash-loader {
-            width: 48px; height: 6px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 10px;
-            margin-top: 24px;
+            width: 160px; height: 8px;
+            background: var(--neu-card-bg);
+            border-radius: 20px;
+            margin-top: 28px;
             overflow: hidden;
             position: relative;
+            box-shadow: var(--neu-pressed);
         }
 
         .splash-loader-bar {
             width: 100%; height: 100%;
-            background: #10b981;
+            background: var(--blue-primary);
+            border-radius: 20px;
             position: absolute; left: -100%;
             animation: loadingBar 1.8s ease-in-out infinite;
-            box-shadow: 0 0 10px #10b981;
         }
 
-        @keyframes floatLogo {
-            0% { transform: translateY(0px) scale(0.95); }
-            100% { transform: translateY(-12px) scale(1.05); }
-        }
-
-        @keyframes ripple {
-            0% { width: 100px; height: 100px; opacity: 1; }
-            100% { width: 220px; height: 220px; opacity: 0; }
+        @keyframes pulseSoft {
+            0% { transform: scale(0.96); }
+            100% { transform: scale(1.04); }
         }
 
         @keyframes loadingBar {
@@ -154,190 +189,170 @@
         .splash-sembunyi { opacity: 0 !important; visibility: hidden !important; pointer-events: none; }
 
         /* ==================================================== */
-        /* CANVAS BACKGROUND: HYPER-GLOW HIGH VISIBILITY        */
+        /* BODY & CONTAINER UTAMA SOFT NEUMORPHISM              */
         /* ==================================================== */
-        #particles-canvas {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            pointer-events: none; z-index: 0;
-        }
-
-        /* ==================================================== */
-        /* THEME VARIABLES & GLASS AMBIENCE                     */
-        /* ==================================================== */
-        :root {
-            --primary: #047857; 
-            --primary-hover: #065f46; 
-            --primary-light: rgba(16, 185, 129, 0.15);
-            --accent: #d97706; 
-            --bg-card: rgba(255, 255, 255, 0.82); 
-            --glass-border: rgba(255, 255, 255, 0.9);
-            --glass-inner-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.9), inset 0 -1px 2px rgba(0, 0, 0, 0.05);
-            --bg-table-header: #f8fafc;
-            --bg-table-sticky: #ffffff; 
-            --text-dark: #090d16; 
-            --text-muted: #334155; 
-            --border-color: #cbd5e1;
-            --shadow-lg: 0 30px 60px rgba(0, 0, 0, 0.12), 0 10px 20px rgba(0, 0, 0, 0.06);
-            --icon-color: #1e293b;
-            --input-bg: rgba(255, 255, 255, 0.9);
-        }
-
-        [data-theme="dark"] {
-            --bg-card: rgba(15, 23, 42, 0.82); 
-            --glass-border: rgba(255, 255, 255, 0.2);
-            --glass-inner-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.25), inset 0 -1px 2px rgba(0, 0, 0, 0.6);
-            --bg-table-header: #1e293b;
-            --bg-table-sticky: #0f172a; 
-            --text-dark: #ffffff; 
-            --text-muted: #e2e8f0;
-            --border-color: rgba(255, 255, 255, 0.18); 
-            --shadow-lg: 0 30px 60px rgba(0, 0, 0, 0.6);
-            --icon-color: #f1f5f9;
-            --primary-light: rgba(16, 185, 129, 0.25);
-            --input-bg: rgba(15, 23, 42, 0.85);
-        }
-
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, 'Plus Jakarta Sans', sans-serif; 
-            margin: 0; padding: 0; 
-            background: linear-gradient(135deg, #0f172a 0%, #064e3b 50%, #022c22 100%);
-            background-attachment: fixed;
-            color: var(--text-dark);
-            display: flex; justify-content: center; align-items: flex-start; min-height: 100vh;
-            transition: var(--smooth-transition); 
-            overscroll-behavior-y: auto; 
-            position: relative;
-            overflow-x: hidden;
-        }
-
-        [data-theme="dark"] body {
-            background: radial-gradient(circle at 50% 0%, #064e3b 0%, #020617 80%);
-            background-attachment: fixed;
-        }
-
-        @keyframes gradientBG {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
+		body { 
+			font-family: 'Plus Jakarta Sans', -apple-system, sans-serif; 
+			margin: 0; padding: 0; 
+			background: var(--neu-bg);
+			color: var(--text-dark);
+			display: flex; justify-content: center; align-items: flex-start; min-height: 100vh;
+			transition: var(--smooth-transition); 
+			overscroll-behavior-y: auto; 
+			position: relative;
+			overflow-x: hidden;
+		}
 
         .app-container { 
             width: 100%; max-width: 480px; 
-            background: var(--bg-card); 
-            backdrop-filter: blur(28px) saturate(210%); 
-            -webkit-backdrop-filter: blur(28px) saturate(210%);
-            padding: 28px 22px; border-radius: 36px; 
-            box-shadow: var(--shadow-lg), var(--glass-inner-shadow);
-            box-sizing: border-box; margin: 20px 16px; position: relative;
-            border: 1px solid var(--glass-border);
+            background: var(--neu-card-bg); 
+            padding: 28px 24px; 
+            border-radius: 36px; 
+            box-shadow: var(--neu-flat);
+            box-sizing: border-box; margin: 24px 16px; position: relative;
             z-index: 1;
             transition: var(--smooth-transition);
         }
 
-        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; width: 100%; position: relative; z-index: 2; }
-        .top-bar-right { display: flex; align-items: center; gap: 6px; }
+        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; width: 100%; position: relative; z-index: 2; }
+        .top-bar-right { display: flex; align-items: center; gap: 10px; }
         
         .net-status { 
-            font-weight: 800; font-size: 9px; padding: 4px 10px; border-radius: 20px; display: inline-flex; align-items: center; gap: 3px;
+            font-weight: 700; font-size: 10px; padding: 6px 14px; border-radius: 20px; display: inline-flex; align-items: center; gap: 4px;
             text-transform: uppercase; letter-spacing: 0.5px;
-            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            box-shadow: var(--neu-pressed);
             transition: var(--smooth-transition);
         }
-        .online { background: rgba(16, 185, 129, 0.25); color: #047857 !important; border: 1px solid rgba(16, 185, 129, 0.4); }
-        [data-theme="dark"] .online { color: #34d399 !important; }
-        .offline { background: rgba(239, 68, 68, 0.25); color: #dc2626 !important; border: 1px solid rgba(239, 68, 68, 0.4); }
+        .online { color: #10b981 !important; }
+        .offline { color: #ef4444 !important; }
 
         .btn-rekap-top {
-            background: var(--primary);
-            color: #ffffff;
-            padding: 5px 12px;
+            background: var(--neu-card-bg);
+            color: var(--blue-primary);
+            padding: 8px 16px;
             border-radius: 20px;
-            font-size: 10px;
-            font-weight: 800;
+            font-size: 11px;
+            font-weight: 700;
             display: inline-flex;
             align-items: center;
-            gap: 4px;
-            border: 1px solid var(--glass-border);
+            gap: 6px;
+            border: none;
             cursor: pointer;
-            box-shadow: 0 4px 12px rgba(4, 120, 87, 0.3);
+            box-shadow: var(--neu-flat-sm);
             transition: var(--smooth-transition);
         }
+        .btn-rekap-top:active { box-shadow: var(--neu-pressed); transform: scale(0.97); }
 
-        .brand-header { text-align: center; margin: 10px 0 24px 0; position: relative; z-index: 2; }
-        .brand-logo { width: 95px; height: 95px; object-fit: contain; border-radius: 22px; margin-bottom: 12px; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.15)); }
-        .brand-header h2 { font-size: 22px; font-weight: 800; margin: 0; letter-spacing: -0.5px; color: var(--text-dark); transition: var(--smooth-transition); }
-        .brand-header p { font-size: 11px; color: var(--primary); font-weight: 800; margin: 4px 0 0 0; text-transform: uppercase; letter-spacing: 1px; transition: var(--smooth-transition); }
-
-        .form-group { margin-bottom: 20px; position: relative; z-index: 2; }
-        label { display: block; font-size: 10px; font-weight: 800; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-muted); transition: var(--smooth-transition); }
+        .brand-header { text-align: center; margin: 5px 0 24px 0; position: relative; z-index: 2; }
         
-        .agenda-input-wrapper { display: flex; gap: 8px; }
+        .brand-logo-container {
+            display: inline-block; margin-bottom: 12px;
+            padding: 16px; border-radius: 28px;
+            background: var(--neu-card-bg);
+            box-shadow: var(--neu-flat);
+        }
+
+        .brand-logo { 
+            width: 75px; height: 75px; object-fit: contain; display: block;
+        }
+        .brand-header h2 { 
+            font-size: 20px; font-weight: 800; margin: 0; letter-spacing: -0.02em; 
+            color: var(--text-dark);
+        }
+        .brand-header p { 
+            font-size: 12px; color: var(--blue-primary); font-weight: 700; margin: 4px 0 0 0; 
+            text-transform: uppercase; letter-spacing: 0.8px; 
+        }
+
+        .form-group { margin-bottom: 22px; position: relative; z-index: 2; }
+        label { 
+            display: block; font-size: 11px; font-weight: 700; margin-bottom: 8px; 
+            text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-muted); transition: var(--smooth-transition); 
+        }
+        
+        .agenda-input-wrapper { display: flex; gap: 10px; }
 
         input, select { 
-            width: 100%; padding: 13px 18px; border: 1px solid var(--border-color); 
+            width: 100%; padding: 14px 18px; 
+            border: none;
             background: var(--input-bg); color: var(--text-dark); 
-            border-radius: 20px; box-sizing: border-box; font-size: 13px; font-family: inherit; font-weight: 700;
+            border-radius: 20px; box-sizing: border-box; font-size: 13.5px; font-family: inherit; font-weight: 600;
             transition: var(--smooth-transition);
-            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-            box-shadow: var(--glass-inner-shadow);
+            box-shadow: var(--neu-pressed);
         }
-        input:focus, select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px var(--primary-light); }
-        #kegiatan { text-transform: uppercase; font-weight: 800; }
+        input:focus, select:focus { 
+            outline: none; 
+        }
+        #kegiatan { text-transform: uppercase; font-weight: 700; color: var(--blue-primary); }
 
         .btn-3d {
-            border: 1px solid var(--glass-border);
+            border: none;
             outline: none;
             position: relative;
             cursor: pointer;
             border-radius: 20px;
             font-family: inherit;
-            font-weight: 800;
+            font-weight: 700;
             text-align: center;
             transition: var(--smooth-transition);
             user-select: none;
             -webkit-tap-highlight-color: transparent;
             z-index: 2;
-            backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-            box-shadow: var(--glass-inner-shadow), 0 8px 16px rgba(0,0,0,0.08);
+            box-shadow: var(--neu-btn-primary);
         }
-        .btn-3d:active { transform: scale(0.96); opacity: 0.9; }
+        .btn-3d:active { box-shadow: var(--neu-pressed); transform: scale(0.97); }
 
         .theme-toggle-btn {
-            background: rgba(255, 255, 255, 0.6); 
+            background: var(--neu-card-bg); 
             color: var(--text-dark);
-            padding: 8px 16px; border-radius: 30px; font-size: 11px;
+            padding: 8px 16px; border-radius: 20px; font-size: 11px;
+            font-weight: 700;
+            box-shadow: var(--neu-flat-sm);
             transition: var(--smooth-transition);
         }
-        [data-theme="dark"] .theme-toggle-btn { background: rgba(30, 41, 59, 0.6); }
 
         .btn-primary { 
-            width: 100%; padding: 14px 18px;
-            background: linear-gradient(135deg, #059669, #047857); 
-            color: #fff; margin-top: 8px; font-size: 14px;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            width: 100%; padding: 15px 18px;
+            background: var(--blue-primary); 
+            color: #ffffff; margin-top: 10px; font-size: 13px; font-weight: 700;
+            box-shadow: 4px 6px 14px rgba(18, 30, 120, 0.3);
+        }
+        [data-theme="dark"] .btn-primary {
+            box-shadow: 4px 6px 16px rgba(59, 130, 246, 0.35);
+        }
+        .btn-primary:hover {
+            background: var(--blue-hover);
         }
 
         .btn-warning { 
-            width: 100%; padding: 14px 18px;
-            background: linear-gradient(135deg, #f59e0b, #d97706); 
-            color: #fff; margin-top: 8px; font-size: 14px;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            width: 100%; padding: 15px 18px;
+            background: var(--yellow-accent); 
+            color: #1e293b; margin-top: 10px; font-size: 13px; font-weight: 700;
+            box-shadow: 4px 6px 14px rgba(217, 155, 0, 0.3);
+        }
+        [data-theme="dark"] .btn-warning {
+            color: #0f172a;
+            box-shadow: 4px 6px 16px rgba(245, 158, 11, 0.35);
         }
 
-        .section-title { font-size: 10px; font-weight: 800; color: var(--text-muted); text-align: center; margin: 24px 0 12px 0; letter-spacing: 1.2px; text-transform: uppercase; position: relative; z-index: 2; transition: var(--smooth-transition); }
+        .section-title { 
+            font-size: 11px; font-weight: 800; color: var(--text-muted); 
+            text-align: center; margin: 26px 0 14px 0; letter-spacing: 1.2px; text-transform: uppercase; 
+            position: relative; z-index: 2; transition: var(--smooth-transition); 
+        }
         
-        #reader { width: 100%; border-radius: 24px; overflow: hidden; border: 1px solid var(--glass-border) !important; background: var(--bg-card); position: relative; z-index: 2; transition: var(--smooth-transition); }
+        #reader { width: 100%; border-radius: 24px; overflow: hidden; border: none !important; background: var(--neu-card-bg); position: relative; z-index: 2; transition: var(--smooth-transition); box-shadow: var(--neu-pressed); padding: 10px; }
         #reader button {
-            background: linear-gradient(135deg, #059669, #047857) !important; color: #ffffff !important; border: 1px solid rgba(255,255,255,0.3) !important;
-            padding: 12px 20px !important; font-size: 13px !important; font-weight: 800 !important;
-            border-radius: 18px !important; cursor: pointer !important;
-            margin: 10px 0 !important; font-family: inherit !important;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.1) !important;
+            background: var(--blue-primary) !important; color: #ffffff !important; border: none !important;
+            padding: 12px 20px !important; font-size: 12px !important; font-weight: 700 !important; font-family: inherit !important;
+            border-radius: 16px !important; cursor: pointer !important; margin: 10px 0 !important;
+            box-shadow: 4px 4px 10px rgba(18, 30, 120, 0.3) !important;
         }
 
-        .divider { text-align: center; margin: 22px 0; font-size: 10px; font-weight: 800; color: var(--text-muted); letter-spacing: 1.5px; position: relative; z-index: 2; transition: var(--smooth-transition); }
+        .divider { 
+            text-align: center; margin: 24px 0; font-size: 11px; font-weight: 800; 
+            color: var(--text-muted); letter-spacing: 1.5px; position: relative; z-index: 2; transition: var(--smooth-transition); 
+        }
 
         .form-group-pencarian {
             position: relative;
@@ -346,36 +361,41 @@
         }
 
         .search-results { 
-            position: absolute; width: 100%; background: var(--bg-table-sticky); border: 1px solid var(--border-color); 
-            max-height: 220px; overflow-y: auto !important; z-index: 99999; border-radius: 20px; margin-top: 6px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25); display: none; -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
-            transition: var(--smooth-transition);
+            position: absolute; width: 100%; background: var(--neu-card-bg); border: none; 
+            max-height: 220px; overflow-y: auto !important; z-index: 99999; border-radius: 20px; margin-top: 8px;
+            box-shadow: var(--neu-flat); display: none; -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
+            transition: var(--smooth-transition); padding: 6px;
         }
-        .search-item { padding: 12px 18px; cursor: pointer; border-bottom: 1px solid var(--border-color); font-size: 13px; font-weight: 700; color: var(--text-dark); min-height: 44px; box-sizing: border-box; transition: var(--smooth-transition); }
-        .search-item:hover { background: var(--primary-light); color: var(--primary); }
+        .search-item { padding: 12px 18px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 13px; font-weight: 600; color: var(--text-dark); min-height: 44px; box-sizing: border-box; transition: var(--smooth-transition); border-radius: 14px; }
+        .search-item:hover { background: rgba(59, 130, 246, 0.12); color: var(--blue-primary); }
 
-        .action-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: 10px; position: relative; z-index: 2; }
+        .action-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 10px; position: relative; z-index: 2; }
         
         .btn-icon, .select-wrapper { 
-            background: var(--input-bg); 
-            border: 1px solid var(--border-color); color: var(--text-dark);
-            padding: 10px 0; border-radius: 18px; cursor: pointer; display: flex; flex-direction: column;
-            align-items: center; justify-content: center; gap: 4px; font-size: 10px; font-weight: 800;
+            background: var(--neu-card-bg); 
+            border: none; color: var(--text-dark);
+            padding: 12px 0; border-radius: 20px; cursor: pointer; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; gap: 4px; font-size: 10px; font-weight: 700;
             transition: var(--smooth-transition); width: 100%; box-sizing: border-box;
             position: relative;
+            box-shadow: var(--neu-flat-sm);
         }
+        .btn-icon:active { box-shadow: var(--neu-pressed); }
         
-        .btn-icon svg { width: 16px; height: 16px; fill: none; stroke: var(--icon-color); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; transition: var(--smooth-transition); }
+        .btn-icon svg { width: 18px; height: 18px; fill: none; stroke: var(--icon-color); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; transition: var(--smooth-transition); }
 
+        /* ==================================================== */
+        /* MODAL OVERLAY NEUMORPHIC MODAL                       */
+        /* ==================================================== */
         .glass-modal-overlay {
             position: fixed;
             top: 0; left: 0; width: 100vw; height: 100vh;
-            background: rgba(15, 23, 42, 0.55);
-            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            background: rgba(15, 23, 42, 0.5);
+            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
             z-index: 99990;
             display: flex; justify-content: center; align-items: center;
             opacity: 0; visibility: hidden;
-            transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.25s;
             padding: 16px; box-sizing: border-box;
         }
 
@@ -388,14 +408,13 @@
         }
 
         .glass-modal-card {
-            width: 100%; max-width: 460px;
-            background: var(--bg-table-sticky);
-            border: 1px solid var(--glass-border);
-            border-radius: 28px;
-            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.35);
-            padding: 20px; box-sizing: border-box;
-            transform: scale(0.85) translateY(15px);
-            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), var(--smooth-transition);
+            width: 100%; max-width: 440px;
+            background: var(--neu-card-bg);
+            border-radius: 32px;
+            box-shadow: var(--neu-flat);
+            padding: 24px; box-sizing: border-box;
+            transform: scale(0.92);
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), var(--smooth-transition);
             max-height: 88vh;
             overflow-y: auto !important;
             -webkit-overflow-scrolling: touch;
@@ -403,60 +422,63 @@
         }
 
         .glass-modal-overlay.active .glass-modal-card {
-            transform: scale(1) translateY(0);
+            transform: scale(1);
         }
 
         .glass-modal-title {
             font-size: 13px; font-weight: 800; text-transform: uppercase;
-            letter-spacing: 0.8px; color: var(--primary); text-align: center;
-            margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px solid var(--border-color);
-            transition: var(--smooth-transition);
+            letter-spacing: 0.8px; color: var(--blue-primary); text-align: center;
+            margin-bottom: 16px; padding-bottom: 10px; border-bottom: 2px solid rgba(255,255,255,0.05);
         }
 
         .glass-modal-list {
-            display: flex; flex-direction: column; gap: 6px;
+            display: flex; flex-direction: column; gap: 8px;
             max-height: 380px; overflow-y: auto; -webkit-overflow-scrolling: touch;
         }
 
         .glass-modal-item {
-            padding: 12px 16px; font-size: 13px; font-weight: 700;
-            color: var(--text-dark); text-align: center; border-radius: 16px;
-            background: var(--input-bg); border: 1px solid var(--border-color);
-            cursor: pointer; transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1), var(--smooth-transition);
+            padding: 13px 18px; font-size: 13px; font-weight: 600;
+            color: var(--text-dark); text-align: center; border-radius: 18px;
+            background: var(--neu-card-bg); box-shadow: var(--neu-flat-sm);
+            cursor: pointer; transition: all 0.2s ease;
         }
 
         .glass-modal-item:hover, .glass-modal-item:active {
-            background: var(--primary); color: #ffffff;
-            transform: scale(0.98);
+            background: var(--blue-primary); color: #ffffff;
+            box-shadow: var(--neu-pressed);
         }
 
         .glass-modal-close-btn {
-            width: 100%; margin-top: 12px; padding: 10px 0;
-            border-radius: 16px; border: 1px solid var(--border-color);
-            background: rgba(0, 0, 0, 0.05); color: var(--text-muted);
-            font-size: 11px; font-weight: 800; text-transform: uppercase;
+            width: 100%; margin-top: 16px; padding: 12px 0;
+            border-radius: 18px; border: none;
+            background: var(--neu-card-bg); color: var(--text-muted);
+            font-size: 11px; font-weight: 700; text-transform: uppercase;
             cursor: pointer; text-align: center; transition: var(--smooth-transition);
+            letter-spacing: 0.5px;
+            box-shadow: var(--neu-flat-sm);
         }
+        .glass-modal-close-btn:active { box-shadow: var(--neu-pressed); }
 
         .custom-dropdown-border { 
-            border: 1.5px solid var(--primary) !important; 
-            border-radius: 18px; 
-            background: rgba(16, 185, 129, 0.12) !important; 
+            border: none !important; 
+            border-radius: 20px; 
+            background: var(--neu-card-bg) !important; 
+            box-shadow: var(--neu-flat-sm) !important;
         }
 
         .scan-notif-modal {
             position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(20px);
-            background: var(--bg-table-sticky); border: 1px solid var(--glass-border); color: var(--text-dark);
-            padding: 20px 28px; border-radius: 28px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
-            z-index: 100005; text-align: center; box-shadow: var(--shadow-lg);
-            opacity: 0; visibility: hidden; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1), var(--smooth-transition); min-width: 260px;
+            background: var(--neu-card-bg); border-radius: 28px; color: var(--text-dark);
+            padding: 22px 30px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+            z-index: 100005; text-align: center; box-shadow: var(--neu-flat);
+            opacity: 0; visibility: hidden; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); min-width: 270px;
         }
         .scan-notif-modal.show { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0); }
-        .scan-notif-icon { width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
-        .scan-notif-modal.success-status .scan-notif-icon { background: rgba(16, 185, 129, 0.2); color: #10b981; }
-        .scan-notif-modal.error-status .scan-notif-icon { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
-        .scan-notif-title { font-size: 15px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; }
-        .scan-notif-desc { font-size: 12px; color: var(--text-muted); margin: 0; font-weight: 700; }
+        .scan-notif-icon { width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; border-radius: 50%; box-shadow: var(--neu-flat-sm); }
+        .scan-notif-modal.success-status .scan-notif-icon { color: #10b981; }
+        .scan-notif-modal.error-status .scan-notif-icon { color: #ef4444; }
+        .scan-notif-title { font-size: 14px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; }
+        .scan-notif-desc { font-size: 12.5px; color: var(--text-muted); margin: 0; font-weight: 600; }
         
         #print-area { 
             display: none; 
@@ -480,8 +502,8 @@
         }
 
         .doc-word-logo {
-            width: 75px;
-            height: 75px;
+            width: 70px;
+            height: 70px;
             object-fit: contain;
             margin-bottom: 8px;
         }
@@ -498,8 +520,8 @@
         .doc-word-title-box p {
             font-size: 11px;
             margin: 3px 0 0 0;
-            color: var(--primary);
-            font-weight: 800;
+            color: var(--blue-primary);
+            font-weight: 700;
             text-transform: uppercase;
         }
 
@@ -510,22 +532,21 @@
             overflow: auto !important;
             -webkit-overflow-scrolling: touch;
             border-radius: 20px;
-            border: 1px solid var(--border-color);
-            background: var(--bg-table-sticky);
-            box-shadow: var(--shadow-lg);
-            margin-top: 8px;
+            background: var(--neu-card-bg);
+            box-shadow: var(--neu-pressed);
+            margin-top: 10px;
             position: relative;
             box-sizing: border-box;
             transition: var(--smooth-transition);
+            padding: 4px;
         }
 
         .print-box-wilayah {
-            background: var(--bg-table-sticky);
-            border: 1px solid var(--border-color);
+            background: var(--neu-card-bg);
             border-radius: 20px;
-            padding: 14px;
+            padding: 16px;
             margin-bottom: 16px;
-            box-shadow: var(--shadow-lg);
+            box-shadow: var(--neu-flat-sm);
             box-sizing: border-box;
             width: 100%;
             transition: var(--smooth-transition);
@@ -535,7 +556,7 @@
             margin: 0 0 10px 0;
             font-size: 13px;
             font-weight: 800;
-            color: var(--primary);
+            color: var(--blue-primary);
             letter-spacing: 0.5px;
             display: flex;
             align-items: center;
@@ -548,20 +569,19 @@
             overflow-x: auto !important;
             -webkit-overflow-scrolling: touch;
             border-radius: 14px;
-            border: 1px solid var(--border-color);
             box-sizing: border-box;
         }
 
         .print-table { 
             width: 100%; border-collapse: separate; border-spacing: 0; 
-            font-size: 11px; min-width: 100%; color: var(--text-dark);
+            font-size: 11.5px; min-width: 100%; color: var(--text-dark);
             table-layout: auto;
             transition: var(--smooth-transition);
         }
 
         .print-table th, .print-table td { 
-            border-bottom: 1px solid var(--border-color); 
-            padding: 9px 8px; text-align: center; white-space: nowrap;
+            border-bottom: 1px solid rgba(255,255,255,0.05); 
+            padding: 10px 8px; text-align: center; white-space: nowrap;
             transition: var(--smooth-transition);
         }
 
@@ -571,7 +591,6 @@
             font-weight: 800; position: sticky; top: 0; z-index: 20;
             text-transform: uppercase; font-size: 10px; letter-spacing: 0.3px;
             border-top: none;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
 
         .print-table th:nth-child(2),
@@ -582,8 +601,8 @@
             z-index: 10; 
             width: 115px; max-width: 125px;
             overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-            box-shadow: 3px 0 8px rgba(0, 0, 0, 0.12);
-            font-weight: 800;
+            box-shadow: 3px 0 6px rgba(0, 0, 0, 0.1);
+            font-weight: 700;
             text-align: left;
             padding-left: 10px;
             color: var(--text-dark);
@@ -596,7 +615,7 @@
 
         .print-table tfoot td, .print-table tfoot tr {
             position: sticky; bottom: 0; background: var(--bg-table-header) !important;
-            z-index: 20; font-weight: 800; border-top: 2px solid var(--border-color);
+            z-index: 20; font-weight: 800; border-top: 2px solid var(--blue-primary);
             color: var(--text-dark); text-align: center;
         }
 
@@ -608,67 +627,68 @@
         }
 
         .print-table tr:hover td { 
-            background-color: var(--primary-light) !important; 
+            background-color: rgba(59, 130, 246, 0.08) !important; 
         }
 
         .sub-info-tag {
             display: inline-block;
             font-size: 9.5px;
-            font-weight: 800;
-            color: var(--primary);
+            font-weight: 700;
+            color: var(--blue-primary);
             text-transform: uppercase;
         }
 
         .th-filter-container { display: flex; align-items: center; justify-content: space-between; gap: 4px; }
         .filter-icon-btn {
-            background: rgba(16, 185, 129, 0.15);
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            padding: 3px;
+            background: var(--neu-card-bg);
+            border: none;
+            border-radius: 8px;
+            padding: 4px;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
             justify-content: center;
+            box-shadow: var(--neu-flat-sm);
             transition: all 0.2s ease;
         }
-        .filter-icon-btn:hover { background: var(--primary); }
+        .filter-icon-btn:hover { background: var(--blue-primary); }
         .filter-icon-btn:hover svg { stroke: #ffffff; }
         .filter-icon-btn svg {
             width: 11px; height: 11px;
             stroke: var(--icon-color);
             fill: none;
-            stroke-width: 2.5;
+            stroke-width: 2.2;
             stroke-linecap: round;
             stroke-linejoin: round;
         }
 
         .filter-backdrop-overlay { 
             display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; 
-            background: rgba(15, 23, 42, 0.5); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            background: rgba(15, 23, 42, 0.5); backdrop-filter: blur(6px);
             z-index: 100010; align-items: center; justify-content: center;
         }
         
         .filter-dropdown-menu { 
-            display: none; position: relative; background: var(--bg-table-sticky); 
-            border: 1px solid var(--border-color); box-shadow: var(--shadow-lg); 
-            border-radius: 28px; z-index: 100020 !important; width: 85%;
-            max-width: 320px; max-height: 80vh; overflow: hidden; padding: 18px; 
+            display: none; position: relative; background: var(--neu-card-bg); 
+            border-radius: 28px; box-shadow: var(--neu-flat); 
+            z-index: 100020 !important; width: 85%;
+            max-width: 320px; max-height: 80vh; overflow: hidden; padding: 20px; 
             box-sizing: border-box; transition: var(--smooth-transition);
         }
-        .filter-search-box { width: 100%; padding: 10px 14px; font-size: 12px; border: 1px solid var(--border-color); border-radius: 14px; margin-bottom: 10px; box-sizing: border-box; background: var(--input-bg); color: var(--text-dark); transition: var(--smooth-transition); }
+        .filter-search-box { width: 100%; padding: 10px 14px; font-size: 12px; border: none; border-radius: 14px; margin-bottom: 12px; box-sizing: border-box; background: var(--input-bg); color: var(--text-dark); box-shadow: var(--neu-pressed); }
         .filter-options-list { display: flex; flex-direction: column; gap: 6px; max-height: 200px; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-right: 4px; }
-        .filter-option-item { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; cursor: pointer; padding: 8px 10px; border-radius: 12px; min-height: 36px; box-sizing: border-box; transition: background 0.2s, var(--smooth-transition); color: var(--text-dark); }
-        .filter-option-item:hover { background: var(--primary-light); }
-        .filter-option-item input { width: 18px !important; height: 18px !important; margin: 0; cursor: pointer; accent-color: var(--primary); }
-        .filter-action-buttons { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; border-top: 1px solid var(--border-color); padding-top: 12px; }
-        .filter-btn-sub { padding: 8px 16px; font-size: 12px; font-weight: 800; border-radius: 14px; border: none; cursor: pointer; }
-        .filter-btn-ok { background: var(--primary); color: white; }
-        .filter-btn-clear { background: rgba(0,0,0,0.1); color: var(--text-dark); }
+        .filter-option-item { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; cursor: pointer; padding: 8px 12px; border-radius: 12px; min-height: 38px; box-sizing: border-box; transition: background 0.2s; color: var(--text-dark); }
+        .filter-option-item:hover { background: rgba(59, 130, 246, 0.12); }
+        .filter-option-item input { width: 18px !important; height: 18px !important; margin: 0; cursor: pointer; accent-color: var(--blue-primary); }
+        .filter-action-buttons { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; border-top: 2px solid rgba(255,255,255,0.05); padding-top: 12px; }
+        .filter-btn-sub { padding: 9px 16px; font-size: 11px; font-weight: 700; border-radius: 14px; border: none; cursor: pointer; }
+        .filter-btn-ok { background: var(--blue-primary); color: white; box-shadow: 3px 3px 8px rgba(18, 30, 120, 0.3); }
+        .filter-btn-clear { background: var(--neu-card-bg); color: var(--text-dark); box-shadow: var(--neu-flat-sm); }
 
-        .resume-kehadiran-box { background: var(--bg-table-sticky); border: 1px solid var(--border-color); padding: 14px 18px; border-radius: 20px; margin-bottom: 12px; font-size: 12px; font-weight: 800; display: flex; flex-direction: column; gap: 8px; color: var(--text-dark); box-shadow: var(--shadow-lg); transition: var(--smooth-transition); width: 100%; box-sizing: border-box; }
+        .resume-kehadiran-box { background: var(--neu-card-bg); border-radius: 20px; padding: 16px 20px; margin-bottom: 14px; font-size: 13px; font-weight: 700; display: flex; flex-direction: column; gap: 8px; color: var(--text-dark); box-shadow: var(--neu-flat-sm); width: 100%; box-sizing: border-box; }
         .resume-row { display: flex; gap: 16px; }
 
-        .waktu-filter-row { grid-column: span 5; display: flex; gap: 8px; margin-bottom: 6px; background: var(--input-bg); padding: 8px; border-radius: 20px; border: 1px solid var(--border-color); transition: var(--smooth-transition); }
+        .waktu-filter-row { grid-column: span 5; display: flex; gap: 10px; margin-bottom: 8px; background: var(--input-bg); padding: 8px; border-radius: 20px; box-shadow: var(--neu-pressed); }
         
         .waktu-custom-select {
             flex: 1;
@@ -676,25 +696,25 @@
         }
 
         .waktu-select-trigger {
-            padding: 8px 12px; font-size: 11px; font-weight: 800; border-radius: 14px; border: 1px solid var(--border-color); background: var(--bg-table-sticky); color: var(--text-dark); cursor: pointer; text-align: center; display: flex; align-items: center; justify-content: center; gap: 4px; transition: var(--smooth-transition);
+            padding: 10px 12px; font-size: 11px; font-weight: 700; border-radius: 14px; background: var(--neu-card-bg); color: var(--text-dark); cursor: pointer; text-align: center; display: flex; align-items: center; justify-content: center; gap: 4px; transition: var(--smooth-transition); box-shadow: var(--neu-flat-sm);
         }
 
         .btn-print-rekapan {
             width: 100%;
-            background: linear-gradient(135deg, #059669, #047857);
+            background: var(--blue-primary);
             color: #ffffff;
-            padding: 10px 0;
+            padding: 12px 0;
             border-radius: 18px;
             font-size: 12px;
-            font-weight: 800;
+            font-weight: 700;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 6px;
-            border: 1px solid var(--glass-border);
+            gap: 8px;
+            border: none;
             cursor: pointer;
-            box-shadow: 0 4px 12px rgba(4, 120, 87, 0.25);
-            margin-bottom: 8px;
+            box-shadow: 4px 4px 12px rgba(18, 30, 120, 0.3);
+            margin-bottom: 10px;
             transition: var(--smooth-transition);
         }
 
@@ -777,6 +797,7 @@
                 margin: 0 !important;
                 text-transform: uppercase !important;
                 color: #000000 !important;
+                font-family: Arial, sans-serif !important;
             }
 
             .doc-word-title-box p {
@@ -811,6 +832,7 @@
                 height: auto !important;
                 width: 100% !important;
                 margin: 0 auto !important;
+                background: transparent !important;
             }
 
             .print-table { 
@@ -836,6 +858,7 @@
                 box-shadow: none !important;
                 text-align: center !important;
                 white-space: normal !important;
+                font-family: Arial, sans-serif !important;
             }
 
             .print-table th { 
@@ -875,7 +898,7 @@
 </head>
 <body onclick="bukaKunciAudioKonstruktor()">
 
-<!-- CANVAS BACKGROUND -->
+<!-- CANVAS BACKGROUND SOFT AMBIENT LIGHT (ELEGANT & PROFESSIONAL) -->
 <canvas id="particles-canvas"></canvas>
 
 <!-- SPLASH SCREEN -->
@@ -905,25 +928,64 @@
 <div class="glass-modal-overlay" id="modal-konfirmasi-hapus">
     <div class="glass-modal-card" onclick="event.stopPropagation()">
         <div class="glass-modal-title" style="color: #ef4444;">⚠️ KONFIRMASI PENGHAPUSAN DATA</div>
-        <div style="text-align: center; margin-bottom: 16px; font-size: 13px; font-weight: 700; color: var(--text-dark);">
-            <p style="margin-bottom: 12px; font-weight: 800; font-size: 14px;">Data generus berikut sudah tidak pernah absen lebih dari 1 tahun:</p>
+        <div style="text-align: center; margin-bottom: 16px; font-size: 13.5px; font-weight: 500; color: var(--text-dark);">
+            <p style="margin-bottom: 12px; font-weight: 600; font-size: 14px;">Data generus berikut sudah tidak pernah absen lebih dari 1 tahun:</p>
             
-            <div style="background: var(--input-bg); padding: 16px 12px; border-radius: 20px; border: 1px solid var(--border-color); margin-bottom: 16px;">
+            <div style="background: var(--input-bg); padding: 16px 12px; border-radius: 20px; box-shadow: var(--neu-pressed); margin-bottom: 16px;">
                 <!-- NAMA GENERUS -->
-                <span id="konfirmasi-nama-generus" style="font-size: 18px; font-weight: 800; color: #047857; display: block;">-</span>
+                <span id="konfirmasi-nama-generus" style="font-size: 17px; font-weight: 800; color: var(--blue-primary); display: block;">-</span>
                 
-                <!-- KELOMPOK GENERUS (DITAMBAHKAN) -->
-                <span id="konfirmasi-kelompok-generus" style="font-size: 13px; font-weight: 700; color: var(--text-dark); display: block; margin-top: 4px;">Kelompok: -</span>
+                <!-- KELOMPOK GENERUS -->
+                <span id="konfirmasi-kelompok-generus" style="font-size: 13px; font-weight: 600; color: var(--text-dark); display: block; margin-top: 6px;">Kelompok: -</span>
                 
                 <!-- ABSEN TERAKHIR -->
-                <span id="konfirmasi-absen-terakhir" style="font-size: 12px; font-weight: 600; color: #475569; display: block; margin-top: 4px;">Absen Terakhir: -</span>
+                <span id="konfirmasi-absen-terakhir" style="font-size: 12px; font-weight: 500; color: var(--text-muted); display: block; margin-top: 4px;">Absen Terakhir: -</span>
             </div>
             
-            <p style="margin: 0; color: #ef4444; font-size: 12px; font-weight: 700;">Apakah Anda yakin ingin menghapus data ini secara permanen?</p>
+            <p style="margin: 0; color: #ef4444; font-size: 12px; font-weight: 600;">Apakah Anda yakin ingin menghapus data ini secara permanen?</p>
         </div>
         
-        <button class="btn-primary btn-3d" id="btn-eksekusi-hapus" style="background: linear-gradient(135deg, #ef4444, #dc2626); margin-bottom: 10px; font-weight: 800;">Ya, Hapus Data Ini</button>
+        <button class="btn-primary btn-3d" id="btn-eksekusi-hapus" style="background: #ef4444; margin-bottom: 10px; font-weight: 700; box-shadow: 4px 4px 10px rgba(239, 68, 68, 0.3);">Ya, Hapus Data Ini</button>
         <button class="glass-modal-close-btn" onclick="tutupModalKonfirmasiHapus()">BATAL</button>
+    </div>
+</div>
+
+<!-- MODAL ABSENSI MASSAL -->
+<div class="glass-modal-overlay" id="modal-absensi-massal" onclick="tutupModalAbsensiMassal()">
+    <div class="glass-modal-card" onclick="event.stopPropagation()">
+        <div class="glass-modal-title">Absensi Massal / Rombongan</div>
+        
+        <!-- Filter Kelompok via Custom Modal Trigger -->
+        <div style="margin-bottom: 12px;">
+            <label style="font-size: 9px; margin-bottom: 4px;">Filter Kelompok:</label>
+            <div class="waktu-select-trigger" onclick="bukaModalFilterKelompokMassal()" id="label-massal-kelompok-terpilih" style="padding: 10px 14px; font-size: 12px; text-align: left; justify-content: space-between;">
+                <span>-- Semua Kelompok --</span>
+                <span style="font-size: 9px; opacity: 0.6;">▼</span>
+            </div>
+            <input type="hidden" id="massal-filter-kelompok" value="SEMUA">
+        </div>
+
+        <!-- Tombol Pilih Semua & Counter -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding: 0 4px;">
+            <label style="margin: 0; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-dark); font-weight: 600;">
+                <input type="checkbox" id="check-pilih-semua" onchange="togglePilihSemuaMassal(this.checked)" style="width: 16px; height: 16px; cursor: pointer; accent-color: var(--blue-primary);">
+                <span>Pilih Semua yang Tampil</span>
+            </label>
+            <span id="massal-counter" style="font-size: 12px; font-weight: 800; color: var(--blue-primary);">0 Terpilih</span>
+        </div>
+
+        <!-- Container List Generus -->
+        <div id="massal-list-container" class="glass-modal-list" style="max-height: 280px; padding: 8px; background: var(--input-bg); border-radius: 20px; box-shadow: var(--neu-pressed);">
+            <!-- Dynamic items via JavaScript -->
+        </div>
+
+        <!-- Action Buttons -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px;">
+            <button class="btn-primary btn-3d" onclick="prosesAbsensiMassal('Manual')">Hadirkan Massal</button>
+            <button class="btn-warning btn-3d" onclick="prosesAbsensiMassal('Izin')">Izinkan Massal</button>
+        </div>
+
+        <button class="glass-modal-close-btn" onclick="tutupModalAbsensiMassal()">Tutup</button>
     </div>
 </div>
 
@@ -934,7 +996,7 @@
         
         <div style="margin-bottom: 12px;">
             <label>PILIH KEGIATAN TERAKHIR / TERSIMPAN:</label>
-            <div class="waktu-select-trigger" onclick="bukaModalPilihKegiatanTersimpan()" id="label-kegiatan-tersimpan-terpilih" style="padding: 12px; font-size: 12px; border-radius: 18px;">
+            <div class="waktu-select-trigger" onclick="bukaModalPilihKegiatanTersimpan()" id="label-kegiatan-tersimpan-terpilih" style="padding: 12px; font-size: 12px;">
                 -- Pilih Kegiatan Tersimpan --
             </div>
         </div>
@@ -980,14 +1042,14 @@
 
             <button type="button" class="custom-dropdown-border btn-3d" title="Rekap Tahunan" style="grid-column: span 5; margin-top: 10px; padding: 10px 0; min-height: 48px;" onclick="bukaModalTahunan()">
                 <div style="display:flex; align-items:center; gap:8px; justify-content:center; width:100%; padding:0 12px; box-sizing:border-box;">
-                    <svg viewBox="0 0 24 24" style="stroke: var(--primary); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; width:18px; height:18px; flex-shrink:0;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                    <span id="rekap-tahunan-label-text" style="color: var(--primary); font-size:12px; font-weight:800; text-transform: uppercase; text-align:center; line-height:1.2;">Rekap Tahunan Kegiatan</span>
+                    <svg viewBox="0 0 24 24" style="stroke: var(--blue-primary); fill:none; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; width:18px; height:18px; flex-shrink:0;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                    <span id="rekap-tahunan-label-text" style="color: var(--blue-primary); font-size:11.5px; font-weight:800; text-transform: uppercase; text-align:center; line-height:1.2;">Rekap Tahunan Kegiatan</span>
                 </div>
             </button>
             <input type="hidden" id="tahunan-dropdown" value="">
             
             <div style="grid-column: span 5; display:flex; align-items:center; gap:6px; margin-top:4px;">
-                <label style="margin:0; font-size:10px; color:var(--text-muted); white-space:nowrap;">SET TAHUN REKAP:</label>
+                <label style="margin:0; font-size:9.5px; color:var(--text-muted); white-space:nowrap;">SET TAHUN REKAP:</label>
                 <div class="waktu-custom-select" style="flex:1;">
                     <div class="waktu-select-trigger" onclick="bukaModalMatriksTahun()" id="label-matriks-tahun-terpilih">
                         --
@@ -1007,12 +1069,12 @@
                 </div>
             </div>
 
-            <h3 style="text-align: center; margin: 0 0 6px 0; font-size: 15px; font-weight: 800; color: var(--text-dark);" id="cetak-judul-kegiatan">Laporan Presensi Kegiatan</h3>
-            <p style="text-align: center; margin: 0 0 12px 0; font-size: 11px; color: var(--text-muted); font-weight: 700;" id="cetak-waktu">-</p>
+            <h3 style="text-align: center; margin: 0 0 6px 0; font-size: 14px; font-weight: 800; color: var(--text-dark);" id="cetak-judul-kegiatan">Laporan Presensi Kegiatan</h3>
+            <p style="text-align: center; margin: 0 0 12px 0; font-size: 11px; color: var(--text-muted); font-weight: 600;" id="cetak-waktu">-</p>
             <div id="resume-kehadiran-container"></div>
 
             <button class="btn-print-rekapan btn-3d" onclick="window.print()">
-                <svg viewBox="0 0 24 24" style="width:16px; height:16px; fill:none; stroke:currentColor; stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round;"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                <svg viewBox="0 0 24 24" style="width:16px; height:16px; fill:none; stroke:currentColor; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round;"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
                 Cetak Hasil Rekapan Ini
             </button>
             
@@ -1082,7 +1144,7 @@
         <button class="theme-toggle-btn btn-3d" onclick="ubahTemaSistem()" id="theme-btn">🌙 Dark Mode</button>
         <div class="top-bar-right">
             <button class="btn-rekap-top btn-3d" onclick="bukaModalRekap()">
-                <svg viewBox="0 0 24 24" style="width:12px; height:12px; fill:none; stroke:currentColor; stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round;"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                <svg viewBox="0 0 24 24" style="width:12px; height:12px; fill:none; stroke:currentColor; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round;"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
                 Rekap
             </button>
             <div id="network-indicator" class="net-status online">● Online</div>
@@ -1090,7 +1152,9 @@
     </div>
     
 	<div class="brand-header">
-		<img src="Logo remaja daerah.png" alt="Logo" class="brand-logo" id="app-logo">
+        <div class="brand-logo-container">
+            <img src="Logo remaja daerah.png" alt="Logo" class="brand-logo" id="app-logo">
+        </div>
 		<h2>PRESENSI KEGIATAN</h2>
 		<p>Muda-mudi Daerah Tawangmangu</p>
 	</div>
@@ -1100,7 +1164,7 @@
         <div class="agenda-input-wrapper">
             <input type="text" id="kegiatan" placeholder="Ketik manual / Pilih template..." oninput="this.value = this.value.toUpperCase(); updateJudulCetak(); perbaruiTeksTombolTahunan(this.value);">
             
-            <button type="button" class="custom-dropdown-border btn-3d" style="width: 115px; height: 48px; color: var(--primary); font-weight: 800; font-size: 11px;" onclick="bukaModalRutin()">
+            <button type="button" class="custom-dropdown-border btn-3d" style="width: 110px; height: 48px; color: var(--blue-primary); font-size: 11px;" onclick="bukaModalRutin()">
                 RUTIN
             </button>
         </div>
@@ -1124,6 +1188,16 @@
     <input type="hidden" id="selected-id-generus">
     <button class="btn-primary btn-3d" onclick="inputManualKehadiran()">Konfirmasi Kehadiran</button>
     <button class="btn-warning btn-3d" onclick="inputManualIziin()">Izin</button>
+
+    <!-- OPSI 3: ABSENSI MASSAL -->
+    <div class="divider">— ATAU —</div>
+
+    <div class="form-group" style="position: relative; z-index: 2;">
+        <label>OPSI 3: ABSENSI MASSAL (ROMBONGAN)</label>
+        <button class="btn-primary btn-3d" type="button" style="background: var(--blue-primary); color: #fff; font-weight: 700;" onclick="bukaModalAbsensiMassal()">
+            Buka Panel Absensi Massal
+        </button>
+    </div>
 </div>
 
 <div id="scan-modal" class="scan-notif-modal">
@@ -1134,117 +1208,106 @@
 
 <script>
     // ==================================================== //
-    // ANIMASI BACKGROUND                                   //
+    // FUNGSI UTILITAS TEXT                                 //
+    // ==================================================== //
+    function toTitleCase(str) {
+        if (!str) return '';
+        return str.toLowerCase().replace(/(?:^|\s|-)\S/g, function(a) { return a.toUpperCase(); });
+    }
+
+    const MAMA_BULAN = [
+        "JANUARI", "FEBRUARI", "MARET", "APRIL", "MEI", "JUNI",
+        "JULI", "AGUSTUS", "SEPTEMBER", "OKTOBER", "NOVEMBER", "DESEMBER"
+    ];
+
+    // ==================================================== //
+    // ANIMASI BACKGROUND: SOFT AMBIENT LIGHT MESH GLOW     //
     // ==================================================== //
     const canvas = document.getElementById('particles-canvas');
     const ctx = canvas.getContext('2d');
-    let hyperParticles = [];
-    let pulseTime = 0;
-
-    const MAMA_BULAN = [
-        "Januari", "Februari", "Maret", "April", "Mei", "Juni",
-        "Juli", "Agustus", "September", "Oktober", "November", "Desember"
-    ];
+    let tick = 0;
 
     function resizeCanvas() {
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
-        initHyperParticles();
     }
 
-    function initHyperParticles() {
-        hyperParticles = [];
-        let count = Math.floor((canvas.width * canvas.height) / 10000);
-        if (count < 35) count = 35;
-
-        for (let i = 0; i < count; i++) {
-            hyperParticles.push({
-                x: Math.random() * canvas.width,
-                y: Math.random() * canvas.height,
-                vx: (Math.random() - 0.5) * 0.9,
-                vy: (Math.random() - 0.5) * 0.9,
-                radius: Math.random() * 3 + 2.5,
-                pulseOffset: Math.random() * Math.PI * 2
-            });
-        }
-    }
-
-    function drawHyperAnimation() {
+    function drawAmbientAnimation() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+        tick += 0.005;
+
         let isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-        pulseTime += 0.03;
 
-        for (let i = 0; i < hyperParticles.length; i++) {
-            let p = hyperParticles[i];
-            p.x += p.vx;
-            p.y += p.vy;
-
-            if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
-            if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
-
-            let dynamicPulse = Math.sin(pulseTime + p.pulseOffset) * 1.5 + p.radius;
-
-            ctx.shadowBlur = 15;
-            ctx.shadowColor = isDark ? "rgba(52, 211, 153, 0.9)" : "rgba(16, 185, 129, 0.8)";
-            ctx.fillStyle = isDark ? "rgba(52, 211, 153, 0.85)" : "rgba(4, 120, 87, 0.75)";
-            
-            ctx.beginPath();
-            ctx.arc(p.x, p.y, Math.max(1, dynamicPulse), 0, Math.PI * 2);
-            ctx.fill();
-
-            for (let j = i + 1; j < hyperParticles.length; j++) {
-                let p2 = hyperParticles[j];
-                let dist = Math.hypot(p.x - p2.x, p.y - p2.y);
-
-                if (dist < 110) {
-                    ctx.shadowBlur = 0;
-                    let alpha = (1 - dist / 110) * (isDark ? 0.35 : 0.25);
-                    ctx.strokeStyle = isDark 
-                        ? `rgba(52, 211, 153, ${alpha})` 
-                        : `rgba(16, 185, 129, ${alpha})`;
-                    ctx.lineWidth = 1.2;
-                    ctx.beginPath();
-                    ctx.moveTo(p.x, p.y);
-                    ctx.lineTo(p2.x, p2.y);
-                    ctx.stroke();
-                }
-            }
+        // Titik Pendaran 1 (Aksen Blue Glow)
+        let x1 = canvas.width * 0.3 + Math.sin(tick) * 80;
+        let y1 = canvas.height * 0.3 + Math.cos(tick * 0.8) * 60;
+        let grad1 = ctx.createRadialGradient(x1, y1, 10, x1, y1, Math.max(canvas.width, canvas.height) * 0.5);
+        
+        if (isDark) {
+            grad1.addColorStop(0, 'rgba(59, 130, 246, 0.12)');
+            grad1.addColorStop(1, 'rgba(17, 20, 26, 0)');
+        } else {
+            grad1.addColorStop(0, 'rgba(18, 30, 120, 0.08)');
+            grad1.addColorStop(1, 'rgba(230, 233, 238, 0)');
         }
-        requestAnimationFrame(drawHyperAnimation);
+
+        ctx.fillStyle = grad1;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Titik Pendaran 2 (Aksen Warm Yellow Glow)
+        let x2 = canvas.width * 0.7 + Math.cos(tick * 1.2) * 70;
+        let y2 = canvas.height * 0.7 + Math.sin(tick * 0.9) * 80;
+        let grad2 = ctx.createRadialGradient(x2, y2, 10, x2, y2, Math.max(canvas.width, canvas.height) * 0.45);
+        
+        if (isDark) {
+            grad2.addColorStop(0, 'rgba(245, 158, 11, 0.08)');
+            grad2.addColorStop(1, 'rgba(17, 20, 26, 0)');
+        } else {
+            grad2.addColorStop(0, 'rgba(245, 176, 0, 0.06)');
+            grad2.addColorStop(1, 'rgba(230, 233, 238, 0)');
+        }
+
+        ctx.fillStyle = grad2;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        requestAnimationFrame(drawAmbientAnimation);
     }
 
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
-    drawHyperAnimation();
+    drawAmbientAnimation();
 
     /* ==================================================== */
-    /* INTEGRASI SISTEM NAVIGASI & TOMBOL BACK HP (ANDROID/IOS)*/
+    /* INTEGRASI SISTEM NAVIGASI & TOMBOL BACK HP           */
     /* ==================================================== */
     window.addEventListener('DOMContentLoaded', () => {
         history.replaceState({ page: 'home' }, '', '#home');
         inisialisasiWaktuOtomatis();
-        cekTokenKonfirmasiEmail(); // Pengecekan token otomatis saat halaman dibuka
+        cekTokenKonfirmasiEmail(); 
     });
 
     window.addEventListener('popstate', (e) => {
-        // 1. Tutup Filter Dropdown / Overlay Jika Aktif
         const globalOverlay = document.getElementById('global-filter-overlay');
         if (globalOverlay && globalOverlay.style.display === 'flex') {
             tutupSemuaDropdownAman(false);
             return;
         }
 
-        // 2. Tutup Modal Center Pilihan
         const centerModal = document.getElementById('global-center-modal');
         if (centerModal && centerModal.classList.contains('active')) {
             tutupGlassModalTengah(false);
             return;
         }
 
-        // 3. Tutup Modal Fitur Rekap
         const rekapModal = document.getElementById('modal-fitur-rekap');
         if (rekapModal && rekapModal.classList.contains('active')) {
             tutupModalRekap(false);
+            return;
+        }
+
+        const massalModal = document.getElementById('modal-absensi-massal');
+        if (massalModal && massalModal.classList.contains('active')) {
+            tutupModalAbsensiMassal(false);
             return;
         }
     });
@@ -1299,7 +1362,6 @@
     /* ==================================================== */
     /* LOGIKA KONFIRMASI HAPUS EMAIL GENERUS                */
     /* ==================================================== */
-    // Fungsi untuk mengecek token URL dan memunculkan modal konfirmasi
 	async function cekTokenKonfirmasiEmail() {
 		const urlParams = new URLSearchParams(window.location.search);
 		const token = urlParams.get('token');
@@ -1349,7 +1411,6 @@
 		}
 	}
 
-	// WAJIB: Panggil fungsi ini otomatis saat halaman selesai dimuat
 	document.addEventListener('DOMContentLoaded', () => {
 		cekTokenKonfirmasiEmail();
 	});
@@ -1366,7 +1427,6 @@
                 tutupModalKonfirmasiHapus();
                 bunyikanSuaraSukses();
                 tampilkanNotifKustom('success', 'Berhasil', 'Data generus telah berhasil dihapus.');
-                // Bersihkan URL dari query parameter token
                 window.history.replaceState({}, document.title, window.location.pathname);
                 muatSemuaGenerus();
             } else {
@@ -1381,6 +1441,192 @@
 
     function tutupModalKonfirmasiHapus() {
         document.getElementById('modal-konfirmasi-hapus').classList.remove('active');
+    }
+
+    /* ==================================================== */
+    /* LOGIKA ABSENSI MASSAL                                */
+    /* ==================================================== */
+    function bukaModalAbsensiMassal(pushHistory = true) {
+        let namaKegiatan = document.getElementById('kegiatan').value.toUpperCase().trim();
+        if (!namaKegiatan) {
+            bunyikanSuaraGagal();
+            return tampilkanNotifKustom('error', 'Gagal', 'Harap isi Nama Agenda terlebih dahulu!');
+        }
+
+        if (pushHistory) {
+            history.pushState({ modal: 'modal-absensi-massal' }, '', '#massal');
+        }
+
+        const modal = document.getElementById('modal-absensi-massal');
+        renderDaftarGenerusMassal();
+        modal.classList.add('active');
+    }
+
+    function tutupModalAbsensiMassal(backHistory = false) {
+        const modal = document.getElementById('modal-absensi-massal');
+        if (modal && modal.classList.contains('active')) {
+            modal.classList.remove('active');
+            if (backHistory && history.state && history.state.modal === 'modal-absensi-massal') {
+                history.back();
+            }
+        }
+    }
+
+    function bukaModalFilterKelompokMassal() {
+        let daftarKelompok = [...new Set(semuaDataGenerus.map(g => (g.kelompok || '-').toUpperCase()))].sort();
+        
+        let opsiModal = [{
+            label: '-- Semua Kelompok --',
+            action: () => pilihFilterKelompokMassal('SEMUA', '-- Semua Kelompok --')
+        }];
+
+        daftarKelompok.forEach(k => {
+            opsiModal.push({
+                label: k,
+                action: () => pilihFilterKelompokMassal(k, k)
+            });
+        });
+
+        bukaGlassModalTengah('Pilih Filter Kelompok', opsiModal);
+    }
+
+    function pilihFilterKelompokMassal(val, labelText) {
+        document.getElementById('massal-filter-kelompok').value = val;
+        const triggerLabel = document.getElementById('label-massal-kelompok-terpilih');
+        if (triggerLabel) {
+            triggerLabel.querySelector('span:first-child').innerText = labelText;
+        }
+        renderDaftarGenerusMassal();
+    }
+
+    function renderDaftarGenerusMassal() {
+        const container = document.getElementById('massal-list-container');
+        const fKelompok = document.getElementById('massal-filter-kelompok').value;
+
+        let dataTerfilter = semuaDataGenerus.filter(g => {
+            return (fKelompok === 'SEMUA' || (g.kelompok || '-').toUpperCase() === fKelompok);
+        });
+
+        dataTerfilter.sort((a, b) => (a.nama_lengkap || '').localeCompare(b.nama_lengkap));
+
+        container.innerHTML = '';
+        if (dataTerfilter.length === 0) {
+            container.innerHTML = '<div style="text-align:center; color:var(--text-muted); padding:12px; font-size:12px;">Data tidak ditemukan.</div>';
+            updateMassalCounter();
+            return;
+        }
+
+        dataTerfilter.forEach(g => {
+			let div = document.createElement('div');
+			div.className = 'filter-option-item';
+			div.style.justifyContent = 'space-between';
+			div.style.padding = '10px 12px';
+			div.style.background = 'var(--bg-table-sticky)';
+
+			div.innerHTML = `
+				<label style="display:flex; align-items:center; gap:10px; width:100%; cursor:pointer;">
+					<input type="checkbox" class="cb-item-massal" value="${g.id_generus}" onchange="updateMassalCounter()" style="width:18px; height:18px;">
+					<div style="font-weight:600; font-size:13px; color:var(--text-dark); text-transform: capitalize;">${(g.nama_lengkap || '').toLowerCase()}</div>
+				</label>
+			`;
+			container.appendChild(div);
+		});
+
+        document.getElementById('check-pilih-semua').checked = false;
+        updateMassalCounter();
+    }
+
+    function togglePilihSemuaMassal(checked) {
+        const checkboxes = document.querySelectorAll('.cb-item-massal');
+        checkboxes.forEach(cb => cb.checked = checked);
+        updateMassalCounter();
+    }
+
+    function updateMassalCounter() {
+        const checkedCount = document.querySelectorAll('.cb-item-massal:checked').length;
+        document.getElementById('massal-counter').innerText = `${checkedCount} Terpilih`;
+    }
+
+    async function prosesAbsensiMassal(metode) {
+        let namaKegiatan = document.getElementById('kegiatan').value.toUpperCase().trim();
+        if (!namaKegiatan) {
+            bunyikanSuaraGagal();
+            return tampilkanNotifKustom('error', 'Gagal', 'Harap isi Nama Agenda terlebih dahulu!');
+        }
+
+        const checkedBoxes = document.querySelectorAll('.cb-item-massal:checked');
+        if (checkedBoxes.length === 0) {
+            bunyikanSuaraGagal();
+            return tampilkanNotifKustom('error', 'Kosong', 'Pilih minimal satu nama!');
+        }
+
+        let idTerpilihArr = Array.from(checkedBoxes).map(cb => cb.value);
+        let waktuSekarang = new Date();
+        let hariIniString = waktuSekarang.toLocaleDateString('fr-CA');
+        let awalHariIni = `${hariIniString}T00:00:00.000Z`;
+        let akhirHariIni = `${hariIniString}T23:59:59.999Z`;
+
+        let localLogs = JSON.parse(localStorage.getItem('absensi_kegiatan_lokal') || '[]');
+        let riwayatHariIni = localLogs.filter(l => new Date(l.waktu_absen).toLocaleDateString('fr-CA') === hariIniString && l.nama_kegiatan.toUpperCase().trim() === namaKegiatan);
+
+        if (navigator.onLine) {
+            try {
+                let { data: cloudLogs } = await _supabase
+                    .from('absensi_kegiatan')
+                    .select('id_generus')
+                    .eq('nama_kegiatan', namaKegiatan)
+                    .gte('waktu_absen', awalHariIni)
+                    .lte('waktu_absen', akhirHariIni);
+                
+                if (cloudLogs) {
+                    riwayatHariIni = riwayatHariIni.concat(cloudLogs);
+                }
+            } catch(e) {}
+        }
+
+        let idSudahAbsenSet = new Set(riwayatHariIni.map(l => String(l.id_generus)));
+
+        let batchAbsenBaru = [];
+        let terlewatCount = 0;
+
+        idTerpilihArr.forEach(idGen => {
+            if (idSudahAbsenSet.has(String(idGen))) {
+                terlewatCount++;
+            } else {
+                batchAbsenBaru.push({
+                    nama_kegiatan: namaKegiatan,
+                    id_generus: idGen,
+                    metode_input: metode,
+                    waktu_absen: waktuSekarang.toISOString()
+                });
+            }
+        });
+
+        if (batchAbsenBaru.length === 0) {
+            bunyikanSuaraGagal();
+            return tampilkanNotifKustom('error', 'Ditolak', 'Semua nama yang dipilih sudah absen hari ini.');
+        }
+
+        let suksesSimpan = false;
+        if (navigator.onLine) {
+            try {
+                let { error } = await _supabase.from('absensi_kegiatan').insert(batchAbsenBaru);
+                if (!error) suksesSimpan = true;
+            } catch (err) {}
+        }
+
+        if (!suksesSimpan) {
+            localLogs.push(...batchAbsenBaru);
+            localStorage.setItem('absensi_kegiatan_lokal', JSON.stringify(localLogs));
+        }
+
+        tutupModalAbsensiMassal();
+        bunyikanSuaraSukses();
+        
+        let infoPesan = `${batchAbsenBaru.length} Generus berhasil di-absen (${metode}).`;
+        if (terlewatCount > 0) infoPesan += ` (${terlewatCount} nama terlewat karena sudah absen)`;
+        
+        tampilkanNotifKustom('success', 'Berhasil Massal', infoPesan);
     }
 
     function inisialisasiWaktuOtomatis() {
@@ -1590,11 +1836,11 @@
         modal.className = "scan-notif-modal"; 
         if (status === 'success') {
             modal.classList.add('success-status');
-            iconContainer.innerHTML = `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+            iconContainer.innerHTML = `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
             titleContainer.style.color = "#10b981";
         } else {
             modal.classList.add('error-status');
-            iconContainer.innerHTML = `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
+            iconContainer.innerHTML = `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
             titleContainer.style.color = "#ef4444";
         }
         titleContainer.innerText = judul;
@@ -1825,7 +2071,7 @@
         let totalIzin = dataAktifRekap.filter(d => d.metode === 'Izin').length;
         let totalLaki = dataAktifRekap.filter(d => !d.jk.includes('P') && d.jk !== '-').length;
         let totalPerempuan = dataAktifRekap.filter(d => d.jk.includes('P')).length;
-        resumeContainer.innerHTML = `<div class="resume-kehadiran-box"><div class="resume-row"><span style="color:var(--primary);">🟢 Hadir: ${totalHadir}</span><span style="color:var(--accent);">🟡 Izin: ${totalIzin}</span></div><div class="resume-row" style="border-top:1px dashed var(--border-color); padding-top:6px;"><span>♂️ L: ${totalLaki}</span><span>♀️ P: ${totalPerempuan}</span></div></div>`;
+        resumeContainer.innerHTML = `<div class="resume-kehadiran-box"><div class="resume-row"><span style="color:var(--blue-primary);">🟢 Hadir: ${totalHadir}</span><span style="color:var(--yellow-accent);">🟡 Izin: ${totalIzin}</span></div><div class="resume-row" style="border-top:1px dashed rgba(255,255,255,0.1); padding-top:6px;"><span>♂️ L: ${totalLaki}</span><span>♀️ P: ${totalPerempuan}</span></div></div>`;
         if(jenis === 'semua') { filterSemuaTerpilih = {}; renderTabelRekapSemuaSistem(); } 
         else if(jenis === 'desa') {
             let rekapDesa = {};
@@ -1841,7 +2087,7 @@
                 let t = rekapDesa[d].hadir + rekapDesa[d].izin; 
                 totH.h += rekapDesa[d].hadir; totH.i += rekapDesa[d].izin;
                 totH.l += rekapDesa[d].laki; totH.p += rekapDesa[d].perempuan;
-                html += `<tr><td>${n++}</td><td style="font-weight:800;">${d}</td><td>${rekapDesa[d].laki}</td><td>${rekapDesa[d].perempuan}</td><td style="color:var(--primary);">${rekapDesa[d].hadir}</td><td style="color:var(--accent);">${rekapDesa[d].izin}</td><td>${t}</td></tr>`; 
+                html += `<tr><td>${n++}</td><td style="font-weight:600;">${d}</td><td>${rekapDesa[d].laki}</td><td>${rekapDesa[d].perempuan}</td><td style="color:var(--blue-primary);">${rekapDesa[d].hadir}</td><td style="color:var(--yellow-accent);">${rekapDesa[d].izin}</td><td>${t}</td></tr>`; 
             }
             html += `</tbody><tfoot><tr><td colspan="2">TOTAL:</td><td>${totH.l}</td><td>${totH.p}</td><td>${totH.h}</td><td>${totH.i}</td><td>${totH.h + totH.i}</td></tr></tfoot></table>`; 
             container.innerHTML = html; areaCetak.style.display = "block";
@@ -1853,8 +2099,8 @@
                 let hK = rekapKlp[k].filter(d => d.metode !== 'Izin').length; let iK = rekapKlp[k].filter(d => d.metode === 'Izin').length;
                 html += `<div class="print-box-wilayah"><h4><span>KELOMPOK: ${k}</span><span style="font-size:11px;">H: ${hK} | I: ${iK}</span></h4><div class="kelompok-table-wrapper"><table class="print-table"><thead><tr><th>No</th><th>Nama</th><th>L/P</th><th>Status</th><th>Waktu</th></tr></thead><tbody>`;
                 rekapKlp[k].forEach((a, i) => { 
-                    let st = a.metode === 'Izin' ? '<span style="color:var(--accent);">IZIN</span>' : '<span style="color:var(--primary);">HADIR</span>';
-                    html += `<tr><td>${i+1}</td><td style="font-weight:800;">${a.name}</td><td>${a.jk.includes('P')?'P':'L'}</td><td>${st}</td><td>${a.waktu}</td></tr>`; 
+                    let st = a.metode === 'Izin' ? '<span style="color:var(--yellow-accent);">IZIN</span>' : '<span style="color:var(--blue-primary);">HADIR</span>';
+                    html += `<tr><td>${i+1}</td><td style="font-weight:600;">${a.name}</td><td>${a.jk.includes('P')?'P':'L'}</td><td>${st}</td><td>${a.waktu}</td></tr>`; 
                 });
                 html += `</tbody></table></div></div>`;
             }
@@ -1872,8 +2118,8 @@
         let html = `<table class="print-table"><thead><tr><th>No</th><th>Nama</th><th><div class="th-filter-container">L/P<button class="filter-icon-btn" onclick="toggleDropdownSemua(event, 'jk')">${filterSvg}</button></div></th><th><div class="th-filter-container">Kelompok<button class="filter-icon-btn" onclick="toggleDropdownSemua(event, 'kelompok')">${filterSvg}</button></div></th><th><div class="th-filter-container">Desa<button class="filter-icon-btn" onclick="toggleDropdownSemua(event, 'desa')">${filterSvg}</button></div></th><th><div class="th-filter-container">Status<button class="filter-icon-btn" onclick="toggleDropdownSemua(event, 'status')">${filterSvg}</button></div></th><th>Absen</th></tr></thead><tbody>`;
         if(dataTerfilter.length === 0) html += `<tr><td colspan="7">Tidak ada data.</td></tr>`;
         else { dataTerfilter.forEach((d, i) => { 
-                let label = d.metode === 'Izin' ? '<span style="color:var(--accent);">IZIN</span>' : '<span style="color:var(--primary);">HADIR</span>';
-                html += `<tr><td>${i+1}</td><td style="font-weight:800;">${d.name}</td><td>${d.jk.includes('P')?'P':'L'}</td><td>${d.kelompok}</td><td>${d.desa}</td><td>${d.status}</td><td>${label} (${d.waktu})</td></tr>`; 
+                let label = d.metode === 'Izin' ? '<span style="color:var(--yellow-accent);">IZIN</span>' : '<span style="color:var(--blue-primary);">HADIR</span>';
+                html += `<tr><td>${i+1}</td><td style="font-weight:600;">${d.name}</td><td>${d.jk.includes('P')?'P':'L'}</td><td>${d.kelompok}</td><td>${d.desa}</td><td>${d.status}</td><td>${label} (${d.waktu})</td></tr>`; 
             });
         }
         html += `</tbody><tfoot><tr><td colspan="6" style="text-align:left; padding-left:10px;">TOTAL:</td><td>${dataTerfilter.length}</td></tr></tfoot></table>`;
@@ -1956,8 +2202,8 @@
                 html += `<tr><td>${idx + 1}</td><td>${orang.nama_lengkap}</td><td><span class="sub-info-tag">${k3}</span></td>`;
                 for (let m = 0; m < 12; m++) {
                     let logsB = logO.filter(l => new Date(l.waktu_absen).getMonth() === m);
-                    if (logsB.some(l => l.metode_input !== 'Izin')) html += `<td style="color:#059669;">✔</td>`; 
-                    else if (logsB.some(l => l.metode_input === 'Izin')) html += `<td style="color:#d97706;">IZN</td>`; 
+                    if (logsB.some(l => l.metode_input !== 'Izin')) html += `<td style="color:var(--blue-primary);">✔</td>`; 
+                    else if (logsB.some(l => l.metode_input === 'Izin')) html += `<td style="color:var(--yellow-accent);">IZN</td>`; 
                     else html += `<td>-</td>`; 
                 }
                 html += `<td>${logO.filter(l => l.metode_input !== 'Izin').length}x</td><td>${logO.filter(l => l.metode_input === 'Izin').length}x</td></tr>`;
