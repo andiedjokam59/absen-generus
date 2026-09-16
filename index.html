@@ -244,7 +244,8 @@
             box-shadow: var(--neu-flat-sm);
             transition: var(--smooth-transition);
         }
-        .btn-rekap-top:active { box-shadow: var(--neu-pressed); transform: scale(0.97); }
+        .btn-rekap-top:hover, .btn-3d:hover { transform: translateY(-1px); }
+        .btn-rekap-top:active, .btn-3d:active { box-shadow: var(--neu-pressed); transform: scale(0.97); }
 
         .brand-header { text-align: center; margin: 5px 0 24px 0; position: relative; z-index: 2; }
         
@@ -315,7 +316,7 @@
         }
 
         /* ==================================================== */
-        /* TOMBOL BIRU & KUNING TIMBUL                          */
+        /* TOMBOL UNIFORM DENGAN EFEK TERAPKAN REKAP            */
         /* ==================================================== */
 
         .btn-primary { 
@@ -326,19 +327,19 @@
             margin-top: 10px; 
             font-size: 13px; 
             font-weight: 800;
-            border: none;
+            border: 1px solid var(--border-subtle);
             border-radius: 20px;
-            box-shadow: 0 4px 14px rgba(59, 130, 246, 0.35);
+            box-shadow: var(--neu-btn-primary);
             transition: var(--smooth-transition);
         }
 
         .btn-primary:hover {
             background: var(--blue-hover);
-            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5);
+            transform: translateY(-1px);
         }
 
         .btn-primary:active {
-            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
+            box-shadow: var(--neu-pressed);
             transform: scale(0.97);
         }
 
@@ -350,20 +351,20 @@
             margin-top: 10px; 
             font-size: 13px; 
             font-weight: 800;
-            border: none;
+            border: 1px solid var(--border-subtle);
             border-radius: 20px;
-            box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35);
+            box-shadow: var(--neu-flat-sm);
             transition: var(--smooth-transition);
         }
 
         .btn-warning:hover {
             background: #d97706;
             color: #ffffff;
-            box-shadow: 0 6px 20px rgba(245, 158, 11, 0.5);
+            transform: translateY(-1px);
         }
 
         .btn-warning:active {
-            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
+            box-shadow: var(--neu-pressed);
             transform: scale(0.97);
         }
 
@@ -380,6 +381,7 @@
             box-shadow: var(--neu-flat-sm);
             transition: var(--smooth-transition);
         }
+        .btn-secondary:hover { transform: translateY(-1px); }
         .btn-secondary:active { box-shadow: var(--neu-pressed); transform: scale(0.97); }
 
         .section-title { 
@@ -462,7 +464,8 @@
             position: relative;
             box-shadow: var(--neu-flat-sm);
         }
-        .btn-icon:active { box-shadow: var(--neu-pressed); }
+        .btn-icon:hover { transform: translateY(-1px); }
+        .btn-icon:active { box-shadow: var(--neu-pressed); transform: scale(0.97); }
         
         .btn-icon svg { width: 18px; height: 18px; fill: none; stroke: var(--icon-color); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; transition: var(--smooth-transition); }
 
@@ -560,10 +563,14 @@
             width: 100%;
         }
 
-        .glass-modal-item:hover, .glass-modal-item:active {
-            background: var(--blue-primary); color: #ffffff;
+        /* TANPA HIGHLIGHT WARNA - HANYA EFEK TEKAN 3D */
+        .glass-modal-item:hover {
+            transform: translateY(-1px);
+            color: var(--blue-primary);
+        }
+        .glass-modal-item:active {
             box-shadow: var(--neu-pressed);
-            transform: translateY(1px);
+            transform: scale(0.97);
         }
 
         .glass-modal-close-btn {
@@ -589,8 +596,8 @@
             justify-content: center;
             flex-shrink: 0;
         }
-        .glass-modal-close-btn:hover { color: var(--text-dark); }
-        .glass-modal-close-btn:active { box-shadow: var(--neu-pressed); transform: scale(0.98); }
+        .glass-modal-close-btn:hover { color: var(--text-dark); transform: translateY(-1px); }
+        .glass-modal-close-btn:active { box-shadow: var(--neu-pressed); transform: scale(0.97); }
 
         .custom-dropdown-border { 
             border: 1px solid var(--border-subtle) !important; 
@@ -599,6 +606,8 @@
             box-shadow: var(--neu-flat-sm) !important;
             transition: var(--smooth-transition);
         }
+        .custom-dropdown-border:hover { transform: translateY(-1px); }
+        .custom-dropdown-border:active { box-shadow: var(--neu-pressed) !important; transform: scale(0.97); }
 
         .scan-notif-modal {
             position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(20px);
@@ -794,8 +803,9 @@
             box-shadow: var(--neu-flat-sm);
             transition: var(--smooth-transition);
         }
-        .filter-icon-btn:hover { background: var(--blue-primary); }
+        .filter-icon-btn:hover { background: var(--blue-primary); transform: translateY(-1px); }
         .filter-icon-btn:hover svg { stroke: #ffffff; }
+        .filter-icon-btn:active { box-shadow: var(--neu-pressed); transform: scale(0.97); }
         .filter-icon-btn svg {
             width: 11px; height: 11px;
             stroke: var(--icon-color);
@@ -851,12 +861,14 @@
             color: white; 
             box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); 
         }
-        .filter-btn-ok:active { transform: scale(0.96); }
+        .filter-btn-ok:hover { transform: translateY(-1px); }
+        .filter-btn-ok:active { transform: scale(0.96); box-shadow: var(--neu-pressed); }
         .filter-btn-clear { 
             background: var(--neu-card-bg); 
             color: var(--text-dark); 
             box-shadow: var(--neu-flat-sm); 
         }
+        .filter-btn-clear:hover { transform: translateY(-1px); }
         .filter-btn-clear:active { box-shadow: var(--neu-pressed); transform: scale(0.96); }
 
         .resume-kehadiran-box { background: var(--neu-card-bg); border: 1px solid var(--border-subtle); border-radius: 20px; padding: 16px 20px; margin-bottom: 14px; font-size: 13px; font-weight: 700; display: flex; flex-direction: column; gap: 8px; color: var(--text-dark); box-shadow: var(--neu-flat-sm); width: 100%; box-sizing: border-box; transition: var(--smooth-transition); }
@@ -869,6 +881,8 @@
         .waktu-select-trigger {
             padding: 10px 12px; font-size: 11px; font-weight: 700; border-radius: 14px; background: var(--neu-card-bg); border: 1px solid var(--border-subtle); color: var(--text-dark); cursor: pointer; text-align: center; display: flex; align-items: center; justify-content: center; gap: 4px; transition: var(--smooth-transition); box-shadow: var(--neu-flat-sm);
         }
+        .waktu-select-trigger:hover { transform: translateY(-1px); }
+        .waktu-select-trigger:active { box-shadow: var(--neu-pressed); transform: scale(0.97); }
 
         .btn-print-rekapan {
             width: 100%;
@@ -893,6 +907,7 @@
         .btn-print-rekapan:hover {
             background: var(--blue-primary);
             color: #ffffff;
+            transform: translateY(-1px);
         }
         .btn-print-rekapan:active { box-shadow: var(--neu-pressed); transform: scale(0.98); }
 
@@ -942,7 +957,7 @@
     <div class="glass-modal-card">
         <div class="glass-modal-title" id="glass-modal-title-text">Pilihan Menu</div>
         <div class="glass-modal-list" id="glass-modal-items-container"></div>
-        <button class="glass-modal-close-btn" onclick="tutupGlassModalTengah()">Batal / Tutup</button>
+        <button class="glass-modal-close-btn btn-3d" onclick="tutupGlassModalTengah()">Batal / Tutup</button>
     </div>
 </div>
 
@@ -963,7 +978,7 @@
         
         <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 14px;">
             <button class="btn-primary btn-3d" id="btn-eksekusi-hapus" style="color: #ef4444; margin-top: 0; font-weight: 800;">Ya, Hapus Data Ini</button>
-            <button class="glass-modal-close-btn" style="margin-top: 0;" onclick="tutupModalKonfirmasiHapus()">BATAL</button>
+            <button class="glass-modal-close-btn btn-3d" style="margin-top: 0;" onclick="tutupModalKonfirmasiHapus()">BATAL</button>
         </div>
     </div>
 </div>
@@ -973,9 +988,19 @@
     <div class="glass-modal-card">
         <div class="glass-modal-title">Absensi Massal / Rombongan</div>
         
+        <!-- Pilihan Filter Kategori Pengurus / Generus -->
+        <div style="margin-bottom: 10px;">
+            <label style="font-size: 9px; margin-bottom: 4px;">Kategori Anggota:</label>
+            <div class="waktu-select-trigger btn-3d" onclick="bukaModalFilterKategoriMassal()" id="label-massal-kategori-terpilih" style="padding: 10px 14px; font-size: 12px; text-align: left; justify-content: space-between;">
+                <span>-- Semua Kategori --</span>
+                <span style="font-size: 9px; opacity: 0.6;">▼</span>
+            </div>
+            <input type="hidden" id="massal-filter-kategori" value="SEMUA">
+        </div>
+
         <div style="margin-bottom: 10px;">
             <label style="font-size: 9px; margin-bottom: 4px;">Filter Kelompok:</label>
-            <div class="waktu-select-trigger" onclick="bukaModalFilterKelompokMassal()" id="label-massal-kelompok-terpilih" style="padding: 10px 14px; font-size: 12px; text-align: left; justify-content: space-between;">
+            <div class="waktu-select-trigger btn-3d" onclick="bukaModalFilterKelompokMassal()" id="label-massal-kelompok-terpilih" style="padding: 10px 14px; font-size: 12px; text-align: left; justify-content: space-between;">
                 <span>-- Semua Kelompok --</span>
                 <span style="font-size: 9px; opacity: 0.6;">▼</span>
             </div>
@@ -1003,7 +1028,7 @@
             <button type="button" class="btn-warning btn-3d" style="margin-top:0;" onclick="prosesAbsensiMassal('Izin')">Izinkan Massal</button>
         </div>
 
-        <button type="button" class="glass-modal-close-btn" style="margin-top: 12px;" onclick="tutupModalAbsensiMassal()">Tutup</button>
+        <button type="button" class="glass-modal-close-btn btn-3d" style="margin-top: 12px;" onclick="tutupModalAbsensiMassal()">Tutup</button>
     </div>
 </div>
 
@@ -1013,7 +1038,7 @@
         
         <div style="margin-bottom: 12px;">
             <label>PILIH KEGIATAN TERAKHIR / TERSIMPAN:</label>
-            <div class="waktu-select-trigger" onclick="bukaModalPilihKegiatanTersimpan()" id="label-kegiatan-tersimpan-terpilih" style="padding: 12px; font-size: 12px;">
+            <div class="waktu-select-trigger btn-3d" onclick="bukaModalPilihKegiatanTersimpan()" id="label-kegiatan-tersimpan-terpilih" style="padding: 12px; font-size: 12px;">
                 -- Pilih Kegiatan Tersimpan --
             </div>
         </div>
@@ -1021,14 +1046,14 @@
         <div class="action-row" style="margin-top: 0;">
             <div class="waktu-filter-row">
                 <div class="waktu-custom-select">
-                    <div class="waktu-select-trigger" onclick="bukaModalBulan()" id="label-bulan-terpilih">
+                    <div class="waktu-select-trigger btn-3d" onclick="bukaModalBulan()" id="label-bulan-terpilih">
                         --
                     </div>
                 </div>
                 <input type="hidden" id="filter-rekap-bulan" value="">
 
                 <div class="waktu-custom-select">
-                    <div class="waktu-select-trigger" onclick="bukaModalTahun()" id="label-tahun-terpilih">
+                    <div class="waktu-select-trigger btn-3d" onclick="bukaModalTahun()" id="label-tahun-terpilih">
                         --
                     </div>
                 </div>
@@ -1068,7 +1093,7 @@
             <div style="grid-column: span 5; display:flex; align-items:center; gap:6px; margin-top:4px;">
                 <label style="margin:0; font-size:9.5px; color:var(--text-muted); white-space:nowrap;">SET TAHUN REKAP:</label>
                 <div class="waktu-custom-select" style="flex:1;">
-                    <div class="waktu-select-trigger" onclick="bukaModalMatriksTahun()" id="label-matriks-tahun-terpilih">
+                    <div class="waktu-select-trigger btn-3d" onclick="bukaModalMatriksTahun()" id="label-matriks-tahun-terpilih">
                         --
                     </div>
                 </div>
@@ -1097,7 +1122,7 @@
             <div id="print-table-container"></div>
         </div>
 
-        <button class="glass-modal-close-btn" onclick="tutupModalRekap()">Selesai / Tutup</button>
+        <button class="glass-modal-close-btn btn-3d" onclick="tutupModalRekap()">Selesai / Tutup</button>
     </div>
 </div>
 
@@ -1105,8 +1130,8 @@
     <div class="filter-dropdown-menu" id="dropdown-semua-jk">
         <div class="filter-options-list" id="list-semua-jk"></div>
         <div class="filter-action-buttons">
-            <button class="filter-btn-sub filter-btn-clear" onclick="bersihkanFilterSemua('jk')">Clear</button>
-            <button class="filter-btn-sub filter-btn-ok" onclick="terapkanFilterSemua('jk')">OK</button>
+            <button class="filter-btn-sub filter-btn-clear btn-3d" onclick="bersihkanFilterSemua('jk')">Clear</button>
+            <button class="filter-btn-sub filter-btn-ok btn-3d" onclick="terapkanFilterSemua('jk')">OK</button>
         </div>
     </div>
 
@@ -1114,8 +1139,8 @@
         <input type="text" class="filter-search-box" placeholder="Cari..." oninput="cariOpsiSemua(this.value, 'kelompok')">
         <div class="filter-options-list" id="list-semua-kelompok"></div>
         <div class="filter-action-buttons">
-            <button class="filter-btn-sub filter-btn-clear" onclick="bersihkanFilterSemua('kelompok')">Clear</button>
-            <button class="filter-btn-sub filter-btn-ok" onclick="terapkanFilterSemua('kelompok')">OK</button>
+            <button class="filter-btn-sub filter-btn-clear btn-3d" onclick="bersihkanFilterSemua('kelompok')">Clear</button>
+            <button class="filter-btn-sub filter-btn-ok btn-3d" onclick="terapkanFilterSemua('kelompok')">OK</button>
         </div>
     </div>
 
@@ -1123,24 +1148,24 @@
         <input type="text" class="filter-search-box" placeholder="Cari..." oninput="cariOpsiSemua(this.value, 'desa')">
         <div class="filter-options-list" id="list-semua-desa"></div>
         <div class="filter-action-buttons">
-            <button class="filter-btn-sub filter-btn-clear" onclick="bersihkanFilterSemua('desa')">Clear</button>
-            <button class="filter-btn-sub filter-btn-ok" onclick="terapkanFilterSemua('desa')">OK</button>
+            <button class="filter-btn-sub filter-btn-clear btn-3d" onclick="bersihkanFilterSemua('desa')">Clear</button>
+            <button class="filter-btn-sub filter-btn-ok btn-3d" onclick="terapkanFilterSemua('desa')">OK</button>
         </div>
     </div>
 
     <div class="filter-dropdown-menu" id="dropdown-semua-status">
         <div class="filter-options-list" id="list-semua-status"></div>
         <div class="filter-action-buttons">
-            <button class="filter-btn-sub filter-btn-clear" onclick="bersihkanFilterSemua('status')">Clear</button>
-            <button class="filter-btn-sub filter-btn-ok" onclick="terapkanFilterSemua('status')">OK</button>
+            <button class="filter-btn-sub filter-btn-clear btn-3d" onclick="bersihkanFilterSemua('status')">Clear</button>
+            <button class="filter-btn-sub filter-btn-ok btn-3d" onclick="terapkanFilterSemua('status')">OK</button>
         </div>
     </div>
 
     <div class="filter-dropdown-menu" id="dropdown-filter-dapukan">
         <div class="filter-options-list" id="list-opsi-dapukan"></div>
         <div class="filter-action-buttons">
-            <button class="filter-btn-sub filter-btn-clear" onclick="bersihkanFilterDapukanPengurus()">Clear</button>
-            <button class="filter-btn-sub filter-btn-ok" onclick="terapkanFilterDapukanPengurus()">OK</button>
+            <button class="filter-btn-sub filter-btn-clear btn-3d" onclick="bersihkanFilterDapukanPengurus()">Clear</button>
+            <button class="filter-btn-sub filter-btn-ok btn-3d" onclick="terapkanFilterDapukanPengurus()">OK</button>
         </div>
     </div>
 
@@ -1148,8 +1173,8 @@
         <input type="text" class="filter-search-box" placeholder="Cari..." oninput="cariOpsiKelompok(this.value)">
         <div class="filter-options-list" id="list-opsi-kelompok"></div>
         <div class="filter-action-buttons">
-            <button class="filter-btn-sub filter-btn-clear" onclick="bersihkanFilterKelompok()">Clear</button>
-            <button class="filter-btn-sub filter-btn-ok" onclick="terapkanFilterKelompok()">OK</button>
+            <button class="filter-btn-sub filter-btn-clear btn-3d" onclick="bersihkanFilterKelompok()">Clear</button>
+            <button class="filter-btn-sub filter-btn-ok btn-3d" onclick="terapkanFilterKelompok()">OK</button>
         </div>
     </div>
 </div>
@@ -1493,6 +1518,26 @@
         }
     }
 
+    function bukaModalFilterKategoriMassal() {
+        let opsiModal = [
+            { label: '-- Semua Kategori --', action: () => pilihFilterKategoriMassal('SEMUA', '-- Semua Kategori --') },
+            { label: 'PENGURUS', action: () => pilihFilterKategoriMassal('PENGURUS', 'PENGURUS') },
+            { label: 'GENERUS', action: () => pilihFilterKategoriMassal('GENERUS', 'GENERUS') },
+            { label: 'MT / MS', action: () => pilihFilterKategoriMassal('MT', 'MT / MS') }
+        ];
+
+        bukaGlassModalTengah('Pilih Kategori Anggota', opsiModal);
+    }
+
+    function pilihFilterKategoriMassal(val, labelText) {
+        document.getElementById('massal-filter-kategori').value = val;
+        const triggerLabel = document.getElementById('label-massal-kategori-terpilih');
+        if (triggerLabel) {
+            triggerLabel.querySelector('span:first-child').innerText = labelText;
+        }
+        renderDaftarGenerusMassal();
+    }
+
     function bukaModalFilterKelompokMassal() {
         let daftarKelompok = [...new Set(semuaDataGenerus.map(g => (g.kelompok || '-').toUpperCase()))].sort();
         
@@ -1523,9 +1568,24 @@
     function renderDaftarGenerusMassal() {
         const container = document.getElementById('massal-list-container');
         const fKelompok = document.getElementById('massal-filter-kelompok').value;
+        const fKategori = document.getElementById('massal-filter-kategori').value;
 
         let dataTerfilter = semuaDataGenerus.filter(g => {
-            return (fKelompok === 'SEMUA' || (g.kelompok || '-').toUpperCase() === fKelompok);
+            let passKelompok = (fKelompok === 'SEMUA' || (g.kelompok || '-').toUpperCase() === fKelompok);
+            let passKategori = true;
+
+            if (fKategori !== 'SEMUA') {
+                let statusUpper = (g.status || '').toUpperCase();
+                if (fKategori === 'PENGURUS') {
+                    passKategori = statusUpper.includes('PENGURUS');
+                } else if (fKategori === 'GENERUS') {
+                    passKategori = statusUpper.includes('GENERUS');
+                } else if (fKategori === 'MT') {
+                    passKategori = statusUpper.includes('MT') || statusUpper.includes('MS');
+                }
+            }
+
+            return passKelompok && passKategori;
         });
 
         dataTerfilter.sort((a, b) => (a.nama_lengkap || '').localeCompare(b.nama_lengkap));
@@ -1547,11 +1607,12 @@
             div.setAttribute('data-nama', (g.nama_lengkap || '').toLowerCase());
 
             let isChecked = idMassalTerpilihSet.has(String(g.id_generus)) ? 'checked' : '';
+            let infoSub = g.status ? ` <span style="font-size:10px; color:var(--blue-primary); opacity:0.8;">[${g.status}]</span>` : '';
 
 			div.innerHTML = `
 				<label style="display:flex; align-items:center; gap:10px; width:100%; cursor:pointer;">
 					<input type="checkbox" class="cb-item-massal" value="${g.id_generus}" ${isChecked} onchange="onCentangItemMassal(this)" style="width:18px; height:18px;">
-					<div style="font-weight:600; font-size:13px; color:var(--text-dark); text-transform: capitalize;">${(g.nama_lengkap || '').toLowerCase()}</div>
+					<div style="font-weight:600; font-size:13px; color:var(--text-dark); text-transform: capitalize;">${(g.nama_lengkap || '').toLowerCase()}${infoSub}</div>
 				</label>
 			`;
 			container.appendChild(div);
@@ -1723,7 +1784,7 @@
         daftarOpsi.forEach(item => {
             const button = document.createElement('button');
             button.type = 'button';
-            button.className = 'glass-modal-item';
+            button.className = 'glass-modal-item btn-3d';
             button.innerText = item.label;
             button.onclick = function() {
                 item.action();
@@ -2298,7 +2359,7 @@
         
         let filterSvg = `<svg viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>`;
 
-        let html = `<table class="print-table"><thead><tr><th>No</th><th>Nama</th><th><div class="th-filter-container">L/P<button class="filter-icon-btn" onclick="toggleDropdownSemua(event, 'jk')">${filterSvg}</button></div></th><th><div class="th-filter-container">Kelompok<button class="filter-icon-btn" onclick="toggleDropdownSemua(event, 'kelompok')">${filterSvg}</button></div></th><th><div class="th-filter-container">Desa<button class="filter-icon-btn" onclick="toggleDropdownSemua(event, 'desa')">${filterSvg}</button></div></th><th><div class="th-filter-container">Status<button class="filter-icon-btn" onclick="toggleDropdownSemua(event, 'status')">${filterSvg}</button></div></th><th>Absen</th></tr></thead><tbody>`;
+        let html = `<table class="print-table"><thead><tr><th>No</th><th>Nama</th><th><div class="th-filter-container">L/P<button class="filter-icon-btn btn-3d" onclick="toggleDropdownSemua(event, 'jk')">${filterSvg}</button></div></th><th><div class="th-filter-container">Kelompok<button class="filter-icon-btn btn-3d" onclick="toggleDropdownSemua(event, 'kelompok')">${filterSvg}</button></div></th><th><div class="th-filter-container">Desa<button class="filter-icon-btn btn-3d" onclick="toggleDropdownSemua(event, 'desa')">${filterSvg}</button></div></th><th><div class="th-filter-container">Status<button class="filter-icon-btn btn-3d" onclick="toggleDropdownSemua(event, 'status')">${filterSvg}</button></div></th><th>Absen</th></tr></thead><tbody>`;
         if(dataTerfilter.length === 0) html += `<tr><td colspan="7">Tidak ada data.</td></tr>`;
         else { dataTerfilter.forEach((d, i) => { 
                 let label = d.metode === 'Izin' ? '<span style="color:var(--yellow-accent);">IZIN</span>' : '<span style="color:var(--blue-primary);">HADIR</span>';
@@ -2371,10 +2432,10 @@
 
         if (statusKategoriAktif === "PENGURUS") {
             if (subDapukanPengurusTerpilih.length > 0) dataOrangTerfilter = dataOrangTerfilter.filter(o => o.usia_dapukan && subDapukanPengurusTerpilih.some(f => o.usia_dapukan.toUpperCase().includes(f)));
-            headerDinamis = `<th><div class="th-filter-container">Dapukan<button class="filter-icon-btn" onclick="toggleDropdownDapukanPengurus(event)">${filterSvg}</button></div></th>`;
+            headerDinamis = `<th><div class="th-filter-container">Dapukan<button class="filter-icon-btn btn-3d" onclick="toggleDropdownDapukanPengurus(event)">${filterSvg}</button></div></th>`;
         } else {
             if (filterTerpilih['kelompok']) dataOrangTerfilter = dataOrangTerfilter.filter(o => filterTerpilih['kelompok'].includes((o.kelompok || "-").toUpperCase()));
-            headerDinamis = `<th><div class="th-filter-container">Kelompok<button class="filter-icon-btn" onclick="toggleDropdownKelompok(event)">${filterSvg}</button></div></th>`;
+            headerDinamis = `<th><div class="th-filter-container">Kelompok<button class="filter-icon-btn btn-3d" onclick="toggleDropdownKelompok(event)">${filterSvg}</button></div></th>`;
         }
         let html = `<table class="print-table"><thead><tr><th>No</th><th>Nama</th>${headerDinamis}<th>Jan</th><th>Feb</th><th>Mar</th><th>Apr</th><th>Mei</th><th>Jun</th><th>Jul</th><th>Agu</th><th>Sep</th><th>Okt</th><th>Nov</th><th>Des</th><th>Hadir</th><th>Izin</th></tr></thead><tbody>`;
         if(dataOrangTerfilter.length === 0) html += `<tr><td colspan="17">Tidak ada data.</td></tr>`;
