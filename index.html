@@ -367,14 +367,30 @@
             transform: scale(0.97);
         }
 
+        .btn-secondary {
+            width: 100%;
+            padding: 12px 18px;
+            background: var(--neu-card-bg);
+            color: var(--blue-primary);
+            margin-top: 10px;
+            font-size: 12px;
+            font-weight: 800;
+            border: 1px solid var(--border-subtle);
+            border-radius: 20px;
+            box-shadow: var(--neu-flat-sm);
+            transition: var(--smooth-transition);
+        }
+        .btn-secondary:active { box-shadow: var(--neu-pressed); transform: scale(0.97); }
+
         .section-title { 
             font-size: 11px; font-weight: 800; color: var(--text-muted); 
             text-align: center; margin: 26px 0 14px 0; letter-spacing: 1.2px; text-transform: uppercase; 
             position: relative; z-index: 2; transition: var(--smooth-transition); 
         }
         
-        /* AREA SCANNER DIPERLEBAR DAN DIOPTIMALKAN */
+        /* AREA SCANNER DISPLAY NONE SAAT MATI */
         #reader { 
+            display: none;
             width: 100%; 
             min-height: 320px;
             border-radius: 28px; 
@@ -386,6 +402,7 @@
             transition: var(--smooth-transition); 
             box-shadow: var(--neu-pressed); 
             padding: 8px; 
+            margin-top: 15px;
         }
 
         #reader video {
@@ -1160,8 +1177,9 @@
 
 	<button id="btn-hidupkan" class="btn-primary btn-3d" type="button" onclick="hidupkanKamera()">Hidupkan Kamera</button>
 	<button id="btn-matikan" class="btn-warning btn-3d" type="button" style="display: none;" onclick="matikanKamera()">Matikan Kamera</button>
+    <button id="btn-switch-kamera" class="btn-secondary btn-3d" type="button" style="display: none;" onclick="switchKamera()">🔄 Ganti Kamera</button>
 
-	<div id="reader" style="margin-top: 15px;"></div>
+	<div id="reader"></div>
 
     <div class="divider">— ATAU —</div>
 
@@ -1965,28 +1983,72 @@
         setTimeout(() => { pengunciScanAktif = false; }, 1500); 
     }
     let html5QrcodeScanner = null;
+    let daftarKameraAktif = [];
+    let indeksKameraTerpilih = 0;
 
-    function hidupkanKamera() {
-        if (!html5QrcodeScanner) {
-            // FUNGSI UTAMA PENENTU UKURAN SCANNER DIPERLEBAR DISINI
-            const calculateQrBox = function(viewfinderWidth, viewfinderHeight) {
-                let minEdge = Math.min(viewfinderWidth, viewfinderHeight);
-                let qrboxSize = Math.floor(minEdge * 0.85); // Menggunakan 85% area kamera untuk scan
-                return {
-                    width: Math.max(280, qrboxSize),
-                    height: Math.max(280, qrboxSize)
-                };
+    async function dapatkanDaftarKamera() {
+        try {
+            const devices = await Html5Qrcode.getCameras();
+            if (devices && devices.length > 0) {
+                daftarKameraAktif = devices;
+            }
+        } catch (e) {}
+    }
+    dapatkanDaftarKamera();
+
+    function jalankanKameraScanner(cameraId = null) {
+        const readerEl = document.getElementById('reader');
+        readerEl.style.display = 'block';
+
+        const calculateQrBox = function(viewfinderWidth, viewfinderHeight) {
+            let minEdge = Math.min(viewfinderWidth, viewfinderHeight);
+            let qrboxSize = Math.floor(minEdge * 0.85);
+            return {
+                width: Math.max(280, qrboxSize),
+                height: Math.max(280, qrboxSize)
             };
+        };
 
-            html5QrcodeScanner = new Html5QrcodeScanner("reader", { 
-                fps: 15, 
-                qrbox: calculateQrBox,
-                aspectRatio: 1.0
-            });
-            html5QrcodeScanner.render(onScanSuccess);
-            document.getElementById('btn-hidupkan').style.display = 'none';
-            document.getElementById('btn-matikan').style.display = 'block';
+        let cameraConfig = { facingMode: "environment" };
+        if (cameraId) {
+            cameraConfig = cameraId;
         }
+
+        if (html5QrcodeScanner) {
+            html5QrcodeScanner.clear().catch(() => {});
+        }
+
+        html5QrcodeScanner = new Html5QrcodeScanner("reader", { 
+            fps: 15, 
+            qrbox: calculateQrBox,
+            aspectRatio: 1.0,
+            videoConstraints: cameraConfig
+        });
+        
+        html5QrcodeScanner.render(onScanSuccess);
+
+        document.getElementById('btn-hidupkan').style.display = 'none';
+        document.getElementById('btn-matikan').style.display = 'block';
+
+        if (daftarKameraAktif.length > 1) {
+            document.getElementById('btn-switch-kamera').style.display = 'block';
+        }
+    }
+
+    async function hidupkanKamera() {
+        if (daftarKameraAktif.length === 0) {
+            await dapatkanDaftarKamera();
+        }
+        indeksKameraTerpilih = 0;
+        let selectedId = daftarKameraAktif.length > 0 ? daftarKameraAktif[0].id : null;
+        jalankanKameraScanner(selectedId);
+    }
+
+    function switchKamera() {
+        if (daftarKameraAktif.length <= 1) return;
+        indeksKameraTerpilih = (indeksKameraTerpilih + 1) % daftarKameraAktif.length;
+        let selectedId = daftarKameraAktif[indeksKameraTerpilih].id;
+        jalankanKameraScanner(selectedId);
     }
 
     function matikanKamera() {
@@ -1995,7 +2057,16 @@
                 html5QrcodeScanner = null;
                 document.getElementById('btn-hidupkan').style.display = 'block';
                 document.getElementById('btn-matikan').style.display = 'none';
-            }).catch(error => {});
+                document.getElementById('btn-switch-kamera').style.display = 'none';
+                document.getElementById('reader').style.display = 'none';
+            }).catch(error => {
+                document.getElementById('btn-hidupkan').style.display = 'block';
+                document.getElementById('btn-matikan').style.display = 'none';
+                document.getElementById('btn-switch-kamera').style.display = 'none';
+                document.getElementById('reader').style.display = 'none';
+            });
+        } else {
+            document.getElementById('reader').style.display = 'none';
         }
     }
 
