@@ -405,10 +405,10 @@
         
         .btn-icon svg { width: 18px; height: 18px; fill: none; stroke: var(--icon-color); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; transition: var(--smooth-transition); }
 
-        /* MODAL OVERLAY */
+        /* MODAL OVERLAY & RESPONSIF KEYBOARD HP */
         .glass-modal-overlay {
             position: fixed;
-            top: 0; left: 0; width: 100vw; height: 100vh;
+            top: 0; left: 0; width: 100vw; height: 100vh; height: 100dvh;
             background: rgba(15, 23, 42, 0.5);
             backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
             z-index: 99990;
@@ -416,6 +416,8 @@
             opacity: 0; visibility: hidden;
             transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.25s;
             padding: 16px; box-sizing: border-box;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
         }
 
         #global-center-modal {
@@ -435,12 +437,34 @@
             box-sizing: border-box;
             transform: scale(0.92);
             transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), var(--smooth-transition);
-            max-height: 85vh;
+            max-height: 85vh; max-height: 85dvh;
             overflow-y: auto !important;
             overscroll-behavior-y: contain;
             -webkit-overflow-scrolling: touch;
             display: flex; 
             flex-direction: column;
+            margin: auto;
+        }
+
+        /* RESPONSIF KHUSUS TAMPILAN MOBILE SAAT KEYBOARD MUNCUL */
+        @media screen and (max-height: 550px) {
+            .glass-modal-overlay {
+                align-items: flex-start !important;
+                padding-top: 10px !important;
+                padding-bottom: 10px !important;
+            }
+            .glass-modal-card {
+                max-height: 94vh !important;
+                max-height: 94dvh !important;
+                padding: 16px 14px !important;
+                margin-top: 0 !important;
+            }
+            .glass-modal-list {
+                max-height: 140px !important;
+            }
+            #massal-list-container {
+                max-height: 150px !important;
+            }
         }
 
         .glass-modal-overlay.active .glass-modal-card {
@@ -869,7 +893,7 @@
     </div>
 </div>
 
-<!-- MODAL ABSENSI MASSAL DENGAN FIX DRAG SELEKSI TEKS -->
+<!-- MODAL ABSENSI MASSAL -->
 <div class="glass-modal-overlay" id="modal-absensi-massal" onclick="tutupModalAbsensiMassal()">
     <div class="glass-modal-card">
         <div class="glass-modal-title">Absensi Massal / Rombongan</div>
@@ -1188,7 +1212,6 @@
         inisialisasiWaktuOtomatis();
         cekTokenKonfirmasiEmail();
 
-        // CEK & KUNCI SETIAP MODAL CARD SUPAYA SELEKSI / BLOK TEKS TIDAK MENUTUP OVERLAY
         document.querySelectorAll('.glass-modal-card, .filter-dropdown-menu').forEach(card => {
             ['click', 'mousedown', 'mouseup', 'pointerdown', 'pointerup', 'touchstart', 'touchend'].forEach(evt => {
                 card.addEventListener(evt, (e) => {
@@ -1196,6 +1219,16 @@
                 });
             });
         });
+
+        // AUTO SCROLL KE INPUT DI HP KETIKA KEYBOARD AKTIF
+        const massalSearch = document.getElementById('massal-search-input');
+        if (massalSearch) {
+            massalSearch.addEventListener('focus', () => {
+                setTimeout(() => {
+                    massalSearch.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 300);
+            });
+        }
     });
 
     window.addEventListener('popstate', (e) => {
@@ -1268,7 +1301,6 @@
     let toastTimeout = null;
     let subDapukanPengurusTerpilih = []; 
 
-    // SET MEMORI PILIHAN CENTANG MASSAL
     let idMassalTerpilihSet = new Set();
 
     async function cekTokenKonfirmasiEmail() {
@@ -1442,7 +1474,6 @@
         }
     }
 
-    // PENCARIAN DENGAN ISOLASI TERHADAP OVERLAY
     function cariOpsiMassal(keyword) {
         let query = (keyword || '').toLowerCase().trim();
         let items = document.querySelectorAll('.item-row-massal');
@@ -1804,7 +1835,6 @@
         else { label.innerText = "Rekap Tahunan Kegiatan"; }
     }
 
-    /* UBAH TEMA BESERTA WARNA STATUS BAR BROWSER OTOMATIS */
     function ubahTemaSistem() {
         const metaThemeColor = document.getElementById('theme-color-meta');
         if (document.documentElement.getAttribute('data-theme') === 'dark') {
