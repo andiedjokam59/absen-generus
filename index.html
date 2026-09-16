@@ -367,27 +367,56 @@
             transform: scale(0.97);
         }
 
+        .btn-secondary {
+            width: 100%;
+            padding: 14px 18px;
+            background: var(--neu-card-bg);
+            color: var(--blue-primary);
+            margin-top: 10px;
+            font-size: 12.5px;
+            font-weight: 800;
+            border: 1px solid var(--border-subtle);
+            border-radius: 20px;
+            box-shadow: var(--neu-flat-sm);
+            transition: var(--smooth-transition);
+        }
+        .btn-secondary:active { box-shadow: var(--neu-pressed); transform: scale(0.97); }
+
         .section-title { 
             font-size: 11px; font-weight: 800; color: var(--text-muted); 
             text-align: center; margin: 26px 0 14px 0; letter-spacing: 1.2px; text-transform: uppercase; 
             position: relative; z-index: 2; transition: var(--smooth-transition); 
         }
         
-        /* AREA SCANNER DISPLAY NONE SECARA DEFAULT */
-        #reader { 
+        /* CONTAINER WADAH SCANNER OTOMATIS HILANG SAAT MATI */
+        #scanner-wrapper {
             display: none;
+            width: 100%;
+            margin-top: 14px;
+            position: relative;
+            z-index: 2;
+        }
+
+        #camera-select-wrapper {
+            margin-bottom: 10px;
+        }
+
+        #camera-select-wrapper label {
+            font-size: 10px;
+            margin-bottom: 4px;
+        }
+
+        #reader { 
             width: 100%; 
-            min-height: 320px;
+            min-height: 280px;
             border-radius: 28px; 
             overflow: hidden; 
             border: 1px solid var(--border-subtle) !important; 
             background: var(--neu-card-bg); 
             position: relative; 
-            z-index: 2; 
             transition: var(--smooth-transition); 
             box-shadow: var(--neu-pressed); 
             padding: 8px; 
-            margin-top: 15px;
         }
 
         #reader video {
@@ -397,16 +426,9 @@
             border-radius: 20px;
         }
 
-        #reader select {
-            margin-bottom: 10px !important;
-            cursor: pointer !important;
-        }
-
-        #reader button {
-            background: var(--neu-card-bg) !important; color: var(--blue-primary) !important; border: 1px solid var(--border-subtle) !important;
-            padding: 12px 20px !important; font-size: 12px !important; font-weight: 700 !important; font-family: inherit !important;
-            border-radius: 16px !important; cursor: pointer !important; margin: 10px 0 !important;
-            box-shadow: var(--neu-btn-primary) !important;
+        /* SEMBUNYIKAN ELEMEN HEADER/NAVIGASI BAWAAN HTML5-QRCODE SUPAYA UNIFORM */
+        #reader__header_message, #reader__dashboard_section_csr {
+            display: none !important;
         }
 
         .divider { 
@@ -1168,7 +1190,22 @@
 	<button id="btn-hidupkan" class="btn-primary btn-3d" type="button" onclick="hidupkanKamera()">Hidupkan Kamera</button>
 	<button id="btn-matikan" class="btn-warning btn-3d" type="button" style="display: none;" onclick="matikanKamera()">Matikan Kamera</button>
 
-	<div id="reader"></div>
+    <!-- INPUT FILE UNTUK SCAN GAMBAR DARI GALERI -->
+    <input type="file" id="qr-input-file" accept="image/*" style="display: none;" onchange="prosesScanGambarFile(event)">
+    <button class="btn-secondary btn-3d" type="button" onclick="document.getElementById('qr-input-file').click()">
+        Scan dari Gambar / Galeri
+    </button>
+
+    <!-- CONTAINER SCANNER DENGAN DROPDOWN KAMERA CUSTOM -->
+    <div id="scanner-wrapper">
+        <div id="camera-select-wrapper">
+            <label for="select-kamera-kustom">Pilih Kamera HP:</label>
+            <select id="select-kamera-kustom" onchange="gantiKameraLangsung(this.value)">
+                <option value="">-- Memuat Kamera --</option>
+            </select>
+        </div>
+        <div id="reader"></div>
+    </div>
 
     <div class="divider">— ATAU —</div>
 
@@ -1971,47 +2008,133 @@
         await prosesAbsensi(decodedText, "Scan Barcode");
         setTimeout(() => { pengunciScanAktif = false; }, 1500); 
     }
-    let html5QrcodeScanner = null;
 
-    function hidupkanKamera() {
-        if (!html5QrcodeScanner) {
-            const readerEl = document.getElementById('reader');
-            readerEl.style.display = 'block';
+    /* LOGIKA KAMERA SINKRON, DROPDOWN KUSTOM, DAN SCAN GAMBAR FILE */
+    let html5QrCode = null;
+    let daftarKameraSistem = [];
+    let kameraSedangAktifId = null;
 
-            const calculateQrBox = function(viewfinderWidth, viewfinderHeight) {
+    async function muatDaftarKameraKeDropdown() {
+        const selectEl = document.getElementById('select-kamera-kustom');
+        try {
+            daftarKameraSistem = await Html5Qrcode.getCameras();
+            if (daftarKameraSistem && daftarKameraSistem.length > 0) {
+                selectEl.innerHTML = '';
+                daftarKameraSistem.forEach((cam, idx) => {
+                    let opt = document.createElement('option');
+                    opt.value = cam.id;
+                    opt.innerText = cam.label || `Kamera ${idx + 1}`;
+                    selectEl.appendChild(opt);
+                });
+                
+                let backCam = daftarKameraSistem.find(c => c.label.toLowerCase().includes('back') || c.label.toLowerCase().includes('belakang') || c.label.toLowerCase().includes('environment'));
+                if (backCam) {
+                    selectEl.value = backCam.id;
+                }
+            } else {
+                selectEl.innerHTML = '<option value="">Default Kamera</option>';
+            }
+        } catch (err) {
+            selectEl.innerHTML = '<option value="">Default Kamera</option>';
+        }
+    }
+
+    async function hidupkanKamera() {
+        document.getElementById('scanner-wrapper').style.display = 'block';
+        document.getElementById('btn-hidupkan').style.display = 'none';
+        document.getElementById('btn-matikan').style.display = 'block';
+
+        await muatDaftarKameraKeDropdown();
+        
+        const selectEl = document.getElementById('select-kamera-kustom');
+        let selectedCamId = selectEl.value;
+
+        jalankanStreamKamera(selectedCamId);
+    }
+
+    async function jalankanStreamKamera(cameraId) {
+        if (!html5QrCode) {
+            html5QrCode = new Html5Qrcode("reader");
+        }
+
+        if (html5QrCode.isScanning) {
+            await html5QrCode.stop();
+        }
+
+        const config = {
+            fps: 15,
+            qrbox: function(viewfinderWidth, viewfinderHeight) {
                 let minEdge = Math.min(viewfinderWidth, viewfinderHeight);
                 let qrboxSize = Math.floor(minEdge * 0.85);
                 return {
-                    width: Math.max(280, qrboxSize),
-                    height: Math.max(280, qrboxSize)
+                    width: Math.max(260, qrboxSize),
+                    height: Math.max(260, qrboxSize)
                 };
-            };
+            },
+            aspectRatio: 1.0
+        };
 
-            html5QrcodeScanner = new Html5QrcodeScanner("reader", { 
-                fps: 15, 
-                qrbox: calculateQrBox,
-                aspectRatio: 1.0
-            });
-            html5QrcodeScanner.render(onScanSuccess);
-            document.getElementById('btn-hidupkan').style.display = 'none';
-            document.getElementById('btn-matikan').style.display = 'block';
+        let cameraParam = cameraId ? { deviceId: { exact: cameraId } } : { facingMode: "environment" };
+
+        html5QrCode.start(cameraParam, config, onScanSuccess)
+        .then(() => {
+            kameraSedangAktifId = cameraId;
+        })
+        .catch(err => {
+            html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess).catch(() => {});
+        });
+    }
+
+    function gantiKameraLangsung(cameraId) {
+        if (cameraId && html5QrCode && html5QrCode.isScanning) {
+            jalankanStreamKamera(cameraId);
         }
     }
 
     function matikanKamera() {
-        if (html5QrcodeScanner) {
-            html5QrcodeScanner.clear().then(() => {
-                html5QrcodeScanner = null;
+        if (html5QrCode && html5QrCode.isScanning) {
+            html5QrCode.stop().then(() => {
+                document.getElementById('scanner-wrapper').style.display = 'none';
                 document.getElementById('btn-hidupkan').style.display = 'block';
                 document.getElementById('btn-matikan').style.display = 'none';
-                document.getElementById('reader').style.display = 'none';
-            }).catch(error => {
+            }).catch(() => {
+                document.getElementById('scanner-wrapper').style.display = 'none';
                 document.getElementById('btn-hidupkan').style.display = 'block';
                 document.getElementById('btn-matikan').style.display = 'none';
-                document.getElementById('reader').style.display = 'none';
             });
         } else {
-            document.getElementById('reader').style.display = 'none';
+            document.getElementById('scanner-wrapper').style.display = 'none';
+            document.getElementById('btn-hidupkan').style.display = 'block';
+            document.getElementById('btn-matikan').style.display = 'none';
+        }
+    }
+
+    /* PROSES SCAN FILE GAMBAR DARI GALERI */
+    async function prosesScanGambarFile(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        if (!html5QrCode) {
+            html5QrCode = new Html5Qrcode("reader");
+        }
+
+        // Jika kamera live sedang aktif, hentikan stream sementara agar tidak bentrok
+        if (html5QrCode.isScanning) {
+            await html5QrCode.stop();
+            document.getElementById('scanner-wrapper').style.display = 'none';
+            document.getElementById('btn-hidupkan').style.display = 'block';
+            document.getElementById('btn-matikan').style.display = 'none';
+        }
+
+        try {
+            tampilkanNotifKustom('success', 'Membaca Gambar...', 'Mohon tunggu sebentar');
+            const decodedText = await html5QrCode.scanFile(file, true);
+            await prosesAbsensi(decodedText, "Scan Gambar File");
+        } catch (err) {
+            bunyikanSuaraGagal();
+            tampilkanNotifKustom('error', 'Gagal Scan Gambar', 'QR/Barcode tidak terdeteksi atau gambar terlalu kabur.');
+        } finally {
+            event.target.value = '';
         }
     }
 
