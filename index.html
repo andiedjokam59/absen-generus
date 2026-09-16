@@ -304,10 +304,9 @@
         }
 
         /* ==================================================== */
-        /* TOMBOL BIRU & KUNING TIMBUL (PERBAIKAN WARNA SOLID)  */
+        /* TOMBOL BIRU & KUNING TIMBUL                          */
         /* ==================================================== */
 
-        /* Tombol Biru (Konfirmasi Kehadiran / Hidupkan / Massal) */
         .btn-primary { 
             width: 100%; 
             padding: 15px 18px;
@@ -332,7 +331,6 @@
             transform: scale(0.97);
         }
 
-        /* Tombol Kuning (Izin / Matikan Kamera) */
         .btn-warning { 
             width: 100%; 
             padding: 15px 18px;
@@ -842,7 +840,7 @@
 </div>
 
 <div class="glass-modal-overlay" id="global-center-modal" onclick="tutupGlassModalTengah()">
-    <div class="glass-modal-card" onclick="event.stopPropagation()">
+    <div class="glass-modal-card">
         <div class="glass-modal-title" id="glass-modal-title-text">Pilihan Menu</div>
         <div class="glass-modal-list" id="glass-modal-items-container"></div>
         <button class="glass-modal-close-btn" onclick="tutupGlassModalTengah()">Batal / Tutup</button>
@@ -850,7 +848,7 @@
 </div>
 
 <div class="glass-modal-overlay" id="modal-konfirmasi-hapus">
-    <div class="glass-modal-card" onclick="event.stopPropagation()">
+    <div class="glass-modal-card">
         <div class="glass-modal-title" style="color: #ef4444;">⚠️ KONFIRMASI PENGHAPUSAN DATA</div>
         <div style="text-align: center; margin-bottom: 16px; font-size: 13.5px; font-weight: 500; color: var(--text-dark);">
             <p style="margin-bottom: 12px; font-weight: 600; font-size: 14px;">Data generus berikut sudah tidak pernah absen lebih dari 1 tahun:</p>
@@ -871,9 +869,9 @@
     </div>
 </div>
 
-<!-- MODAL ABSENSI MASSAL DENGAN TAMBAHAN KOLOM PENCARIAN -->
+<!-- MODAL ABSENSI MASSAL DENGAN FIX DRAG SELEKSI TEKS -->
 <div class="glass-modal-overlay" id="modal-absensi-massal" onclick="tutupModalAbsensiMassal()">
-    <div class="glass-modal-card" onclick="event.stopPropagation()">
+    <div class="glass-modal-card">
         <div class="glass-modal-title">Absensi Massal / Rombongan</div>
         
         <div style="margin-bottom: 10px;">
@@ -885,10 +883,9 @@
             <input type="hidden" id="massal-filter-kelompok" value="SEMUA">
         </div>
 
-        <!-- KOLOM PENCARIAN DI DALAM MODAL MASSAL -->
         <div style="margin-bottom: 10px;">
             <label style="font-size: 9px; margin-bottom: 4px;">Cari Nama:</label>
-            <input type="text" id="massal-search-input" placeholder="Ketik nama untuk mencari..." oninput="cariOpsiMassal(this.value)" style="padding: 10px 14px; font-size: 12px;">
+            <input type="text" id="massal-search-input" placeholder="Ketik nama untuk mencari..." oninput="cariOpsiMassal(this.value)" autocomplete="off" style="padding: 10px 14px; font-size: 12px;">
         </div>
 
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding: 0 4px;">
@@ -903,16 +900,16 @@
         </div>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px;">
-            <button class="btn-primary btn-3d" style="margin-top:0;" onclick="prosesAbsensiMassal('Manual')">Hadirkan Massal</button>
-            <button class="btn-warning btn-3d" style="margin-top:0;" onclick="prosesAbsensiMassal('Izin')">Izinkan Massal</button>
+            <button type="button" class="btn-primary btn-3d" style="margin-top:0;" onclick="prosesAbsensiMassal('Manual')">Hadirkan Massal</button>
+            <button type="button" class="btn-warning btn-3d" style="margin-top:0;" onclick="prosesAbsensiMassal('Izin')">Izinkan Massal</button>
         </div>
 
-        <button class="glass-modal-close-btn" style="margin-top: 12px;" onclick="tutupModalAbsensiMassal()">Tutup</button>
+        <button type="button" class="glass-modal-close-btn" style="margin-top: 12px;" onclick="tutupModalAbsensiMassal()">Tutup</button>
     </div>
 </div>
 
 <div class="glass-modal-overlay" id="modal-fitur-rekap" onclick="tutupModalRekap()">
-    <div class="glass-modal-card" onclick="event.stopPropagation()">
+    <div class="glass-modal-card">
         <div class="glass-modal-title">Menu Rekap & Penyimpanan</div>
         
         <div style="margin-bottom: 12px;">
@@ -1006,7 +1003,7 @@
 </div>
 
 <div id="global-filter-overlay" class="filter-backdrop-overlay" onclick="tutupSemuaDropdownAman()">
-    <div class="filter-dropdown-menu" id="dropdown-semua-jk" onclick="event.stopPropagation()">
+    <div class="filter-dropdown-menu" id="dropdown-semua-jk">
         <div class="filter-options-list" id="list-semua-jk"></div>
         <div class="filter-action-buttons">
             <button class="filter-btn-sub filter-btn-clear" onclick="bersihkanFilterSemua('jk')">Clear</button>
@@ -1014,7 +1011,7 @@
         </div>
     </div>
 
-    <div class="filter-dropdown-menu" id="dropdown-semua-kelompok" onclick="event.stopPropagation()">
+    <div class="filter-dropdown-menu" id="dropdown-semua-kelompok">
         <input type="text" class="filter-search-box" placeholder="Cari..." oninput="cariOpsiSemua(this.value, 'kelompok')">
         <div class="filter-options-list" id="list-semua-kelompok"></div>
         <div class="filter-action-buttons">
@@ -1023,7 +1020,7 @@
         </div>
     </div>
 
-    <div class="filter-dropdown-menu" id="dropdown-semua-desa" onclick="event.stopPropagation()">
+    <div class="filter-dropdown-menu" id="dropdown-semua-desa">
         <input type="text" class="filter-search-box" placeholder="Cari..." oninput="cariOpsiSemua(this.value, 'desa')">
         <div class="filter-options-list" id="list-semua-desa"></div>
         <div class="filter-action-buttons">
@@ -1032,7 +1029,7 @@
         </div>
     </div>
 
-    <div class="filter-dropdown-menu" id="dropdown-semua-status" onclick="event.stopPropagation()">
+    <div class="filter-dropdown-menu" id="dropdown-semua-status">
         <div class="filter-options-list" id="list-semua-status"></div>
         <div class="filter-action-buttons">
             <button class="filter-btn-sub filter-btn-clear" onclick="bersihkanFilterSemua('status')">Clear</button>
@@ -1040,7 +1037,7 @@
         </div>
     </div>
 
-    <div class="filter-dropdown-menu" id="dropdown-filter-dapukan" onclick="event.stopPropagation()">
+    <div class="filter-dropdown-menu" id="dropdown-filter-dapukan">
         <div class="filter-options-list" id="list-opsi-dapukan"></div>
         <div class="filter-action-buttons">
             <button class="filter-btn-sub filter-btn-clear" onclick="bersihkanFilterDapukanPengurus()">Clear</button>
@@ -1048,7 +1045,7 @@
         </div>
     </div>
 
-    <div class="filter-dropdown-menu" id="dropdown-filter-kelompok" onclick="event.stopPropagation()">
+    <div class="filter-dropdown-menu" id="dropdown-filter-kelompok">
         <input type="text" class="filter-search-box" placeholder="Cari..." oninput="cariOpsiKelompok(this.value)">
         <div class="filter-options-list" id="list-opsi-kelompok"></div>
         <div class="filter-action-buttons">
@@ -1189,7 +1186,16 @@
     window.addEventListener('DOMContentLoaded', () => {
         history.replaceState({ page: 'home' }, '', '#home');
         inisialisasiWaktuOtomatis();
-        cekTokenKonfirmasiEmail(); 
+        cekTokenKonfirmasiEmail();
+
+        // CEK & KUNCI SETIAP MODAL CARD SUPAYA SELEKSI / BLOK TEKS TIDAK MENUTUP OVERLAY
+        document.querySelectorAll('.glass-modal-card, .filter-dropdown-menu').forEach(card => {
+            ['click', 'mousedown', 'mouseup', 'pointerdown', 'pointerup', 'touchstart', 'touchend'].forEach(evt => {
+                card.addEventListener(evt, (e) => {
+                    e.stopPropagation();
+                });
+            });
+        });
     });
 
     window.addEventListener('popstate', (e) => {
@@ -1261,6 +1267,9 @@
     let globalAudioCtx = null;
     let toastTimeout = null;
     let subDapukanPengurusTerpilih = []; 
+
+    // SET MEMORI PILIHAN CENTANG MASSAL
+    let idMassalTerpilihSet = new Set();
 
     async function cekTokenKonfirmasiEmail() {
 		const urlParams = new URLSearchParams(window.location.search);
@@ -1346,7 +1355,8 @@
         }
 
         const modal = document.getElementById('modal-absensi-massal');
-        document.getElementById('massal-search-input').value = ''; // Reset pencarian saat modal dibuka
+        idMassalTerpilihSet.clear();
+        document.getElementById('massal-search-input').value = ''; 
         renderDaftarGenerusMassal();
         modal.classList.add('active');
     }
@@ -1391,12 +1401,9 @@
     function renderDaftarGenerusMassal() {
         const container = document.getElementById('massal-list-container');
         const fKelompok = document.getElementById('massal-filter-kelompok').value;
-        const keywordCari = (document.getElementById('massal-search-input')?.value || '').toLowerCase();
 
         let dataTerfilter = semuaDataGenerus.filter(g => {
-            let sesuaiKelompok = (fKelompok === 'SEMUA' || (g.kelompok || '-').toUpperCase() === fKelompok);
-            let sesuaiKeyword = !keywordCari || (g.nama_lengkap || '').toLowerCase().includes(keywordCari);
-            return sesuaiKelompok && sesuaiKeyword;
+            return (fKelompok === 'SEMUA' || (g.kelompok || '-').toUpperCase() === fKelompok);
         });
 
         dataTerfilter.sort((a, b) => (a.nama_lengkap || '').localeCompare(b.nama_lengkap));
@@ -1410,38 +1417,76 @@
 
         dataTerfilter.forEach(g => {
 			let div = document.createElement('div');
-			div.className = 'filter-option-item';
+			div.className = 'filter-option-item item-row-massal';
 			div.style.justifyContent = 'space-between';
 			div.style.padding = '10px 12px';
 			div.style.background = 'var(--bg-table-sticky)';
+            div.setAttribute('data-nama', (g.nama_lengkap || '').toLowerCase());
+
+            let isChecked = idMassalTerpilihSet.has(String(g.id_generus)) ? 'checked' : '';
 
 			div.innerHTML = `
 				<label style="display:flex; align-items:center; gap:10px; width:100%; cursor:pointer;">
-					<input type="checkbox" class="cb-item-massal" value="${g.id_generus}" onchange="updateMassalCounter()" style="width:18px; height:18px;">
+					<input type="checkbox" class="cb-item-massal" value="${g.id_generus}" ${isChecked} onchange="onCentangItemMassal(this)" style="width:18px; height:18px;">
 					<div style="font-weight:600; font-size:13px; color:var(--text-dark); text-transform: capitalize;">${(g.nama_lengkap || '').toLowerCase()}</div>
 				</label>
 			`;
 			container.appendChild(div);
 		});
 
-        document.getElementById('check-pilih-semua').checked = false;
+        const keywordCari = (document.getElementById('massal-search-input')?.value || '').toLowerCase();
+        if(keywordCari) {
+            cariOpsiMassal(keywordCari);
+        } else {
+            updateMassalCounter();
+        }
+    }
+
+    // PENCARIAN DENGAN ISOLASI TERHADAP OVERLAY
+    function cariOpsiMassal(keyword) {
+        let query = (keyword || '').toLowerCase().trim();
+        let items = document.querySelectorAll('.item-row-massal');
+        
+        items.forEach(item => {
+            let nama = item.getAttribute('data-nama') || '';
+            if (!query || nama.includes(query)) {
+                item.style.display = 'flex';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+
+        let visibleCB = document.querySelectorAll('.item-row-massal:not([style*="display: none"]) .cb-item-massal');
+        let checkedVisibleCB = Array.from(visibleCB).filter(cb => cb.checked);
+        document.getElementById('check-pilih-semua').checked = (visibleCB.length > 0 && visibleCB.length === checkedVisibleCB.length);
+        
         updateMassalCounter();
     }
 
-    // Fungsi untuk memfilter list nama secara real-time berdasarkan input pencarian massal
-    function cariOpsiMassal(keyword) {
-        renderDaftarGenerusMassal();
+    function onCentangItemMassal(checkbox) {
+        if (checkbox.checked) {
+            idMassalTerpilihSet.add(String(checkbox.value));
+        } else {
+            idMassalTerpilihSet.delete(String(checkbox.value));
+        }
+        updateMassalCounter();
     }
 
     function togglePilihSemuaMassal(checked) {
-        const checkboxes = document.querySelectorAll('.cb-item-massal');
-        checkboxes.forEach(cb => cb.checked = checked);
+        let visibleCB = document.querySelectorAll('.item-row-massal:not([style*="display: none"]) .cb-item-massal');
+        visibleCB.forEach(cb => {
+            cb.checked = checked;
+            if (checked) {
+                idMassalTerpilihSet.add(String(cb.value));
+            } else {
+                idMassalTerpilihSet.delete(String(cb.value));
+            }
+        });
         updateMassalCounter();
     }
 
     function updateMassalCounter() {
-        const checkedCount = document.querySelectorAll('.cb-item-massal:checked').length;
-        document.getElementById('massal-counter').innerText = `${checkedCount} Terpilih`;
+        document.getElementById('massal-counter').innerText = `${idMassalTerpilihSet.size} Terpilih`;
     }
 
     async function prosesAbsensiMassal(metode) {
@@ -1451,13 +1496,12 @@
             return tampilkanNotifKustom('error', 'Gagal', 'Harap isi Nama Agenda terlebih dahulu!');
         }
 
-        const checkedBoxes = document.querySelectorAll('.cb-item-massal:checked');
-        if (checkedBoxes.length === 0) {
+        if (idMassalTerpilihSet.size === 0) {
             bunyikanSuaraGagal();
             return tampilkanNotifKustom('error', 'Kosong', 'Pilih minimal satu nama!');
         }
 
-        let idTerpilihArr = Array.from(checkedBoxes).map(cb => cb.value);
+        let idTerpilihArr = Array.from(idMassalTerpilihSet);
         let waktuSekarang = new Date();
         let hariIniString = waktuSekarang.toLocaleDateString('fr-CA');
         let awalHariIni = `${hariIniString}T00:00:00.000Z`;
