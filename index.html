@@ -871,17 +871,24 @@
     </div>
 </div>
 
+<!-- MODAL ABSENSI MASSAL DENGAN TAMBAHAN KOLOM PENCARIAN -->
 <div class="glass-modal-overlay" id="modal-absensi-massal" onclick="tutupModalAbsensiMassal()">
     <div class="glass-modal-card" onclick="event.stopPropagation()">
         <div class="glass-modal-title">Absensi Massal / Rombongan</div>
         
-        <div style="margin-bottom: 12px;">
+        <div style="margin-bottom: 10px;">
             <label style="font-size: 9px; margin-bottom: 4px;">Filter Kelompok:</label>
             <div class="waktu-select-trigger" onclick="bukaModalFilterKelompokMassal()" id="label-massal-kelompok-terpilih" style="padding: 10px 14px; font-size: 12px; text-align: left; justify-content: space-between;">
                 <span>-- Semua Kelompok --</span>
                 <span style="font-size: 9px; opacity: 0.6;">▼</span>
             </div>
             <input type="hidden" id="massal-filter-kelompok" value="SEMUA">
+        </div>
+
+        <!-- KOLOM PENCARIAN DI DALAM MODAL MASSAL -->
+        <div style="margin-bottom: 10px;">
+            <label style="font-size: 9px; margin-bottom: 4px;">Cari Nama:</label>
+            <input type="text" id="massal-search-input" placeholder="Ketik nama untuk mencari..." oninput="cariOpsiMassal(this.value)" style="padding: 10px 14px; font-size: 12px;">
         </div>
 
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding: 0 4px;">
@@ -892,7 +899,7 @@
             <span id="massal-counter" style="font-size: 12px; font-weight: 800; color: var(--blue-primary);">0 Terpilih</span>
         </div>
 
-        <div id="massal-list-container" class="glass-modal-list" style="max-height: 280px; padding: 12px 14px; background: var(--input-bg); border-radius: 20px; box-shadow: var(--neu-pressed);">
+        <div id="massal-list-container" class="glass-modal-list" style="max-height: 240px; padding: 12px 14px; background: var(--input-bg); border-radius: 20px; box-shadow: var(--neu-pressed);">
         </div>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px;">
@@ -1339,6 +1346,7 @@
         }
 
         const modal = document.getElementById('modal-absensi-massal');
+        document.getElementById('massal-search-input').value = ''; // Reset pencarian saat modal dibuka
         renderDaftarGenerusMassal();
         modal.classList.add('active');
     }
@@ -1383,9 +1391,12 @@
     function renderDaftarGenerusMassal() {
         const container = document.getElementById('massal-list-container');
         const fKelompok = document.getElementById('massal-filter-kelompok').value;
+        const keywordCari = (document.getElementById('massal-search-input')?.value || '').toLowerCase();
 
         let dataTerfilter = semuaDataGenerus.filter(g => {
-            return (fKelompok === 'SEMUA' || (g.kelompok || '-').toUpperCase() === fKelompok);
+            let sesuaiKelompok = (fKelompok === 'SEMUA' || (g.kelompok || '-').toUpperCase() === fKelompok);
+            let sesuaiKeyword = !keywordCari || (g.nama_lengkap || '').toLowerCase().includes(keywordCari);
+            return sesuaiKelompok && sesuaiKeyword;
         });
 
         dataTerfilter.sort((a, b) => (a.nama_lengkap || '').localeCompare(b.nama_lengkap));
@@ -1415,6 +1426,11 @@
 
         document.getElementById('check-pilih-semua').checked = false;
         updateMassalCounter();
+    }
+
+    // Fungsi untuk memfilter list nama secara real-time berdasarkan input pencarian massal
+    function cariOpsiMassal(keyword) {
+        renderDaftarGenerusMassal();
     }
 
     function togglePilihSemuaMassal(checked) {
