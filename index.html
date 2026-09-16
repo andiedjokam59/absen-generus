@@ -1465,7 +1465,7 @@
     async function eksekusiHapusGenerus(idGenerus, token) {
         try {
             let { error } = await _supabase
-                .from('data_generus')
+                .from('data_absensi_generus')
                 .delete()
                 .eq('id_generus', idGenerus)
                 .eq('deletion_token', token);
@@ -1690,13 +1690,13 @@
         let awalHariIni = `${hariIniString}T00:00:00.000Z`;
         let akhirHariIni = `${hariIniString}T23:59:59.999Z`;
 
-        let localLogs = JSON.parse(localStorage.getItem('absensi_kegiatan_lokal') || '[]');
+        let localLogs = JSON.parse(localStorage.getItem('absensi_generus_lokal') || '[]');
         let riwayatHariIni = localLogs.filter(l => new Date(l.waktu_absen).toLocaleDateString('fr-CA') === hariIniString && l.nama_kegiatan.toUpperCase().trim() === namaKegiatan);
 
         if (navigator.onLine) {
             try {
                 let { data: cloudLogs } = await _supabase
-                    .from('absensi_kegiatan')
+                    .from('absensi_generus')
                     .select('id_generus')
                     .eq('nama_kegiatan', namaKegiatan)
                     .gte('waktu_absen', awalHariIni)
@@ -1716,11 +1716,13 @@
             if (idSudahAbsenSet.has(String(idGen))) {
                 terlewatCount++;
             } else {
+                let profilGen = semuaDataGenerus.find(g => String(g.id_generus) === String(idGen));
                 batchAbsenBaru.push({
                     nama_kegiatan: namaKegiatan,
                     id_generus: idGen,
                     metode_input: metode,
-                    waktu_absen: waktuSekarang.toISOString()
+                    waktu_absen: waktuSekarang.toISOString(),
+                    nama_lengkap: profilGen ? profilGen.nama_lengkap : "-"
                 });
             }
         });
@@ -1733,14 +1735,14 @@
         let suksesSimpan = false;
         if (navigator.onLine) {
             try {
-                let { error } = await _supabase.from('absensi_kegiatan').insert(batchAbsenBaru);
+                let { error } = await _supabase.from('absensi_generus').insert(batchAbsenBaru);
                 if (!error) suksesSimpan = true;
             } catch (err) {}
         }
 
         if (!suksesSimpan) {
             localLogs.push(...batchAbsenBaru);
-            localStorage.setItem('absensi_kegiatan_lokal', JSON.stringify(localLogs));
+            localStorage.setItem('absensi_generus_lokal', JSON.stringify(localLogs));
         }
 
         tutupModalAbsensiMassal();
@@ -1825,13 +1827,13 @@
 
     async function bukaModalPilihKegiatanTersimpan() {
         let daftarAgenda = new Set();
-        let localLogs = JSON.parse(localStorage.getItem('absensi_kegiatan_lokal') || '[]');
+        let localLogs = JSON.parse(localStorage.getItem('absensi_generus_lokal') || '[]');
         localLogs.forEach(l => {
             if(l.nama_kegiatan) daftarAgenda.add(l.nama_kegiatan.toUpperCase().trim());
         });
         if (navigator.onLine) {
             try {
-                let { data: logs } = await _supabase.from('absensi_kegiatan').select('nama_kegiatan');
+                let { data: logs } = await _supabase.from('absensi_generus').select('nama_kegiatan');
                 if (logs) {
                     logs.forEach(l => {
                         if(l.nama_kegiatan) daftarAgenda.add(l.nama_kegiatan.toUpperCase().trim());
@@ -2027,17 +2029,17 @@
     window.addEventListener('offline', updateStatusInternet);
 
     async function muatSemuaGenerus() {
-        const lokalGenerus = localStorage.getItem('cache_data_generus');
+        const lokalGenerus = localStorage.getItem('cache_data_absensi_generus');
         if (lokalGenerus) {
             semuaDataGenerus = JSON.parse(lokalGenerus);
             searchInput.placeholder = `Cari di antara ${semuaDataGenerus.length} data (Lokal)...`;
         }
         if (navigator.onLine) {
             try {
-                let { data: generus, error } = await _supabase.from('data_generus').select('*');
+                let { data: generus, error } = await _supabase.from('data_absensi_generus').select('*');
                 if (!error && generus) { 
                     semuaDataGenerus = generus; 
-                    localStorage.setItem('cache_data_generus', JSON.stringify(generus));
+                    localStorage.setItem('cache_data_absensi_generus', JSON.stringify(generus));
                     searchInput.placeholder = `Cari di antara ${generus.length} data...`; 
                 }
             } catch (e) {}
@@ -2200,35 +2202,87 @@
     }
 
     async function prosesAbsensi(idGenerus, metode) {
-        let namaKegiatan = document.getElementById('kegiatan').value.toUpperCase().trim();
-        if(!namaKegiatan) { bunyikanSuaraGagal(); tampilkanNotifKustom('error', 'Gagal Presensi', 'Harap isi Nama Agenda terlebih dahulu!'); return; }
-        let profil = semuaDataGenerus.find(g => String(g.id_generus) === String(idGenerus));
-        if (!profil) { bunyikanSuaraGagal(); tampilkanNotifKustom('error', 'Ditolak', `ID (${idGenerus}) tidak terdaftar!`); return; }
-        let waktuSekarang = new Date();
-        let hariIniString = waktuSekarang.toLocaleDateString('fr-CA');
-        let awalHariIni = `${hariIniString}T00:00:00.000Z`;
-        let akhirHariIni = `${hariIniString}T23:59:59.999Z`;
-        let localLogs = JSON.parse(localStorage.getItem('absensi_kegiatan_lokal') || '[]');
-        let riwayatHariIni = localLogs.filter(l => new Date(l.waktu_absen).toLocaleDateString('fr-CA') === hariIniString);
-        if (navigator.onLine) {
-            try {
-                let { data: cloudLogs } = await _supabase.from('absensi_kegiatan').select('waktu_absen, nama_kegiatan').eq('id_generus', idGenerus).gte('waktu_absen', awalHariIni).lte('waktu_absen', akhirHariIni);
-                if (cloudLogs) riwayatHariIni = riwayatHariIni.concat(cloudLogs);
-            } catch(e) {}
-        }
-        let sudahAbsen = riwayatHariIni.some(l => l.nama_kegiatan.toUpperCase().trim() === namaKegiatan);
-        if (sudahAbsen) { bunyikanSuaraGagal(); tampilkanNotifKustom('error', 'Sudah Absen', `${profil.nama_lengkap} sudah absen hari ini.`); return; }
-        const dataAbsenBaru = { nama_kegiatan: namaKegiatan, id_generus: idGenerus, metode_input: metode, waktu_absen: waktuSekarang.toISOString() };
-        if (navigator.onLine) {
-            try {
-                let { error } = await _supabase.from('absensi_kegiatan').insert([dataAbsenBaru]);
-                if (!error) { bunyikanSuaraSukses(); tampilkanNotifKustom('success', 'Berhasil', profil.nama_lengkap); return; }
-            } catch (err) {}
-        }
-        localLogs.push(dataAbsenBaru);
-        localStorage.setItem('absensi_kegiatan_lokal', JSON.stringify(localLogs));
-        bunyikanSuaraSukses(); tampilkanNotifKustom('success', 'Berhasil (Offline)', profil.nama_lengkap + ' [Lokal]');
-    }
+		let inputAgendaField = document.getElementById('kegiatan');
+		let namaKegiatan = inputAgendaField ? inputAgendaField.value.toUpperCase().trim() : "";
+		
+		if(!namaKegiatan) { 
+			bunyikanSuaraGagal(); 
+			return tampilkanNotifKustom('error', 'Gagal Presensi', 'Harap isi Nama Agenda terlebih dahulu!'); 
+		}
+		
+		let profil = semuaDataGenerus.find(g => String(g.id_generus) === String(idGenerus));
+		if (!profil) { 
+			bunyikanSuaraGagal(); 
+			return tampilkanNotifKustom('error', 'Ditolak', `ID (${idGenerus}) tidak terdaftar!`); 
+		}
+		
+		let waktuSekarang = new Date();
+		let hariIniString = waktuSekarang.toLocaleDateString('fr-CA');
+		let awalHariIni = `${hariIniString}T00:00:00.000Z`;
+		let akhirHariIni = `${hariIniString}T23:59:59.999Z`;
+		
+		let localLogs = JSON.parse(localStorage.getItem('absensi_generus_lokal') || '[]');
+		let riwayatHariIni = localLogs.filter(l => new Date(l.waktu_absen).toLocaleDateString('fr-CA') === hariIniString);
+		
+		if (navigator.onLine) {
+			try {
+				// Ambil data dari Supabase dengan filter id_generus dan rentang hari ini saja
+				let { data: cloudLogs, error: fetchErr } = await _supabase
+					.from('absensi_generus')
+					.select('waktu_absen, nama_kegiatan')
+					.eq('id_generus', String(idGenerus))
+					.gte('waktu_absen', awalHariIni)
+					.lte('waktu_absen', akhirHariIni);
+					
+				if (!fetchErr && cloudLogs) {
+					riwayatHariIni = riwayatHariIni.concat(cloudLogs);
+				}
+			} catch(e) {
+				console.error("Gagal ambil riwayat online:", e);
+			}
+		}
+		
+		// Pengecekan ketat: Hanya anggap sudah absen jika NAMA KEGIATANNYA PERSIS SAMA di hari yang sama
+		let sudahAbsenDiAgendaIni = riwayatHariIni.some(l => {
+			let namaLogClean = (l.nama_kegiatan || "").toUpperCase().trim();
+			return namaLogClean === namaKegiatan;
+		});
+
+		if (sudahAbsenDiAgendaIni) { 
+			bunyikanSuaraGagal(); 
+			return tampilkanNotifKustom('error', 'Sudah Absen', `${profil.nama_lengkap} sudah absen di agenda "${namaKegiatan}" hari ini.`); 
+		}
+		
+		const dataAbsenBaru = { 
+            nama_kegiatan: namaKegiatan, 
+            id_generus: String(idGenerus), 
+            metode_input: metode, 
+            waktu_absen: waktuSekarang.toISOString(),
+            nama_lengkap: profil.nama_lengkap 
+        };
+
+		if (navigator.onLine) {
+			try {
+				let { error } = await _supabase.from('absensi_generus').insert([dataAbsenBaru]);
+				if (!error) { 
+					bunyikanSuaraSukses(); 
+					tampilkanNotifKustom('success', 'Berhasil', profil.nama_lengkap); 
+					return; 
+				} else {
+					// INI KUNCINYA: Menampilkan error asli Supabase ke console agar terlihat jelas
+					console.error("GAGAL KIRIM KE SUPABASE:", error.message, error.details, error.hint);
+				}
+			} catch (err) {
+				console.error("EXCEPTION SUPABASE:", err);
+			}
+		}
+		
+		// Jika gagal tembus ke internet, baru masuk ke penyimpanan lokal
+		localLogs.push(dataAbsenBaru);
+		localStorage.setItem('absensi_generus_lokal', JSON.stringify(localLogs));
+		bunyikanSuaraSukses(); 
+		tampilkanNotifKustom('success', 'Berhasil (Offline)', profil.nama_lengkap + ' [Lokal]');
+	}
 
     function inputManualKehadiran() { 
         if(!selectedIdInput.value) { bunyikanSuaraGagal(); return tampilkanNotifKustom('error', 'Gagal', 'Pilih nama terlebih dahulu!'); }
@@ -2243,11 +2297,11 @@
         let logAbsen = [];
         if (navigator.onLine) {
             try {
-                let { data: logs, error } = await _supabase.from('absensi_kegiatan').select('*').eq('nama_kegiatan', namaKegiatan.toUpperCase());
+                let { data: logs, error } = await _supabase.from('absensi_generus').select('*').eq('nama_kegiatan', namaKegiatan.toUpperCase());
                 if (!error && logs) logAbsen = logs;
             } catch(e) {}
         }
-        let localLogs = JSON.parse(localStorage.getItem('absensi_kegiatan_lokal') || '[]');
+        let localLogs = JSON.parse(localStorage.getItem('absensi_generus_lokal') || '[]');
         let localLogsFilter = localLogs.filter(l => l.nama_kegiatan.toUpperCase() === namaKegiatan.toUpperCase());
         let gabunganSemua = [...logAbsen, ...localLogsFilter];
         let mapUnik = new Map();
@@ -2265,7 +2319,7 @@
             let detail = semuaDataGenerus.find(g => String(g.id_generus) === String(absen.id_generus));
             let tanggalObj = new Date(absen.waktu_absen);
             return {
-                id: absen.id_generus, name: detail ? detail.nama_lengkap : "ID Terhapus",
+                id: absen.id_generus, name: detail ? detail.nama_lengkap : (absen.nama_lengkap || "ID Terhapus"),
                 kelompok: detail ? (detail.kelompok || "-").toUpperCase() : "-",
                 desa: detail ? (detail.desa || "-").toUpperCase().replace("DESA ", "") : "-",
                 jk: detail ? (detail.jenis_kelamin || "-").toUpperCase() : "-", 
@@ -2279,22 +2333,22 @@
 
     async function sinkronisasiDataOfflineKeCloud() {
         if (!navigator.onLine) return;
-        let localLogs = JSON.parse(localStorage.getItem('absensi_kegiatan_lokal') || '[]');
+        let localLogs = JSON.parse(localStorage.getItem('absensi_generus_lokal') || '[]');
         if (localLogs.length === 0) return;
         let berhasilUploadCount = 0; let logsSisaGagal = [];
         for (let i = 0; i < localLogs.length; i++) {
             try {
-                let { error } = await _supabase.from('absensi_kegiatan').insert([localLogs[i]]);
+                let { error } = await _supabase.from('absensi_generus').insert([localLogs[i]]);
                 if (!error) berhasilUploadCount++; else logsSisaGagal.push(localLogs[i]);
             } catch (e) { logsSisaGagal.push(localLogs[i]); }
         }
-        localStorage.setItem('absensi_kegiatan_lokal', JSON.stringify(logsSisaGagal));
-        if (berhasilUploadCount > 0) tampilkanNotifKustom('success', 'Sinkronisasi', `${berhasilUploadCount} data lokal berhasil dicadangkan.`);
+        localStorage.setItem('absensi_generus_lokal', JSON.stringify(logsSisaGagal));
+        if (berhasilUploadCount > 0) tampilkanNotifKustom('success', 'Sinkronisasi', `${berhasilUploadCount} data lokal berhasil dikirim ke Supabase.`);
     }
 
     async function sinkronisasiManual() {
         if (!navigator.onLine) { tampilkanNotifKustom('error', 'Offline', 'Tidak ada koneksi internet.'); return; }
-        let localLogs = JSON.parse(localStorage.getItem('absensi_kegiatan_lokal') || '[]');
+        let localLogs = JSON.parse(localStorage.getItem('absensi_generus_lokal') || '[]');
         if(localLogs.length === 0) { tampilkanNotifKustom('success', 'Sinkronisasi', 'Semua data sudah sinkron.'); return; }
         await sinkronisasiDataOfflineKeCloud();
     }
@@ -2405,11 +2459,11 @@
         let logAbsen = [];
         if (navigator.onLine) {
             try {
-                let { data: remoteLogs } = await _supabase.from('absensi_kegiatan').select('*').ilike('nama_kegiatan', `%${namaKegiatan}%`);
+                let { data: remoteLogs } = await _supabase.from('absensi_generus').select('*').ilike('nama_kegiatan', `%${namaKegiatan}%`);
                 if (remoteLogs) logAbsen = remoteLogs;
             } catch(e) {}
         }
-        let localLogs = JSON.parse(localStorage.getItem('absensi_kegiatan_lokal') || '[]').filter(l => l.nama_kegiatan.toUpperCase().includes(namaKegiatan));
+        let localLogs = JSON.parse(localStorage.getItem('absensi_generus_lokal') || '[]').filter(l => l.nama_kegiatan.toUpperCase().includes(namaKegiatan));
         let mapUnik = new Map(); [...logAbsen, ...localLogs].forEach(item => mapUnik.set(item.id_generus + "_" + item.waktu_absen, item));
         const tahunPilihan = document.getElementById('filter-tahunan-tahun').value;
         dataMentahTahunanLog = Array.from(mapUnik.values()).filter(l => String(new Date(l.waktu_absen).getFullYear()) === tahunPilihan);
