@@ -373,7 +373,28 @@
             position: relative; z-index: 2; transition: var(--smooth-transition); 
         }
         
-        #reader { width: 100%; border-radius: 24px; overflow: hidden; border: 1px solid var(--border-subtle) !important; background: var(--neu-card-bg); position: relative; z-index: 2; transition: var(--smooth-transition); box-shadow: var(--neu-pressed); padding: 10px; }
+        /* AREA SCANNER DIPERLEBAR DAN DIOPTIMALKAN */
+        #reader { 
+            width: 100%; 
+            min-height: 320px;
+            border-radius: 28px; 
+            overflow: hidden; 
+            border: 1px solid var(--border-subtle) !important; 
+            background: var(--neu-card-bg); 
+            position: relative; 
+            z-index: 2; 
+            transition: var(--smooth-transition); 
+            box-shadow: var(--neu-pressed); 
+            padding: 8px; 
+        }
+
+        #reader video {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: cover !important;
+            border-radius: 20px;
+        }
+
         #reader button {
             background: var(--neu-card-bg) !important; color: var(--blue-primary) !important; border: 1px solid var(--border-subtle) !important;
             padding: 12px 20px !important; font-size: 12px !important; font-weight: 700 !important; font-family: inherit !important;
@@ -875,7 +896,6 @@
 
 <canvas id="particles-canvas"></canvas>
 
-<!-- splash, modal, dan elemen aplikasi tetap sama... -->
 <div id="splash-screen">
   <div class="splash-content">
       <div class="logo-wrapper">
@@ -1948,7 +1968,21 @@
 
     function hidupkanKamera() {
         if (!html5QrcodeScanner) {
-            html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 220 });
+            // FUNGSI UTAMA PENENTU UKURAN SCANNER DIPERLEBAR DISINI
+            const calculateQrBox = function(viewfinderWidth, viewfinderHeight) {
+                let minEdge = Math.min(viewfinderWidth, viewfinderHeight);
+                let qrboxSize = Math.floor(minEdge * 0.85); // Menggunakan 85% area kamera untuk scan
+                return {
+                    width: Math.max(280, qrboxSize),
+                    height: Math.max(280, qrboxSize)
+                };
+            };
+
+            html5QrcodeScanner = new Html5QrcodeScanner("reader", { 
+                fps: 15, 
+                qrbox: calculateQrBox,
+                aspectRatio: 1.0
+            });
             html5QrcodeScanner.render(onScanSuccess);
             document.getElementById('btn-hidupkan').style.display = 'none';
             document.getElementById('btn-matikan').style.display = 'block';
