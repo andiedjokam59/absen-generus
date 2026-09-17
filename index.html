@@ -1184,13 +1184,12 @@
     <div class="top-bar">
         <button class="theme-toggle-btn btn-3d" onclick="ubahTemaSistem()" id="theme-btn">🌙 Dark Mode</button>
         <div class="top-bar-right">
-			<!-- TOMBOL REFRESH DATA SUPABASE -->
-			<button class="btn-rekap-top btn-3d" onclick="refreshDataManual()" title="Refresh Data Master">
-				<svg viewBox="0 0 24 24" style="width:12px; height:12px; fill:none; stroke:currentColor; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round;">
+			<!-- TOMBOL REFRESH HANYA IKON -->
+			<button class="btn-rekap-top btn-3d" onclick="refreshDataManual()" title="Refresh Data Master" style="padding: 8px 10px;">
+				<svg viewBox="0 0 24 24" style="width:14px; height:14px; fill:none; stroke:currentColor; stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round;">
 					<polyline points="23 4 23 10 17 10"></polyline>
 					<path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
 				</svg>
-				Refresh
 			</button>
 
 			<button class="btn-rekap-top btn-3d" onclick="bukaModalRekap()">
@@ -1388,10 +1387,9 @@
     if ('serviceWorker' in navigator) {
 		window.addEventListener('load', () => {
 			navigator.serviceWorker.register('./service-worker.js').then((registration) => {
+				// Cek update service worker tiap kali halaman dibuka
 				if (navigator.onLine) {
-					setInterval(() => {
-						registration.update();
-					}, 10000);
+					registration.update();
 				}
 
 				registration.addEventListener('updatefound', () => {
@@ -1399,7 +1397,11 @@
 					if (newWorker) {
 						newWorker.addEventListener('statechange', () => {
 							if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-								newWorker.postMessage({ action: 'skipWaiting' });
+								// Hapus cache lama & reload otomatis jika ada pembaruan
+								caches.keys().then(names => {
+									for (let name of names) caches.delete(name);
+								});
+								window.location.reload();
 							}
 						});
 					}
