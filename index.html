@@ -2479,37 +2479,63 @@
     function pemicuUlangTahunanMatriks() { let dropdownKategori = document.getElementById('tahunan-dropdown').value; if(dropdownKategori) tarikRekapTahunanMatriks(dropdownKategori); }
 
     function renderTabelMatriksTahunanSistem() {
-        let container = document.getElementById('print-table-container');
-        let statusKategoriAktif = dataMasterTahunanOrang.length > 0 ? (dataMasterTahunanOrang[0].status||"").toUpperCase() : "";
-        let dataOrangTerfilter = [...dataMasterTahunanOrang];
-        let headerDinamis = "";
-        let filterSvg = `<svg viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>`;
+		let container = document.getElementById('print-table-container');
+		let statusKategoriAktif = dataMasterTahunanOrang.length > 0 ? (dataMasterTahunanOrang[0].status || "").toUpperCase() : "";
+		let dataOrangTerfilter = [...dataMasterTahunanOrang];
+		let headerDinamis = "";
+		let filterSvg = `<svg viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>`;
 
-        if (statusKategoriAktif === "PENGURUS") {
-            if (subDapukanPengurusTerpilih.length > 0) dataOrangTerfilter = dataOrangTerfilter.filter(o => o.usia_dapukan && subDapukanPengurusTerpilih.some(f => o.usia_dapukan.toUpperCase().includes(f)));
-            headerDinamis = `<th><div class="th-filter-container">Dapukan<button class="filter-icon-btn btn-3d" onclick="toggleDropdownDapukanPengurus(event)">${filterSvg}</button></div></th>`;
-        } else {
-            if (filterTerpilih['kelompok']) dataOrangTerfilter = dataOrangTerfilter.filter(o => filterTerpilih['kelompok'].includes((o.kelompok || "-").toUpperCase()));
-            headerDinamis = `<th><div class="th-filter-container">Kelompok<button class="filter-icon-btn btn-3d" onclick="toggleDropdownKelompok(event)">${filterSvg}</button></div></th>`;
-        }
-        let html = `<table class="print-table"><thead><tr><th>No</th><th>Nama</th>${headerDinamis}<th>Jan</th><th>Feb</th><th>Mar</th><th>Apr</th><th>Mei</th><th>Jun</th><th>Jul</th><th>Agu</th><th>Sep</th><th>Okt</th><th>Nov</th><th>Des</th><th>Hadir</th><th>Izin</th></tr></thead><tbody>`;
-        if(dataOrangTerfilter.length === 0) html += `<tr><td colspan="17">Tidak ada data.</td></tr>`;
-        else {
-            dataOrangTerfilter.sort((a,b) => (a.nama_lengkap || '').localeCompare(b.nama_lengkap)).forEach((orang, idx) => {
-                let logO = dataMentahTahunanLog.filter(l => String(l.id_generus) === String(orang.id_generus));
-                let k3 = (statusKategoriAktif === "PENGURUS") ? (orang.usia_dapukan || "-").toUpperCase() : (orang.kelompok || "-").toUpperCase();
-                html += `<tr><td>${idx + 1}</td><td>${orang.nama_lengkap}</td><td><span class="sub-info-tag">${k3}</span></td>`;
-                for (let m = 0; m < 12; m++) {
-                    let logsB = logO.filter(l => new Date(l.waktu_absen).getMonth() === m);
-                    if (logsB.some(l => l.metode_input !== 'Izin')) html += `<td style="color:var(--blue-primary);">✔</td>`; 
-                    else if (logsB.some(l => l.metode_input === 'Izin')) html += `<td style="color:var(--yellow-accent);">IZN</td>`; 
-                    else html += `<td>-</td>`; 
-                }
-                html += `<td>${logO.filter(l => l.metode_input !== 'Izin').length}x</td><td>${logO.filter(l => l.metode_input === 'Izin').length}x</td></tr>`;
-            });
-        }
-        html += `</table>`; container.innerHTML = html; document.getElementById('print-area').style.display = "block";
-    }
+		if (statusKategoriAktif === "PENGURUS") {
+			if (subDapukanPengurusTerpilih.length > 0) dataOrangTerfilter = dataOrangTerfilter.filter(o => o.usia_dapukan && subDapukanPengurusTerpilih.some(f => o.usia_dapukan.toUpperCase().includes(f)));
+			headerDinamis = `<th><div class="th-filter-container">Dapukan<button class="filter-icon-btn btn-3d" onclick="toggleDropdownDapukanPengurus(event)">${filterSvg}</button></div></th>`;
+		} else {
+			if (filterTerpilih['kelompok']) dataOrangTerfilter = dataOrangTerfilter.filter(o => filterTerpilih['kelompok'].includes((o.kelompok || "-").toUpperCase()));
+			headerDinamis = `<th><div class="th-filter-container">Kelompok<button class="filter-icon-btn btn-3d" onclick="toggleDropdownKelompok(event)">${filterSvg}</button></div></th>`;
+		}
+
+		let html = `<table class="print-table"><thead><tr><th>No</th><th>Nama</th>${headerDinamis}<th>Jan</th><th>Feb</th><th>Mar</th><th>Apr</th><th>Mei</th><th>Jun</th><th>Jul</th><th>Agu</th><th>Sep</th><th>Okt</th><th>Nov</th><th>Des</th><th>Hadir</th><th>Izin</th></tr></thead><tbody>`;
+
+		if (dataOrangTerfilter.length === 0) {
+			html += `<tr><td colspan="17">Tidak ada data.</td></tr>`;
+		} else {
+			dataOrangTerfilter.sort((a, b) => (a.nama_lengkap || '').localeCompare(b.nama_lengkap)).forEach((orang, idx) => {
+				let logO = dataMentahTahunanLog.filter(l => String(l.id_generus) === String(orang.id_generus));
+				let k3 = (statusKategoriAktif === "PENGURUS") ? (orang.usia_dapukan || "-").toUpperCase() : (orang.kelompok || "-").toUpperCase();
+				
+				html += `<tr><td>${idx + 1}</td><td>${orang.nama_lengkap}</td><td><span class="sub-info-tag">${k3}</span></td>`;
+
+				// Counter untuk menghitung total bulan yang dianggap Hadir & Izin (Maksimal 1x per bulan)
+				let totalBulanHadir = 0;
+				let totalBulanIzin = 0;
+
+				for (let m = 0; m < 12; m++) {
+					let logsB = logO.filter(l => new Date(l.waktu_absen).getMonth() === m);
+
+					// Jika di bulan tersebut ada absen Hadir (metode_input bukan 'Izin')
+					if (logsB.some(l => l.metode_input !== 'Izin')) {
+						html += `<td style="color:var(--blue-primary);">✔</td>`; 
+						totalBulanHadir++; // Dihitung 1x untuk bulan ini
+					} 
+					// Jika tidak ada Hadir tapi ada catatan Izin
+					else if (logsB.some(l => l.metode_input === 'Izin')) {
+						html += `<td style="color:var(--yellow-accent);">IZN</td>`; 
+						totalBulanIzin++; // Dihitung 1x untuk bulan ini
+					} 
+					// Jika tidak ada absen sama sekali
+					else {
+						html += `<td>-</td>`; 
+					}
+				}
+
+				// Menampilkan hasil akumulasi bulanan di tabel paling belakang
+				html += `<td>${totalBulanHadir}x</td><td>${totalBulanIzin}x</td></tr>`;
+			});
+		}
+
+		html += `</table>`; 
+		container.innerHTML = html; 
+		document.getElementById('print-area').style.display = "block";
+	}
 
     function toggleDropdownDapukanPengurus(event) {
         event.stopPropagation(); let menu = document.getElementById('dropdown-filter-dapukan'); tutupSemuaDropdownAman(false);
