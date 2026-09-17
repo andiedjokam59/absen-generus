@@ -2105,36 +2105,42 @@
     window.addEventListener('offline', updateStatusInternet);
 
     async function muatSemuaGenerus() {
-		// A. BACA CACHE LOKAL TERLEBIH DAHULU (Agar saat offline data langsung ada)
-		const lokalGenerus = localStorage.getItem('cache_data_absensi_generus');
-		if (lokalGenerus) {
-			try {
+		// A. BACA CACHE LOKAL TERLEBIH DAHULU (Wajib untuk Safari / Offline)
+		let lokalGenerus = null;
+		try {
+			lokalGenerus = localStorage.getItem('cache_data_absensi_generus');
+			if (lokalGenerus) {
 				semuaDataGenerus = JSON.parse(lokalGenerus);
 				if (searchInput) {
 					searchInput.placeholder = `Cari di antara ${semuaDataGenerus.length} data...`;
 				}
-			} catch (e) {
-				console.error("Gagal parse cache lokal:", e);
 			}
+		} catch (e) {
+			console.warn("Storage warning di perangkat:", e);
 		}
 
-		// B. JIKA ONLINE, BACA LANGSUNG HINGGA 10.000 DATA DARI SUPABASE
+		// B. JIKA ONLINE, AMBIL DATA TERBARU DARI SUPABASE
 		if (navigator.onLine) {
 			try {
 				let { data: generus, error } = await _supabase
 					.from('data_absensi_generus')
 					.select('*')
-					.limit(10000); // Tarik hingga 10.000 data sekaligus
+					.limit(10000);
 
 				if (!error && generus && generus.length > 0) { 
 					semuaDataGenerus = generus; 
-					localStorage.setItem('cache_data_absensi_generus', JSON.stringify(generus));
+					try {
+						localStorage.setItem('cache_data_absensi_generus', JSON.stringify(generus));
+					} catch (errQuota) {
+						console.warn("Penyimpanan lokal penuh, data tetap dimuat di RAM.");
+					}
+					
 					if (searchInput) {
 						searchInput.placeholder = `Cari di antara ${generus.length} data...`; 
 					}
 				}
 			} catch (e) {
-				console.log("Koneksi Supabase terganggu, menggunakan data lokal.");
+				console.log("Koneksi Supabase terganggu, menggunakan cache lokal.");
 			}
 		}
 	}
