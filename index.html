@@ -1181,24 +1181,35 @@
 </div>
 
 <div class="app-container">
-    <div class="top-bar">
-        <button class="theme-toggle-btn btn-3d" onclick="ubahTemaSistem()" id="theme-btn">🌙 Dark Mode</button>
-        <div class="top-bar-right">
-			<!-- TOMBOL REFRESH HANYA IKON -->
-			<button class="btn-rekap-top btn-3d" onclick="refreshDataManual()" title="Refresh Data Master" style="padding: 8px 10px;">
-				<svg viewBox="0 0 24 24" style="width:14px; height:14px; fill:none; stroke:currentColor; stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round;">
+    <div class="top-bar" style="flex-direction: column; align-items: stretch; gap: 10px;">
+		<!-- BARIS 1: SEJAJAR DARK MODE, REKAP, DAN STATUS ONLINE -->
+		<div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+			<button class="theme-toggle-btn btn-3d" onclick="ubahTemaSistem()" id="theme-btn">🌙 Dark Mode</button>
+			
+			<div class="top-bar-right" style="display: flex; align-items: center; gap: 8px;">
+				<button class="btn-rekap-top btn-3d" onclick="bukaModalRekap()">
+					<svg viewBox="0 0 24 24" style="width:12px; height:12px; fill:none; stroke:currentColor; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round;">
+						<line x1="18" y1="20" x2="18" y2="10"></line>
+						<line x1="12" y1="20" x2="12" y2="4"></line>
+						<line x1="6" y1="20" x2="6" y2="14"></line>
+					</svg>
+					Rekap
+				</button>
+				<div id="network-indicator" class="net-status online">● Online</div>
+			</div>
+		</div>
+
+		<!-- BARIS 2: TOMBOL REFRESH DENGAN TEKS (POSISI DI BAWAH DARK MODE) -->
+		<div style="display: flex; justify-content: flex-start;">
+			<button class="btn-rekap-top btn-3d" onclick="refreshDataManual()" title="Refresh Data Master" style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px;">
+				<svg viewBox="0 0 24 24" style="width:12px; height:12px; fill:none; stroke:currentColor; stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round;">
 					<polyline points="23 4 23 10 17 10"></polyline>
 					<path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
 				</svg>
+				<span>Refresh</span>
 			</button>
-
-			<button class="btn-rekap-top btn-3d" onclick="bukaModalRekap()">
-				<svg viewBox="0 0 24 24" style="width:12px; height:12px; fill:none; stroke:currentColor; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round;"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
-				Rekap
-			</button>
-			<div id="network-indicator" class="net-status online">● Online</div>
 		</div>
-    </div>
+	</div>
     
 	<div class="brand-header">
         <div class="brand-logo-container">
