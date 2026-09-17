@@ -494,23 +494,28 @@
         }
 
         .glass-modal-card {
-            width: 100%; max-width: 440px;
-            background: var(--neu-card-bg);
-            border-radius: 32px;
-            border: 1px solid var(--border-subtle);
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15), 0 10px 20px rgba(0, 0, 0, 0.1), inset 0 2px 3px var(--border-subtle);
-            padding: 24px 18px;
-            box-sizing: border-box;
-            transform: scale(0.92);
-            transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), var(--smooth-transition);
-            max-height: 85vh; max-height: 85dvh;
-            overflow-y: auto !important;
-            overscroll-behavior-y: contain;
-            -webkit-overflow-scrolling: touch;
-            display: flex; 
-            flex-direction: column;
-            margin: auto;
-        }
+			width: 100%; 
+			max-width: 420px;
+			background: var(--neu-card-bg);
+			border-radius: 28px; /* Sudut membulat sama dengan notifikasi */
+			border: 1px solid var(--border-subtle);
+			/* Menggunakan paduan bayangan luar yang lembut dan inset shadow khas notifikasi */
+			box-shadow: 0 20px 40px rgba(0, 0, 0, 0.18), 
+						0 8px 16px rgba(0, 0, 0, 0.12), 
+						inset 0 1px 2px var(--border-subtle);
+			padding: 24px 20px;
+			box-sizing: border-box;
+			transform: scale(0.92);
+			transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), var(--smooth-transition);
+			max-height: 85vh; 
+			max-height: 85dvh;
+			overflow-y: auto !important;
+			overscroll-behavior-y: contain;
+			-webkit-overflow-scrolling: touch;
+			display: flex; 
+			flex-direction: column;
+			margin: auto;
+		}
 
         /* RESPONSIF KHUSUS TAMPILAN MOBILE SAAT KEYBOARD MUNCUL */
         @media screen and (max-height: 550px) {
@@ -538,41 +543,56 @@
         }
 
         .glass-modal-title {
-            font-size: 13px; font-weight: 800; text-transform: uppercase;
-            letter-spacing: 0.8px; color: var(--blue-primary); text-align: center;
-            margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid var(--border-subtle);
-            flex-shrink: 0;
-            transition: var(--smooth-transition);
-        }
+			font-size: 14px; 
+			font-weight: 800; 
+			text-transform: uppercase;
+			letter-spacing: 0.5px; 
+			color: var(--blue-primary); 
+			text-align: center;
+			margin-bottom: 14px; 
+			padding-bottom: 10px; 
+			border-bottom: 1px solid var(--border-subtle);
+			flex-shrink: 0;
+			transition: var(--smooth-transition);
+		}
 
         .glass-modal-list {
-            display: flex; flex-direction: column; gap: 12px;
-            max-height: 380px; overflow-y: auto; -webkit-overflow-scrolling: touch;
-            padding: 6px 4px;
-            box-sizing: border-box;
-        }
+			display: flex; 
+			flex-direction: column; 
+			gap: 10px;
+			max-height: 360px; 
+			overflow-y: auto; 
+			-webkit-overflow-scrolling: touch;
+			padding: 6px 4px;
+			box-sizing: border-box;
+		}
 
         .glass-modal-item {
-            padding: 14px 18px; font-size: 13px; font-weight: 700;
-            color: var(--text-dark); text-align: center; border-radius: 20px;
-            background: var(--neu-card-bg); 
-            box-shadow: var(--neu-flat-sm);
-            border: 1px solid var(--border-subtle);
-            cursor: pointer; transition: var(--smooth-transition);
-            box-sizing: border-box;
-            display: block;
-            width: 100%;
-        }
+			padding: 14px 18px; 
+			font-size: 13px; 
+			font-weight: 700;
+			color: var(--text-dark); 
+			text-align: center; 
+			border-radius: 20px;
+			background: var(--neu-card-bg); 
+			box-shadow: var(--neu-flat-sm);
+			border: 1px solid var(--border-subtle);
+			cursor: pointer; 
+			transition: var(--smooth-transition);
+			box-sizing: border-box;
+			display: block;
+			width: 100%;
+		}
 
-        /* TANPA HIGHLIGHT WARNA - HANYA EFEK TEKAN 3D */
         .glass-modal-item:hover {
-            transform: translateY(-1px);
-            color: var(--blue-primary);
-        }
+			transform: translateY(-1px);
+			color: var(--blue-primary);
+		}
+		
         .glass-modal-item:active {
-            box-shadow: var(--neu-pressed);
-            transform: scale(0.97);
-        }
+			box-shadow: var(--neu-pressed);
+			transform: scale(0.97);
+		}
 
         .glass-modal-close-btn {
             width: 100%; 
