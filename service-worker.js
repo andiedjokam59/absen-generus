@@ -1,24 +1,32 @@
-// Service Worker Offline-First dengan Pembaruan Otomatis Real-Time
+// Service Worker Fully-Offline Capable
+const CACHE_NAME = 'presensi-offline-v1';
 
-const CACHE_NAME = 'presensi-app-shell';
-
-// Berkas-berkas inti agar aplikasi bisa dibuka dari awal tanpa internet
-const ASSETS = [
+// Daftar semua file internal dan CDN eksternal yang WAJIB disimpan agar bisa offline total
+const ASSETS_TO_CACHE = [
   './',
-  './index tema putih.html',
+  './index.html',
   './Logo remaja daerah.png',
-  './manifest.json'
+  './manifest.json',
+  // Library Eksternal (Agar fitur QR Scanner & Supabase tetap jalan saat offline)
+  'https://unpkg.com/html5-qrcode',
+  'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2',
+  'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap'
 ];
 
-// 1. Install: Simpan berkas dasar ke memori lokal HP/Laptop
+// 1. Install Event: Download dan simpan semua aset ke dalam cache
 self.addEventListener('install', (event) => {
   self.skipWaiting();
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
+    caches.open(CACHE_NAME).then((cache) => {
+      // Menggunakan Promise.allSettled agar jika salah satu CDN gagal, file lokal tetap ter-cache
+      return Promise.allSettled(
+        ASSETS_TO_CACHE.map((asset) => cache.add(asset))
+      );
+    })
   );
 });
 
-// 2. Activate: Langsung ambil alih koneksi tanpa menunggu
+// 2. Activate Event: Hapus cache versi lama & ambil alih kontrol langsung
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
@@ -31,42 +39,44 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// 3. Fetch: Prioritaskan Sinyal (Network First) untuk Data Terbaru, Fallback ke Cache jika Offline Total
+// 3. Fetch Event: Cache-First dengan Fallback ke Network
+// Jika offline, ambil dari Cache. Jika online, ambil dari server sambil memperbarui Cache.
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
 
-  // Jangan simpan response API Supabase/External CDN ke dalam App Shell Cache
   const url = new URL(event.request.url);
-  const isExternalApi = url.origin.includes('supabase.co');
 
-  if (isExternalApi) {
-    // Biarkan Supabase ditangani oleh logika JavaScript offline di halaman HTML
+  // Abaikan request langsung ke database Supabase agar tidak bentrok dengan logika offline Supabase di HTML
+  if (url.origin.includes('supabase.co')) {
     return;
   }
 
   event.respondWith(
-    fetch(event.request)
-      .then((networkResponse) => {
-        // Jika ada internet, perbarui salinan cache lokal secara otomatis
+    caches.match(event.request).then((cachedResponse) => {
+      if (cachedResponse) {
+        // Jika ada di cache, tampilkan langsung (sehingga logo & aplikasi langsung muncul walau offline)
+        fetch(event.request).then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, networkResponse));
+          }
+        }).catch(() => {/* Abaikan error jaringan saat offline */});
+
+        return cachedResponse;
+      }
+
+      // Jika belum ada di cache, ambil dari jaringan
+      return fetch(event.request).then((networkResponse) => {
         if (networkResponse && networkResponse.status === 200) {
           const responseToCache = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseToCache);
-          });
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseToCache));
         }
         return networkResponse;
-      })
-      .catch(() => {
-        // Jika TIDAK ADA SINYAL SAMA SEKALI, ambil tampilan dari memori cache lokal
-        return caches.match(event.request).then((cachedResponse) => {
-          if (cachedResponse) {
-            return cachedResponse;
-          }
-          // Jika membuka halaman utama saat offline
-          if (event.request.mode === 'navigate') {
-            return caches.match('./index tema putih.html');
-          }
-        });
-      })
+      }).catch(() => {
+        // Fallback untuk navigasi utama jika offline total
+        if (event.request.mode === 'navigate') {
+          return caches.match('./index.html');
+        }
+      });
+    })
   );
 });

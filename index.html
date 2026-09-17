@@ -2051,23 +2051,36 @@
     window.addEventListener('offline', updateStatusInternet);
 
     async function muatSemuaGenerus() {
-        const lokalGenerus = localStorage.getItem('cache_data_absensi_generus');
-        if (lokalGenerus) {
-            semuaDataGenerus = JSON.parse(lokalGenerus);
-            searchInput.placeholder = `Cari di antara ${semuaDataGenerus.length} data (Lokal)...`;
-        }
-        if (navigator.onLine) {
-            try {
-                let { data: generus, error } = await _supabase.from('data_absensi_generus').select('*');
-                if (!error && generus) { 
-                    semuaDataGenerus = generus; 
-                    localStorage.setItem('cache_data_absensi_generus', JSON.stringify(generus));
-                    searchInput.placeholder = `Cari di antara ${generus.length} data...`; 
-                }
-            } catch (e) {}
-        }
-    }
-    muatSemuaGenerus();
+		// 1. BACA CACHE LOKAL TERLEBIH DAHULU (PENTING AGAR OFFLINE BISA TAMPIL DATA)
+		const lokalGenerus = localStorage.getItem('cache_data_absensi_generus');
+		if (lokalGenerus) {
+			try {
+				semuaDataGenerus = JSON.parse(lokalGenerus);
+				if (searchInput) {
+					searchInput.placeholder = `Cari di antara ${semuaDataGenerus.length} data (Offline)...`;
+				}
+			} catch (e) {
+				console.error("Gagal parse cache lokal:", e);
+			}
+		}
+
+		// 2. JIKA ADA SINYAL / ONLINE, PERBARUI DATA DARI SUPABASE DAN SIMPAN KE LOKAL
+		if (navigator.onLine) {
+			try {
+				let { data: generus, error } = await _supabase.from('data_absensi_generus').select('*');
+				if (!error && generus && generus.length > 0) { 
+					semuaDataGenerus = generus; 
+					// Simpan salinan terbaru ke memori HP agar bisa dipakai saat offline
+					localStorage.setItem('cache_data_absensi_generus', JSON.stringify(generus));
+					if (searchInput) {
+						searchInput.placeholder = `Cari di antara ${generus.length} data...`; 
+					}
+				}
+			} catch (e) {
+				console.log("Koneksi Supabase tidak terjangkau, menggunakan data lokal.");
+			}
+		}
+	}
 
     function cariNamaPintar() {
         let keyword = searchInput.value.toLowerCase();
