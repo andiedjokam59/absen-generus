@@ -2309,19 +2309,30 @@
 		}
 		
 		let waktuSekarang = new Date();
-		let hariIniString = waktuSekarang.toLocaleDateString('fr-CA');
-		let awalHariIni = `${hariIniString}T00:00:00.000Z`;
-		let akhirHariIni = `${hariIniString}T23:59:59.999Z`;
+		// Ambil tanggal lokal hari ini dalam format YYYY-MM-DD yang presisi
+		let thn = waktuSekarang.getFullYear();
+		let bln = String(waktuSekarang.getMonth() + 1).padStart(2, '0');
+		let tgl = String(waktuSekarang.getDate()).padStart(2, '0');
+		let hariIniFormat = `${thn}-${bln}-${tgl}`;
+
+		let awalHariIni = `${hariIniFormat}T00:00:00.000Z`;
+		let akhirHariIni = `${hariIniFormat}T23:59:59.999Z`;
 		
+		// 1. CEK RIWAYAT DARI LOCALSTORAGE (Pengecekan tanggal lokal yang aman)
 		let localLogs = JSON.parse(localStorage.getItem('absensi_generus_lokal') || '[]');
-		let riwayatHariIni = localLogs.filter(l => new Date(l.waktu_absen).toLocaleDateString('fr-CA') === hariIniString);
+		let riwayatHariIni = localLogs.filter(l => {
+			if (!l.waktu_absen) return false;
+			let d = new Date(l.waktu_absen);
+			let dStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+			return dStr === hariIniFormat;
+		});
 		
+		// 2. CEK RIWAYAT ONLINE (JIKA TERHUBUNG INTERNET)
 		if (navigator.onLine) {
 			try {
-				// Ambil data dari Supabase dengan filter id_generus dan rentang hari ini saja
 				let { data: cloudLogs, error: fetchErr } = await _supabase
 					.from('absensi_generus')
-					.select('waktu_absen, nama_kegiatan')
+					.select('waktu_absen, nama_kegiatan, id_generus')
 					.eq('id_generus', String(idGenerus))
 					.gte('waktu_absen', awalHariIni)
 					.lte('waktu_absen', akhirHariIni);
@@ -2334,10 +2345,11 @@
 			}
 		}
 		
-		// Pengecekan ketat: Hanya anggap sudah absen jika NAMA KEGIATANNYA PERSIS SAMA di hari yang sama
+		// 3. PENGECEKAN KETAT: Apakah ID Generus ini SUDAH ABSEN di agenda & tanggal yang sama?
 		let sudahAbsenDiAgendaIni = riwayatHariIni.some(l => {
-			let namaLogClean = (l.nama_kegiatan || "").toUpperCase().trim();
-			return namaLogClean === namaKegiatan;
+			let sameId = String(l.id_generus) === String(idGenerus);
+			let sameAgenda = (l.nama_kegiatan || "").toUpperCase().trim() === namaKegiatan;
+			return sameId && sameAgenda;
 		});
 
 		if (sudahAbsenDiAgendaIni) { 
@@ -2346,13 +2358,14 @@
 		}
 		
 		const dataAbsenBaru = { 
-            nama_kegiatan: namaKegiatan, 
-            id_generus: String(idGenerus), 
-            metode_input: metode, 
-            waktu_absen: waktuSekarang.toISOString(),
-            nama_lengkap: profil.nama_lengkap 
-        };
+			nama_kegiatan: namaKegiatan, 
+			id_generus: String(idGenerus), 
+			metode_input: metode, 
+			waktu_absen: waktuSekarang.toISOString(),
+			nama_lengkap: profil.nama_lengkap 
+		};
 
+		// JIKA ONLINE: SIMPAN KE SUPABASE
 		if (navigator.onLine) {
 			try {
 				let { error } = await _supabase.from('absensi_generus').insert([dataAbsenBaru]);
@@ -2360,16 +2373,13 @@
 					bunyikanSuaraSukses(); 
 					tampilkanNotifKustom('success', 'Berhasil', profil.nama_lengkap); 
 					return; 
-				} else {
-					// INI KUNCINYA: Menampilkan error asli Supabase ke console agar terlihat jelas
-					console.error("GAGAL KIRIM KE SUPABASE:", error.message, error.details, error.hint);
 				}
 			} catch (err) {
-				console.error("EXCEPTION SUPABASE:", err);
+				console.error("Exception Supabase:", err);
 			}
 		}
 		
-		// Jika gagal tembus ke internet, baru masuk ke penyimpanan lokal
+		// JIKA OFFLINE ATAU GAGAL ONLINE: SIMPAN KE LOCALSTORAGE
 		localLogs.push(dataAbsenBaru);
 		localStorage.setItem('absensi_generus_lokal', JSON.stringify(localLogs));
 		bunyikanSuaraSukses(); 
