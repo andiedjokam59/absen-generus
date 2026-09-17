@@ -1377,17 +1377,18 @@
 		window.addEventListener('load', () => {
 			navigator.serviceWorker.register('./service-worker.js').then((registration) => {
 				
-				// Cek pembaruan ke GitHub setiap 5 detik secara otomatis
-				setInterval(() => {
-					registration.update();
-				}, 5000);
+				// Cek update ke GitHub jika HP sedang terhubung ke internet (setiap 10 detik)
+				if (navigator.onLine) {
+					setInterval(() => {
+						registration.update();
+					}, 10000);
+				}
 
 				registration.addEventListener('updatefound', () => {
 					const newWorker = registration.installing;
 					if (newWorker) {
 						newWorker.addEventListener('statechange', () => {
 							if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-								// Jika ada file baru di GitHub, langsung aktifkan detik itu juga
 								newWorker.postMessage({ action: 'skipWaiting' });
 							}
 						});
@@ -1397,8 +1398,7 @@
 				console.error('Service Worker Error:', err);
 			});
 
-			// OTOMATIS RELOAD HALAMAN
-			// Saat file baru terdeteksi di GitHub, halaman HP/Laptop pengguna langsung reload otomatis
+			// Apabila ada versi baru dari GitHub saat ada sinyal, halaman reload otomatis
 			let isRefreshing = false;
 			navigator.serviceWorker.addEventListener('controllerchange', () => {
 				if (!isRefreshing) {
