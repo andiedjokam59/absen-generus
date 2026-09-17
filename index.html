@@ -1376,8 +1376,6 @@
     if ('serviceWorker' in navigator) {
 		window.addEventListener('load', () => {
 			navigator.serviceWorker.register('./service-worker.js').then((registration) => {
-				
-				// Cek update ke GitHub jika HP sedang terhubung ke internet (setiap 10 detik)
 				if (navigator.onLine) {
 					setInterval(() => {
 						registration.update();
@@ -1398,7 +1396,6 @@
 				console.error('Service Worker Error:', err);
 			});
 
-			// Apabila ada versi baru dari GitHub saat ada sinyal, halaman reload otomatis
 			let isRefreshing = false;
 			navigator.serviceWorker.addEventListener('controllerchange', () => {
 				if (!isRefreshing) {
@@ -2051,33 +2048,36 @@
     window.addEventListener('offline', updateStatusInternet);
 
     async function muatSemuaGenerus() {
-		// 1. BACA CACHE LOKAL TERLEBIH DAHULU (PENTING AGAR OFFLINE BISA TAMPIL DATA)
+		// A. BACA CACHE LOKAL TERLEBIH DAHULU (Agar saat offline data langsung ada)
 		const lokalGenerus = localStorage.getItem('cache_data_absensi_generus');
 		if (lokalGenerus) {
 			try {
 				semuaDataGenerus = JSON.parse(lokalGenerus);
 				if (searchInput) {
-					searchInput.placeholder = `Cari di antara ${semuaDataGenerus.length} data (Offline)...`;
+					searchInput.placeholder = `Cari di antara ${semuaDataGenerus.length} data...`;
 				}
 			} catch (e) {
 				console.error("Gagal parse cache lokal:", e);
 			}
 		}
 
-		// 2. JIKA ADA SINYAL / ONLINE, PERBARUI DATA DARI SUPABASE DAN SIMPAN KE LOKAL
+		// B. JIKA ONLINE, BACA LANGSUNG HINGGA 10.000 DATA DARI SUPABASE
 		if (navigator.onLine) {
 			try {
-				let { data: generus, error } = await _supabase.from('data_absensi_generus').select('*');
+				let { data: generus, error } = await _supabase
+					.from('data_absensi_generus')
+					.select('*')
+					.limit(10000); // Tarik hingga 10.000 data sekaligus
+
 				if (!error && generus && generus.length > 0) { 
 					semuaDataGenerus = generus; 
-					// Simpan salinan terbaru ke memori HP agar bisa dipakai saat offline
 					localStorage.setItem('cache_data_absensi_generus', JSON.stringify(generus));
 					if (searchInput) {
 						searchInput.placeholder = `Cari di antara ${generus.length} data...`; 
 					}
 				}
 			} catch (e) {
-				console.log("Koneksi Supabase tidak terjangkau, menggunakan data lokal.");
+				console.log("Koneksi Supabase terganggu, menggunakan data lokal.");
 			}
 		}
 	}
@@ -2489,26 +2489,44 @@
     }
 
     async function tarikRekapTahunanMatriks(statusPilihan) {
-        let namaKegiatan = document.getElementById('kegiatan').value.toUpperCase().trim();
-        if(!namaKegiatan) return tampilkanNotifKustom('error', 'Gagal', 'Isi Nama Agenda!');
-        let logAbsen = [];
-        if (navigator.onLine) {
-            try {
-                let { data: remoteLogs } = await _supabase.from('absensi_generus').select('*').ilike('nama_kegiatan', `%${namaKegiatan}%`);
-                if (remoteLogs) logAbsen = remoteLogs;
-            } catch(e) {}
-        }
-        let localLogs = JSON.parse(localStorage.getItem('absensi_generus_lokal') || '[]').filter(l => l.nama_kegiatan.toUpperCase().includes(namaKegiatan));
-        let mapUnik = new Map(); [...logAbsen, ...localLogs].forEach(item => mapUnik.set(item.id_generus + "_" + item.waktu_absen, item));
-        const tahunPilihan = document.getElementById('filter-tahunan-tahun').value;
-        dataMentahTahunanLog = Array.from(mapUnik.values()).filter(l => String(new Date(l.waktu_absen).getFullYear()) === tahunPilihan);
-        if (statusPilihan === "JAMA'AH UMUM") { dataMasterTahunanOrang = semuaDataGenerus.filter(g => g.status && ["GENERUS", "PENGURUS", "MT/MS", "JAMA'AH UMUM"].includes(g.status.toUpperCase()) && g.kelompok_aktif !== false); } 
-        else { dataMasterTahunanOrang = semuaDataGenerus.filter(g => g.status && g.status.toUpperCase().includes(statusPilihan.toUpperCase())); }
-        filterTerpilih = {}; subDapukanPengurusTerpilih = []; 
-        document.getElementById('cetak-judul-kegiatan').innerText = `REKAP TAHUNAN: ${namaKegiatan}`;
-        document.getElementById('cetak-waktu').innerText = `Kategori: ${statusPilihan} | Tahun: ${tahunPilihan}`;
-        document.getElementById('resume-kehadiran-container').innerHTML = ""; renderTabelMatriksTahunanSistem();
-    }
+		let namaKegiatan = document.getElementById('kegiatan').value.toUpperCase().trim();
+		if(!namaKegiatan) return tampilkanNotifKustom('error', 'Gagal', 'Isi Nama Agenda!');
+
+		let logAbsen = [];
+		if (navigator.onLine) {
+			try {
+				let { data: remoteLogs, error } = await _supabase
+					.from('absensi_generus')
+					.select('*')
+					.ilike('nama_kegiatan', `%${namaKegiatan}%`)
+					.limit(10000); // Tarik hingga 10.000 log absensi
+
+				if (!error && remoteLogs) logAbsen = remoteLogs;
+			} catch(e) {
+				console.error("Error penarikan rekap Supabase:", e);
+			}
+		}
+
+		let localLogs = JSON.parse(localStorage.getItem('absensi_generus_lokal') || '[]').filter(l => l.nama_kegiatan.toUpperCase().includes(namaKegiatan));
+		let mapUnik = new Map(); 
+		[...logAbsen, ...localLogs].forEach(item => mapUnik.set(item.id_generus + "_" + item.waktu_absen, item));
+
+		const tahunPilihan = document.getElementById('filter-tahunan-tahun').value;
+		dataMentahTahunanLog = Array.from(mapUnik.values()).filter(l => String(new Date(l.waktu_absen).getFullYear()) === tahunPilihan);
+
+		if (statusPilihan === "JAMA'AH UMUM") { 
+			dataMasterTahunanOrang = semuaDataGenerus.filter(g => g.status && ["GENERUS", "PENGURUS", "MT/MS", "JAMA'AH UMUM"].includes(g.status.toUpperCase()) && g.kelompok_aktif !== false); 
+		} else { 
+			dataMasterTahunanOrang = semuaDataGenerus.filter(g => g.status && g.status.toUpperCase().includes(statusPilihan.toUpperCase())); 
+		}
+
+		filterTerpilih = {}; 
+		subDapukanPengurusTerpilih = []; 
+		document.getElementById('cetak-judul-kegiatan').innerText = `REKAP TAHUNAN: ${namaKegiatan}`;
+		document.getElementById('cetak-waktu').innerText = `Kategori: ${statusPilihan} | Tahun: ${tahunPilihan}`;
+		document.getElementById('resume-kehadiran-container').innerHTML = ""; 
+		renderTabelMatriksTahunanSistem();
+	}
 
     function pemicuUlangTahunanMatriks() { let dropdownKategori = document.getElementById('tahunan-dropdown').value; if(dropdownKategori) tarikRekapTahunanMatriks(dropdownKategori); }
 
