@@ -1184,12 +1184,21 @@
     <div class="top-bar">
         <button class="theme-toggle-btn btn-3d" onclick="ubahTemaSistem()" id="theme-btn">🌙 Dark Mode</button>
         <div class="top-bar-right">
-            <button class="btn-rekap-top btn-3d" onclick="bukaModalRekap()">
-                <svg viewBox="0 0 24 24" style="width:12px; height:12px; fill:none; stroke:currentColor; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round;"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
-                Rekap
-            </button>
-            <div id="network-indicator" class="net-status online">● Online</div>
-        </div>
+			<!-- TOMBOL REFRESH DATA SUPABASE -->
+			<button class="btn-rekap-top btn-3d" onclick="refreshDataManual()" title="Refresh Data Master">
+				<svg viewBox="0 0 24 24" style="width:12px; height:12px; fill:none; stroke:currentColor; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round;">
+					<polyline points="23 4 23 10 17 10"></polyline>
+					<path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+				</svg>
+				Refresh
+			</button>
+
+			<button class="btn-rekap-top btn-3d" onclick="bukaModalRekap()">
+				<svg viewBox="0 0 24 24" style="width:12px; height:12px; fill:none; stroke:currentColor; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round;"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+				Rekap
+			</button>
+			<div id="network-indicator" class="net-status online">● Online</div>
+		</div>
     </div>
     
 	<div class="brand-header">
@@ -1324,28 +1333,31 @@
     drawAmbientAnimation();
 
     window.addEventListener('DOMContentLoaded', () => {
-        history.replaceState({ page: 'home' }, '', '#home');
-        inisialisasiWaktuOtomatis();
-        cekTokenKonfirmasiEmail();
+		history.replaceState({ page: 'home' }, '', '#home');
+		inisialisasiWaktuOtomatis();
+		cekTokenKonfirmasiEmail();
 
-        document.querySelectorAll('.glass-modal-card, .filter-dropdown-menu').forEach(card => {
-            ['click', 'mousedown', 'mouseup', 'pointerdown', 'pointerup', 'touchstart', 'touchend'].forEach(evt => {
-                card.addEventListener(evt, (e) => {
-                    e.stopPropagation();
-                });
-            });
-        });
+		// PANSSIL FUNGSI PULL DATA MASTER SUPABASE SAAT HALAMAN DIBUKA!
+		muatSemuaGenerus();
 
-        // AUTO SCROLL KE INPUT DI HP KETIKA KEYBOARD AKTIF
-        const massalSearch = document.getElementById('massal-search-input');
-        if (massalSearch) {
-            massalSearch.addEventListener('focus', () => {
-                setTimeout(() => {
-                    massalSearch.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }, 300);
-            });
-        }
-    });
+		document.querySelectorAll('.glass-modal-card, .filter-dropdown-menu').forEach(card => {
+			['click', 'mousedown', 'mouseup', 'pointerdown', 'pointerup', 'touchstart', 'touchend'].forEach(evt => {
+				card.addEventListener(evt, (e) => {
+					e.stopPropagation();
+				});
+			});
+		});
+
+		// AUTO SCROLL KE INPUT DI HP KETIKA KEYBOARD AKTIF
+		const massalSearch = document.getElementById('massal-search-input');
+		if (massalSearch) {
+			massalSearch.addEventListener('focus', () => {
+				setTimeout(() => {
+					massalSearch.scrollIntoView({ behavior: 'smooth', block: 'center' });
+				}, 300);
+			});
+		}
+	});
 
     window.addEventListener('popstate', (e) => {
         const globalOverlay = document.getElementById('global-filter-overlay');
@@ -1437,7 +1449,41 @@
 
     let idMassalTerpilihSet = new Set();
 
-    async function cekTokenKonfirmasiEmail() {
+    async function refreshDataManual() {
+		if (!navigator.onLine) {
+			bunyikanSuaraGagal();
+			return tampilkanNotifKustom('error', 'Offline', 'Gagal refresh, tidak ada koneksi internet.');
+		}
+
+		tampilkanNotifKustom('success', 'Memuat Data...', 'Sedang mengambil data terbaru dari server');
+		
+		try {
+			let { data: generus, error } = await _supabase
+				.from('data_absensi_generus')
+				.select('*')
+				.limit(10000);
+
+			if (!error && generus && generus.length > 0) {
+				semuaDataGenerus = generus;
+				localStorage.setItem('cache_data_absensi_generus', JSON.stringify(generus));
+				
+				if (searchInput) {
+					searchInput.placeholder = `Cari di antara ${generus.length} data...`;
+				}
+				
+				bunyikanSuaraSukses();
+				tampilkanNotifKustom('success', 'Berhasil Refresh', `${generus.length} data berhasil diperbarui.`);
+			} else {
+				bunyikanSuaraGagal();
+				tampilkanNotifKustom('error', 'Gagal Refresh', error ? error.message : 'Data tidak ditemukan.');
+			}
+		} catch (e) {
+			bunyikanSuaraGagal();
+			tampilkanNotifKustom('error', 'Gagal Refresh', 'Terjadi gangguan jaringan.');
+		}
+	}
+	
+	async function cekTokenKonfirmasiEmail() {
 		const urlParams = new URLSearchParams(window.location.search);
 		const token = urlParams.get('token');
 
