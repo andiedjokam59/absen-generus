@@ -1,69 +1,35 @@
-const CACHE_NAME = 'presensi-iq-v4'; // <-- NAIKKAN VERSI INI SETIAP KALI UPDATE FITUR
-const ASSETS_TO_CACHE = [
-  './',
-  './index.html',
-  './manifest.json',
-  './Logo remaja daerah.png',
-  // Library CDN di-cache agar bisa dipanggil saat offline murni:
-  'https://unpkg.com/html5-qrcode',
-  'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2',
-  'https://fonts.googleapis.com/css2?family=Inter:wght=400;500;600;700&display=swap'
-];
+// Service Worker Otomatis Real-Time (Tanpa Harus Mengubah Versi Manual)
 
-// 1. Install & langsung aktifkan Service Worker baru
-self.addEventListener('install', event => {
-  self.skipWaiting(); // Memaksa SW baru menggantikan SW lama tanpa menunggu browser ditutup
+// 1. Install Event: Langsung aktif tanpa antre/menunggu
+self.addEventListener('install', (event) => {
+  self.skipWaiting();
+});
+
+// 2. Activate Event: Langsung ambil alih semua halaman yang terbuka
+self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => {
-      return cache.addAll(ASSETS_TO_CACHE);
+    caches.keys().then((keys) => {
+      // Hapus seluruh cache lama secara otomatis setiap kali Service Worker aktif
+      return Promise.all(keys.map((key) => caches.delete(key)));
+    }).then(() => {
+      return self.clients.claim();
     })
   );
 });
 
-// 2. Aktivasi & bersihkan cache lama
-self.addEventListener('activate', event => {
-  event.waitUntil(
-    caches.keys().then(keys => {
-      return Promise.all(
-        keys.map(key => {
-          if (key !== CACHE_NAME) {
-            return caches.delete(key);
-          }
-        })
-      );
-    }).then(() => self.clients.claim()) // Langsung ambil alih semua tab terbuka
-  );
-});
-
-// 3. Strategi Fetch: Network-First dengan Cache Fallback
-self.addEventListener('fetch', event => {
-  // Abaikan request API Supabase / POST request dari penanganan cache
-  if (event.request.url.includes('supabase.co') || event.request.method !== 'GET') {
-    return;
-  }
+// 3. Fetch Event: Strategi Network-First / Network-Only
+// Mengambil langsung dari GitHub/Server terlebih dahulu agar selalu detik itu juga ter-update
+self.addEventListener('fetch', (event) => {
+  if (event.request.method !== 'GET') return;
 
   event.respondWith(
-    fetch(event.request)
-      .then(networkResponse => {
-        // Jika berhasil mengambil versi terbaru dari jaringan, perbarui cache secara dinamis
-        if (networkResponse && networkResponse.status === 200) {
-          const responseToCache = networkResponse.clone();
-          caches.open(CACHE_NAME).then(cache => {
-            cache.put(event.request, responseToCache);
-          });
-        }
+    fetch(event.request, { cache: 'no-store' }) // Paksa mengambil data segar tanpa cache browser
+      .then((networkResponse) => {
         return networkResponse;
       })
       .catch(() => {
-        // Jika offline atau jaringan gagal, ambil dari cache
-        return caches.match(event.request).then(cachedResponse => {
-          if (cachedResponse) {
-            return cachedResponse;
-          }
-          if (event.request.mode === 'navigate') {
-            return caches.match('./index.html');
-          }
-        });
+        // Jika benar-benar offline (tidak ada internet), ambil fallback dari cache jika ada
+        return caches.match(event.request);
       })
   );
 });
