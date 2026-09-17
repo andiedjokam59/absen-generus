@@ -1468,7 +1468,7 @@
 			return tampilkanNotifKustom('error', 'Offline', 'Gagal refresh, tidak ada koneksi internet.');
 		}
 
-		tampilkanNotifKustom('success', 'Memuat Data...', 'Sedang mengambil data terbaru dari server');
+		tampilkanNotifKustom('success', 'Memuat Data...', 'Sedang memperbarui data dan me-reload halaman...');
 		
 		try {
 			let { data: generus, error } = await _supabase
@@ -1480,12 +1480,10 @@
 				semuaDataGenerus = generus;
 				localStorage.setItem('cache_data_absensi_generus', JSON.stringify(generus));
 				
-				if (searchInput) {
-					searchInput.placeholder = `Cari di antara ${generus.length} data...`;
-				}
-				
-				bunyikanSuaraSukses();
-				tampilkanNotifKustom('success', 'Berhasil Refresh', `${generus.length} data berhasil diperbarui.`);
+				// JEDA 0.5 DETIK LALU RELOAD PAGE BROWSER SECARA OTOMATIS
+				setTimeout(() => {
+					window.location.reload();
+				}, 500);
 			} else {
 				bunyikanSuaraGagal();
 				tampilkanNotifKustom('error', 'Gagal Refresh', error ? error.message : 'Data tidak ditemukan.');
