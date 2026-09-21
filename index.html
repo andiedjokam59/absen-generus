@@ -1193,48 +1193,70 @@
 		}
 	});
 
+    // SISTEM PENGELOLAAN MODAL & BACK BUTTON YANG DISERAGAMKAN
+    function openModal(modalId) {
+        const el = document.getElementById(modalId);
+        if (!el) return;
+        if (!history.state || history.state.modal !== modalId) {
+            history.pushState({ modal: modalId }, '', '#' + modalId);
+        }
+        if (modalId === 'global-filter-overlay') {
+            el.style.display = 'flex';
+        } else {
+            el.classList.add('active');
+        }
+    }
+
+    function closeModal(modalId, fromPopState = false) {
+        const el = document.getElementById(modalId);
+        if (!el) return;
+
+        if (modalId === 'global-filter-overlay') {
+            document.querySelectorAll('.filter-dropdown-menu').forEach(m => m.style.display = 'none');
+            el.style.display = 'none';
+        } else {
+            el.classList.remove('active');
+        }
+
+        if (!fromPopState) {
+            if (history.state && history.state.modal === modalId) {
+                history.back();
+            }
+        }
+    }
+
     window.addEventListener('popstate', (e) => {
-        const globalOverlay = document.getElementById('global-filter-overlay');
-        if (globalOverlay && globalOverlay.style.display === 'flex') {
-            tutupSemuaDropdownAman(false);
-            return;
-        }
+        const state = e.state;
+        const activeModalId = state ? state.modal : null;
 
-        const centerModal = document.getElementById('global-center-modal');
-        if (centerModal && centerModal.classList.contains('active')) {
-            tutupGlassModalTengah(false);
-            return;
-        }
+        const allModals = [
+            'global-center-modal',
+            'modal-konfirmasi-hapus',
+            'modal-kelompok-nihil',
+            'modal-rekap-semua',
+            'modal-rekap-desa',
+            'modal-rekap-kelompok',
+            'modal-rekap-tahunan',
+            'modal-absensi-massal',
+            'modal-fitur-rekap',
+            'global-filter-overlay'
+        ];
 
-        const rekapModal = document.getElementById('modal-fitur-rekap');
-        if (rekapModal && rekapModal.classList.contains('active')) {
-            tutupModalRekap(false);
-            return;
-        }
+        allModals.forEach(modalId => {
+            const el = document.getElementById(modalId);
+            if (!el) return;
+            
+            let isActive = false;
+            if (modalId === 'global-filter-overlay') {
+                isActive = (el.style.display === 'flex');
+            } else {
+                isActive = el.classList.contains('active');
+            }
 
-        const massalModal = document.getElementById('modal-absensi-massal');
-        if (massalModal && massalModal.classList.contains('active')) {
-            tutupModalAbsensiMassal(false);
-            return;
-        }
-
-        const kelompokNihilModal = document.getElementById('modal-kelompok-nihil');
-        if (kelompokNihilModal && kelompokNihilModal.classList.contains('active')) {
-            tutupModalKelompokNihil();
-            return;
-        }
-
-        const rSemua = document.getElementById('modal-rekap-semua');
-        if (rSemua && rSemua.classList.contains('active')) { tutupModalRekapSemua(false); return; }
-
-        const rDesa = document.getElementById('modal-rekap-desa');
-        if (rDesa && rDesa.classList.contains('active')) { tutupModalRekapDesa(false); return; }
-
-        const rKlp = document.getElementById('modal-rekap-kelompok');
-        if (rKlp && rKlp.classList.contains('active')) { tutupModalRekapKelompok(false); return; }
-
-        const rTahunan = document.getElementById('modal-rekap-tahunan');
-        if (rTahunan && rTahunan.classList.contains('active')) { tutupModalRekapTahunan(false); return; }
+            if (isActive && activeModalId !== modalId) {
+                closeModal(modalId, true);
+            }
+        });
     });
 
     if ('serviceWorker' in navigator) {
@@ -1355,7 +1377,6 @@
 			const elKelompok = document.getElementById('konfirmasi-kelompok-generus');
 			const elAbsen = document.getElementById('konfirmasi-absen-terakhir');
 			const btnHapus = document.getElementById('btn-eksekusi-hapus');
-			const modal = document.getElementById('modal-konfirmasi-hapus');
 
 			if (elNama) elNama.innerText = data.nama_lengkap || 'Generus Terkait';
 			if (elKelompok) elKelompok.innerText = `Kelompok: ${(data.kelompok || '-').toUpperCase()}`;
@@ -1369,9 +1390,7 @@
 				};
 			}
 
-			if (modal) {
-				modal.classList.add('active');
-			}
+			openModal('modal-konfirmasi-hapus');
 		} catch (e) {
 			console.error('Error konfirmasi email:', e);
 		}
@@ -1401,36 +1420,25 @@
         }
     }
 
-    function tutupModalKonfirmasiHapus() {
-        document.getElementById('modal-konfirmasi-hapus').classList.remove('active');
+    function tutupModalKonfirmasiHapus(fromPopState = false) {
+        closeModal('modal-konfirmasi-hapus', fromPopState);
     }
 
-    function bukaModalAbsensiMassal(pushHistory = true) {
+    function bukaModalAbsensiMassal() {
         let namaKegiatan = document.getElementById('kegiatan').value.toUpperCase().trim();
         if (!namaKegiatan) {
             bunyikanSuaraGagal();
             return tampilkanNotifKustom('error', 'Gagal', 'Harap isi Nama Agenda terlebih dahulu!');
         }
 
-        if (pushHistory) {
-            history.pushState({ modal: 'modal-absensi-massal' }, '', '#massal');
-        }
-
-        const modal = document.getElementById('modal-absensi-massal');
         idMassalTerpilihSet.clear();
         document.getElementById('massal-search-input').value = ''; 
         renderDaftarGenerusMassal();
-        modal.classList.add('active');
+        openModal('modal-absensi-massal');
     }
 
-    function tutupModalAbsensiMassal(backHistory = false) {
-        const modal = document.getElementById('modal-absensi-massal');
-        if (modal && modal.classList.contains('active')) {
-            modal.classList.remove('active');
-            if (backHistory && history.state && history.state.modal === 'modal-absensi-massal') {
-                history.back();
-            }
-        }
+    function tutupModalAbsensiMassal(fromPopState = false) {
+        closeModal('modal-absensi-massal', fromPopState);
     }
 
     function bukaModalFilterKategoriMassal() {
@@ -1702,55 +1710,40 @@
             button.innerText = item.label;
             button.onclick = function() {
                 item.action();
-                tutupGlassModalTengah(false);
+                tutupGlassModalTengah();
             };
             containerEl.appendChild(button);
         });
 
-        modal.classList.add('active');
+        openModal('global-center-modal');
     }
 
-    function tutupGlassModalTengah(backHistory = false) {
-        const modal = document.getElementById('global-center-modal');
-        if (modal && modal.classList.contains('active')) {
-            modal.classList.remove('active');
-            if (backHistory && history.state && history.state.modal === 'global-center-modal') {
-                history.back();
-            }
-        }
+    function tutupGlassModalTengah(fromPopState = false) {
+        closeModal('global-center-modal', fromPopState);
     }
 
-    function bukaModalRekap(pushHistory = true) {
-        if (pushHistory) {
-            history.pushState({ modal: 'modal-fitur-rekap' }, '', '#rekap');
-        }
-        document.getElementById('modal-fitur-rekap').classList.add('active');
+    function bukaModalRekap() {
+        openModal('modal-fitur-rekap');
     }
 
-    function tutupModalRekap(backHistory = false) {
-        const modal = document.getElementById('modal-fitur-rekap');
-        if (modal && modal.classList.contains('active')) {
-            modal.classList.remove('active');
-            if (backHistory && history.state && history.state.modal === 'modal-fitur-rekap') {
-                history.back();
-            }
-        }
+    function tutupModalRekap(fromPopState = false) {
+        closeModal('modal-fitur-rekap', fromPopState);
     }
 
-    function tutupModalRekapSemua(backHistory = true) {
-        document.getElementById('modal-rekap-semua').classList.remove('active');
+    function tutupModalRekapSemua(fromPopState = false) {
+        closeModal('modal-rekap-semua', fromPopState);
     }
 
-    function tutupModalRekapDesa(backHistory = true) {
-        document.getElementById('modal-rekap-desa').classList.remove('active');
+    function tutupModalRekapDesa(fromPopState = false) {
+        closeModal('modal-rekap-desa', fromPopState);
     }
 
-    function tutupModalRekapKelompok(backHistory = true) {
-        document.getElementById('modal-rekap-kelompok').classList.remove('active');
+    function tutupModalRekapKelompok(fromPopState = false) {
+        closeModal('modal-rekap-kelompok', fromPopState);
     }
 
-    function tutupModalRekapTahunan(backHistory = true) {
-        document.getElementById('modal-rekap-tahunan').classList.remove('active');
+    function tutupModalRekapTahunan(fromPopState = false) {
+        closeModal('modal-rekap-tahunan', fromPopState);
     }
 
     async function tampilkanKelompokNihil() {
@@ -1761,7 +1754,6 @@
         
         let dataMurni = await dapatkanDataGabungan(namaKegiatan);
         
-        // MENGABAIKAN KELOMPOK PONDOK
         let semuaKelompok = [...new Set(semuaDataGenerus.map(g => (g.kelompok || "-").toUpperCase()))]
             .filter(k => k !== '-' && k !== '' && !k.includes('PONDOK'))
             .sort();
@@ -1798,11 +1790,11 @@
             container.innerText = teks;
         }
         
-        document.getElementById('modal-kelompok-nihil').classList.add('active');
+        openModal('modal-kelompok-nihil');
     }
 
-    function tutupModalKelompokNihil() {
-        document.getElementById('modal-kelompok-nihil').classList.remove('active');
+    function tutupModalKelompokNihil(fromPopState = false) {
+        closeModal('modal-kelompok-nihil', fromPopState);
     }
 
     function copyKelompokNihil() {
@@ -2357,7 +2349,6 @@
             return lulusBulan && lulusTahun;
         });
 
-        // MENGABAIKAN KELOMPOK PONDOK SECARA GLOBAL
         return logTerfilterwaktu.map(absen => {
             let detail = semuaDataGenerus.find(g => String(g.id_generus) === String(absen.id_generus));
             let tanggalObj = new Date(absen.waktu_absen);
@@ -2419,7 +2410,7 @@
             document.getElementById('cetak-waktu-semua').innerText = periodeStr;
             document.getElementById('resume-kehadiran-container-semua').innerHTML = resumeHtml;
             renderTabelRekapSemuaSistem(); 
-            document.getElementById('modal-rekap-semua').classList.add('active');
+            openModal('modal-rekap-semua');
         } 
         else if(jenis === 'desa') {
             document.getElementById('cetak-judul-kegiatan-desa').innerText = `Laporan Presensi: ${namaKegiatan}`;
@@ -2443,7 +2434,7 @@
             }
             html += `</tbody><tfoot><tr><td colspan="2">TOTAL:</td><td>${totH.l}</td><td>${totH.p}</td><td>${totH.h}</td><td>${totH.i}</td><td>${totH.h + totH.i}</td></tr></tfoot></table>`; 
             document.getElementById('print-table-container-desa').innerHTML = html; 
-            document.getElementById('modal-rekap-desa').classList.add('active');
+            openModal('modal-rekap-desa');
         }
         else if(jenis === 'kelompok') {
             document.getElementById('cetak-judul-kegiatan-kelompok').innerText = `Laporan Presensi: ${namaKegiatan}`;
@@ -2479,7 +2470,7 @@
                 }
             }
             document.getElementById('print-table-container-kelompok').innerHTML = html; 
-            document.getElementById('modal-rekap-kelompok').classList.add('active');
+            openModal('modal-rekap-kelompok');
         }
     }
 
@@ -2507,7 +2498,8 @@
         let terbukanNow = (menu.style.display === 'block');
         tutupSemuaDropdownAman(false);
         if(!terbukanNow) {
-            menu.style.display = 'block'; globalOverlay.style.display = 'flex';
+            openModal('global-filter-overlay');
+            menu.style.display = 'block';
             let listDataUnik = [...new Set(dataAktifRekap.map(d => d[kolom]))].sort();
             let containerOpsi = document.getElementById(`list-semua-${kolom}`); containerOpsi.innerHTML = '';
             listDataUnik.forEach(val => {
@@ -2562,7 +2554,6 @@
 			dataMasterTahunanOrang = semuaDataGenerus.filter(g => g.status && g.status.toUpperCase().includes(statusPilihan.toUpperCase())); 
 		}
 
-        // MENGABAIKAN KELOMPOK PONDOK SECARA GLOBAL UNTUK REKAP TAHUNAN
         dataMasterTahunanOrang = dataMasterTahunanOrang.filter(g => !(g.kelompok || "").toUpperCase().includes('PONDOK'));
 
 		filterTerpilih = {}; 
@@ -2571,7 +2562,7 @@
 		document.getElementById('cetak-waktu-tahunan').innerText = `Kategori: ${statusPilihan} | Tahun: ${tahunPilihan}`;
 		document.getElementById('resume-kehadiran-container-tahunan').innerHTML = ""; 
 		renderTabelMatriksTahunanSistem();
-        document.getElementById('modal-rekap-tahunan').classList.add('active');
+        openModal('modal-rekap-tahunan');
 	}
 
     function pemicuUlangTahunanMatriks() { let dropdownKategori = document.getElementById('tahunan-dropdown').value; if(dropdownKategori) tarikRekapTahunanMatriks(dropdownKategori); }
@@ -2632,7 +2623,8 @@
     function toggleDropdownDapukanPengurus(event) {
         event.stopPropagation(); let menu = document.getElementById('dropdown-filter-dapukan'); tutupSemuaDropdownAman(false);
         if(menu.style.display !== 'block') {
-            menu.style.display = 'block'; globalOverlay.style.display = 'flex';
+            openModal('global-filter-overlay');
+            menu.style.display = 'block';
             let containerOpsi = document.getElementById('list-opsi-dapukan'); containerOpsi.innerHTML = '';
             ["KMM", "PPG", "DAERAH", "PONDOK", "KELOMPOK", "DESA"].forEach(dapukan => {
                 let tercentang = subDapukanPengurusTerpilih.includes(dapukan) ? 'checked' : '';
@@ -2649,7 +2641,8 @@
     function toggleDropdownKelompok(event) {
         event.stopPropagation(); let menu = document.getElementById('dropdown-filter-kelompok'); tutupSemuaDropdownAman(false);
         if(menu.style.display !== 'block') {
-            menu.style.display = 'block'; globalOverlay.style.display = 'flex';
+            openModal('global-filter-overlay');
+            menu.style.display = 'block';
             let listKlp = [...new Set(dataMasterTahunanOrang.map(o => (o.kelompok || "-").toUpperCase()))].sort();
             let containerOpsi = document.getElementById('list-opsi-kelompok'); containerOpsi.innerHTML = '';
             listKlp.forEach(klp => {
@@ -2666,12 +2659,11 @@
         tutupSemuaDropdownAman(false); renderTabelMatriksTahunanSistem();
     }
 
-    function tutupSemuaDropdownAman(backHistory = false) { 
+    function tutupSemuaDropdownAman(fromPopState = false) { 
         document.querySelectorAll('.filter-dropdown-menu').forEach(m => {
             m.style.display = 'none';
         });
-        globalOverlay.style.display = 'none'; 
-        tutupGlassModalTengah(backHistory);
+        closeModal('global-filter-overlay', fromPopState);
     }
     
     async function eksporKeExcel() {
