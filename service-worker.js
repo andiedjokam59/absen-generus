@@ -1,5 +1,5 @@
 // Service Worker Universal (Android & iOS Safari Friendly)
-const CACHE_NAME = 'presensi-app-v3';
+const CACHE_NAME = 'presensi-app-v1';
 
 const ASSETS_TO_CACHE = [
   './',
@@ -36,7 +36,7 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// 3. Fetch Event (Ramah Safari & Android)
+// 3. Fetch Event (Network-First untuk HTML/Navigasi, Cache-First untuk Aset Lainnya)
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
 
@@ -47,33 +47,41 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // STRATEGI NETWORK-FIRST UNTUK HALAMAN UTAMA / HTML (index.html)
+  // Memastikan update index.html langsung dirasakan saat online, tetap aman saat offline.
+  if (event.request.mode === 'navigate' || url.pathname.endsWith('.html') || url.pathname === '/' || url.pathname.endsWith('/')) {
+    event.respondWith(
+      fetch(event.request)
+        .then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const responseToCache = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseToCache));
+          }
+          return networkResponse;
+        })
+        .catch(() => {
+          // Jika offline, gunakan cache terakhir agar aplikasi tetap bisa dibuka
+          return caches.match(event.request).then((cachedResponse) => {
+            return cachedResponse || caches.match('./index.html');
+          });
+        })
+    );
+    return;
+  }
+
+  // STRATEGI CACHE-FIRST UNTUK ASET STATIS (Gambar, Font, Library CDN)
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
-      // Jika ada di cache lokal, langsung tampilkan (Cepat & Bekerja Offline)
       if (cachedResponse) {
-        // Jika online, perbarui cache di latar belakang
-        if (navigator.onLine) {
-          fetch(event.request).then((networkResponse) => {
-            if (networkResponse && networkResponse.status === 200) {
-              caches.open(CACHE_NAME).then((cache) => cache.put(event.request, networkResponse));
-            }
-          }).catch(() => {});
-        }
         return cachedResponse;
       }
-
-      // Jika belum ada di cache, minta ke jaringan
       return fetch(event.request).then((networkResponse) => {
         if (networkResponse && networkResponse.status === 200) {
           const responseToCache = networkResponse.clone();
           caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseToCache));
         }
         return networkResponse;
-      }).catch(() => {
-        if (event.request.mode === 'navigate') {
-          return caches.match('./index.html');
-        }
-      });
+      }).catch(() => {});
     })
   );
 });
