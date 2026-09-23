@@ -1,5 +1,5 @@
 // Service Worker Universal (Android & iOS Safari Friendly)
-const CACHE_NAME = 'presensi-app-v1';
+const CACHE_NAME = 'presensi-app-v2';
 
 const ASSETS_TO_CACHE = [
   './',
