@@ -825,13 +825,13 @@
             <p style="text-align: center; margin: 0 0 12px 0; font-size: 11px; color: var(--text-muted); font-weight: 600;" id="cetak-waktu-tahunan">-</p>
             <div id="resume-kehadiran-container-tahunan"></div>
 
-            <!-- ACTION BUTTONS: PRINT, EXCEL, & PDF TAHUNAN -->
+            <!-- ACTION BUTTONS: PRINT, EXCEL, & PDF TAHUNAN (BERSIH TANPA ICON & TANPA TEKS DALAM KURUNG) -->
             <div class="action-download-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px;">
                 <button class="btn-secondary btn-3d" style="margin-top:0; padding:10px 0; font-size:11px;" onclick="eksporTahunanKeExcel()">
-                    📊 Unduh Excel
+                    Unduh Excel
                 </button>
                 <button class="btn-secondary btn-3d" style="margin-top:0; padding:10px 0; font-size:11px;" onclick="eksporTahunanKePDF()">
-                    📄 Unduh PDF (F4)
+                    Unduh PDF
                 </button>
             </div>
 
@@ -2809,8 +2809,8 @@
         if(!namaKegiatan) return tampilkanNotifKustom('error', 'Gagal', 'Isi nama agenda!');
 
         bukaGlassModalTengah('Pilihan Format Unduh Rekap', [
-            { label: '📊 Unduh Format Excel (.xls)', action: () => eksporKeExcel() },
-            { label: '📄 Unduh Format PDF (Ukuran F4 / Folio)', action: () => eksporKePDFF4() }
+            { label: 'Unduh Excel', action: () => eksporKeExcel() },
+            { label: 'Unduh PDF', action: () => eksporKePDFF4() }
         ]);
     }
 
@@ -2825,13 +2825,14 @@
         let dataMurni = await dapatkanDataGabungan(namaKegiatan);
         if(dataMurni.length === 0) return tampilkanNotifKustom('error', 'Kosong', 'Tidak ada data.');
 
-        let perKelompok = {};
-        dataMurni.forEach(d => {
-            let k = (d.kelompok || '-').toUpperCase();
-            if(!perKelompok[k]) perKelompok[k] = [];
-            perKelompok[k].push(d);
+        // DIGABUNG DALAM 1 TABEL LENGKAP & NOMOR SAMBUNG 1 - TERAKHIR
+        dataMurni.sort((a, b) => {
+            let kA = (a.kelompok || '-').toUpperCase();
+            let kB = (b.kelompok || '-').toUpperCase();
+            if (kA !== kB) return kA.localeCompare(kB);
+            return a.name.localeCompare(b.name);
         });
-        
+
         let htmlTable = `
             <html xmlns:x="urn:schemas-microsoft-com:office:excel">
             <head>
@@ -2840,43 +2841,35 @@
             <body>
                 <h2>REKAP PRESENSI: ${namaKegiatan}</h2>
                 <p>Periode: ${txtBulan} ${txtTahun}</p>
-                <table border="1">`;
+                <table border="1">
+                    <thead>
+                        <tr>
+                            <th style="background-color: #dce1eb;">No</th>
+                            <th style="background-color: #dce1eb;">Nama</th>
+                            <th style="background-color: #dce1eb;">Kelompok</th>
+                            <th style="background-color: #dce1eb;">Desa</th>
+                            <th style="background-color: #dce1eb;">Status</th>
+                            <th style="background-color: #dce1eb;">Waktu</th>
+                            <th style="background-color: #dce1eb;">Metode</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
 
-        for (let klp in perKelompok) {
-            let items = perKelompok[klp];
-            items.sort((a, b) => a.name.localeCompare(b.name));
-
+        dataMurni.forEach((d, i) => {
             htmlTable += `
-                    <tr>
-                        <th colspan="7" style="background-color: #121e78; color: #ffffff; font-weight: bold; text-align: left;">KELOMPOK: ${klp}</th>
-                    </tr>
-                    <tr>
-                        <th style="background-color: #dce1eb;">No</th>
-                        <th style="background-color: #dce1eb;">Nama</th>
-                        <th style="background-color: #dce1eb;">Kelompok</th>
-                        <th style="background-color: #dce1eb;">Desa</th>
-                        <th style="background-color: #dce1eb;">Status</th>
-                        <th style="background-color: #dce1eb;">Waktu</th>
-                        <th style="background-color: #dce1eb;">Metode</th>
-                    </tr>`;
-
-            items.forEach((d, i) => {
-                htmlTable += `
-                    <tr>
-                        <td>${i+1}</td>
-                        <td>${d.name}</td>
-                        <td>${d.kelompok}</td>
-                        <td>${d.desa}</td>
-                        <td>${d.status}</td>
-                        <td>${d.tanggalLengkap} - ${d.waktu}</td>
-                        <td>${d.metode}</td>
-                    </tr>`;
-            });
-
-            htmlTable += `<tr><td colspan="7"></td></tr>`;
-        }
+                <tr>
+                    <td>${i + 1}</td>
+                    <td>${d.name}</td>
+                    <td>${d.kelompok}</td>
+                    <td>${d.desa}</td>
+                    <td>${d.status}</td>
+                    <td>${d.tanggalLengkap} - ${d.waktu}</td>
+                    <td>${d.metode}</td>
+                </tr>`;
+        });
 
         htmlTable += `
+                    </tbody>
                 </table>
             </body>
             </html>`;
@@ -2982,7 +2975,7 @@
         }
     }
 
-    // EKSPOK TAHUNAN KE EXCEL
+    // EKSPOR TAHUNAN KE EXCEL (DIGABUNG 1 TABEL UTUH, URUT KELOMPOK, NOMOR CONTINUOUS 1 - TERAKHIR)
     async function eksporTahunanKeExcel() {
         let namaKegiatan = document.getElementById('kegiatan').value.toUpperCase().trim();
         let tahunPilihan = document.getElementById('filter-tahunan-tahun').value;
@@ -3026,38 +3019,38 @@
                 htmlTable += `<td>${hCount}x</td><td>${iCount}x</td></tr>`;
             });
         } else {
-            let perKelompokObj = {};
-            dataMasterTahunanOrang.sort((a,b)=>(a.nama_lengkap||'').localeCompare(b.nama_lengkap)).forEach(orang => {
-                let k = (orang.kelompok || '-').toUpperCase();
-                if (!perKelompokObj[k]) perKelompokObj[k] = [];
-                perKelompokObj[k].push(orang);
+            // GENERUS: JADI 1 TABEL UTUH, URUT KELOMPOK, NOMOR URUT CONTINUOUS
+            let copyData = [...dataMasterTahunanOrang];
+            copyData.sort((a, b) => {
+                let kA = (a.kelompok || '-').toUpperCase();
+                let kB = (b.kelompok || '-').toUpperCase();
+                if (kA !== kB) return kA.localeCompare(kB);
+                return (a.nama_lengkap || '').localeCompare(b.nama_lengkap);
             });
 
-            for (let klp in perKelompokObj) {
-                htmlTable += `
-                    <tr><th colspan="17" style="background-color: #121e78; color: #ffffff; text-align: left;">KELOMPOK: ${klp}</th></tr>
-                    <tr style="background-color: #dce1eb;">
-                        <th>No</th><th>Nama</th><th>Kelompok</th>
-                        <th>Jan</th><th>Feb</th><th>Mar</th><th>Apr</th><th>Mei</th><th>Jun</th>
-                        <th>Jul</th><th>Agu</th><th>Sep</th><th>Okt</th><th>Nov</th><th>Des</th>
-                        <th>Hadir</th><th>Izin</th>
-                    </tr>`;
+            htmlTable += `
+                <tr style="background-color: #121e78; color: #ffffff;">
+                    <th>No</th><th>Nama</th><th>Kelompok</th>
+                    <th>Jan</th><th>Feb</th><th>Mar</th><th>Apr</th><th>Mei</th><th>Jun</th>
+                    <th>Jul</th><th>Agu</th><th>Sep</th><th>Okt</th><th>Nov</th><th>Des</th>
+                    <th>Hadir</th><th>Izin</th>
+                </tr>`;
 
-                perKelompokObj[klp].forEach((orang, idx) => {
-                    let logO = dataMentahTahunanLog.filter(l => String(l.id_generus) === String(orang.id_generus));
-                    htmlTable += `<tr><td>${idx + 1}</td><td>${orang.nama_lengkap}</td><td>${klp}</td>`;
+            copyData.forEach((orang, idx) => {
+                let logO = dataMentahTahunanLog.filter(l => String(l.id_generus) === String(orang.id_generus));
+                let klp = (orang.kelompok || '-').toUpperCase();
 
-                    let hCount = 0, iCount = 0;
-                    for (let m = 0; m < 12; m++) {
-                        let logsB = logO.filter(l => new Date(l.waktu_absen).getMonth() === m);
-                        if (logsB.some(l => l.metode_input !== 'Izin')) { htmlTable += `<td>✔</td>`; hCount++; }
-                        else if (logsB.some(l => l.metode_input === 'Izin')) { htmlTable += `<td>IZN</td>`; iCount++; }
-                        else { htmlTable += `<td>-</td>`; }
-                    }
-                    htmlTable += `<td>${hCount}x</td><td>${iCount}x</td></tr>`;
-                });
-                htmlTable += `<tr><td colspan="17"></td></tr>`;
-            }
+                htmlTable += `<tr><td>${idx + 1}</td><td>${orang.nama_lengkap}</td><td>${klp}</td>`;
+
+                let hCount = 0, iCount = 0;
+                for (let m = 0; m < 12; m++) {
+                    let logsB = logO.filter(l => new Date(l.waktu_absen).getMonth() === m);
+                    if (logsB.some(l => l.metode_input !== 'Izin')) { htmlTable += `<td>✔</td>`; hCount++; }
+                    else if (logsB.some(l => l.metode_input === 'Izin')) { htmlTable += `<td>IZN</td>`; iCount++; }
+                    else { htmlTable += `<td>-</td>`; }
+                }
+                htmlTable += `<td>${hCount}x</td><td>${iCount}x</td></tr>`;
+            });
         }
 
         htmlTable += `</table></body></html>`;
@@ -3069,7 +3062,7 @@
         link.click();
     }
 
-    // EKSPOR TAHUNAN KE PDF (F4/FOLIO)
+    // EKSPOR TAHUNAN KE PDF
     async function eksporTahunanKePDF() {
         let namaKegiatan = document.getElementById('kegiatan').value.toUpperCase().trim();
         let tahunPilihan = document.getElementById('filter-tahunan-tahun').value;
