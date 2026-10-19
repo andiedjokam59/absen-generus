@@ -2856,8 +2856,11 @@
                     <tbody>`;
 
         dataMurni.forEach((d, i) => {
+            let isPengurus = (d.status || '').toUpperCase().includes('PENGURUS');
+            let rowBgStyle = isPengurus ? 'style="background-color: #fef08a;"' : '';
+
             htmlTable += `
-                <tr>
+                <tr ${rowBgStyle}>
                     <td>${i + 1}</td>
                     <td>${d.name}</td>
                     <td>${d.kelompok}</td>
@@ -2937,15 +2940,18 @@
 
             items.forEach((item, idx) => {
                 let st = item.metode === 'Izin' ? '<b style="color:#d99b00;">IZIN</b>' : '<b style="color:#121e78;">HADIR</b>';
+                let isPengurus = (item.status || '').toUpperCase().includes('PENGURUS');
+                let cellBgStyle = isPengurus ? 'background-color:#fef08a;' : '';
+
                 isiHtmlKelompok += `
-                    <tr>
-                        <td style="border:1px solid #000; padding:4px; text-align:center;">${idx + 1}</td>
-                        <td style="border:1px solid #000; padding:4px; font-weight:600;">${item.name}</td>
-                        <td style="border:1px solid #000; padding:4px; text-align:center;">${item.jk.includes('P')?'P':'L'}</td>
-                        <td style="border:1px solid #000; padding:4px; text-align:center;">${item.desa}</td>
-                        <td style="border:1px solid #000; padding:4px; text-align:center;">${item.status}</td>
-                        <td style="border:1px solid #000; padding:4px; text-align:center;">${st}</td>
-                        <td style="border:1px solid #000; padding:4px; text-align:center;">${item.waktu}</td>
+                    <tr style="${cellBgStyle}">
+                        <td style="border:1px solid #000; padding:4px; text-align:center; ${cellBgStyle}">${idx + 1}</td>
+                        <td style="border:1px solid #000; padding:4px; font-weight:600; ${cellBgStyle}">${item.name}</td>
+                        <td style="border:1px solid #000; padding:4px; text-align:center; ${cellBgStyle}">${item.jk.includes('P')?'P':'L'}</td>
+                        <td style="border:1px solid #000; padding:4px; text-align:center; ${cellBgStyle}">${item.desa}</td>
+                        <td style="border:1px solid #000; padding:4px; text-align:center; ${cellBgStyle}">${item.status}</td>
+                        <td style="border:1px solid #000; padding:4px; text-align:center; ${cellBgStyle}">${st}</td>
+                        <td style="border:1px solid #000; padding:4px; text-align:center; ${cellBgStyle}">${item.waktu}</td>
                     </tr>`;
             });
 
@@ -3007,7 +3013,7 @@
 
             dataMasterTahunanOrang.sort((a,b)=>(a.nama_lengkap||'').localeCompare(b.nama_lengkap)).forEach((orang, idx) => {
                 let logO = dataMentahTahunanLog.filter(l => String(l.id_generus) === String(orang.id_generus));
-                htmlTable += `<tr><td>${idx + 1}</td><td>${orang.nama_lengkap}</td><td>${orang.usia_dapukan || '-'}</td>`;
+                htmlTable += `<tr style="background-color: #fef08a;"><td>${idx + 1}</td><td>${orang.nama_lengkap}</td><td>${orang.usia_dapukan || '-'}</td>`;
 
                 let hCount = 0, iCount = 0;
                 for (let m = 0; m < 12; m++) {
@@ -3039,8 +3045,10 @@
             copyData.forEach((orang, idx) => {
                 let logO = dataMentahTahunanLog.filter(l => String(l.id_generus) === String(orang.id_generus));
                 let klp = (orang.kelompok || '-').toUpperCase();
+                let isP = (orang.status || '').toUpperCase().includes('PENGURUS');
+                let rowBgStyle = isP ? 'style="background-color: #fef08a;"' : '';
 
-                htmlTable += `<tr><td>${idx + 1}</td><td>${orang.nama_lengkap}</td><td>${klp}</td>`;
+                htmlTable += `<tr ${rowBgStyle}><td>${idx + 1}</td><td>${orang.nama_lengkap}</td><td>${klp}</td>`;
 
                 let hCount = 0, iCount = 0;
                 for (let m = 0; m < 12; m++) {
